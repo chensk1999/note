@@ -2,22 +2,29 @@
 
 ## 脚本结构
 
+脚本包括以下几个部分：
+
 1. 自动执行段：脚本运行时，自动从头开始执行，直到遇到return，exit，或者一个 hotkey / hotstring 标签
 2. 子程序：以一个标签（可以是普通标签，hotkey标签或者hotstring标签）作为开头，return 作为结束。使用`gosub label`的方式调用。行为不同于函数，更相似于汇编语言的过程
 3. 函数：类似于一般编程语言的函数
 
-```
-; 定义函数
-function(param, ByRef ref_param, optional:="")
+脚本运行时，首先运行自动执行段；然后，键盘/鼠标每捕捉到一个hotkey / hotstring，就执行相应子程序；在子程序内部，可以调用其他的子程序或者其他的函数、执行命令
+
+```assembly
+GLOB_VAR = 0
+
+lbl:
+    MsgBox, 这是自动执行段
+    return
+
+function(param, ByRef ref_param, optional:="") ; 普通参数、引用传参、默认参数
 {
-    ; 普通参数、引用传参、默认参数
-    return "a value"
+    gosub lbl
+    return "result"
 }
 ```
 
-可以用`Func("func_name")`的方式引用函数对象
 
-脚本运行时，首先运行自动执行段；然后，键盘/鼠标每捕捉到一个hotkey / hotstring，就执行相应子程序；在子程序内部，可以运算、调用其他的子程序或者其他的函数、执行命令
 
 ## 表达式
 
@@ -25,7 +32,7 @@ ahk的变量没有严格类型概念。一个表达式可以包含以下内容�
 
 * 字符串
 
-```
+```assembly
 "this is a string"
 "%和,不需要转义`r`n""双引号“”的转义字符是两个双引号"
 ```
@@ -34,7 +41,7 @@ ahk的变量没有严格类型概念。一个表达式可以包含以下内容�
 
 不需要先声明再定义，用赋值运算符赋值
 
-```
+```assembly
 var := 1
 ; 注意AHK的等号非常奇怪，既可以用于赋值也可以判断相等，为了避免歧义，请总是使用赋值运算符
 ; 另外，AHK的增量赋值(包括但不仅限于+=, ++)都有奇怪的特性。最好只用:=
@@ -42,7 +49,7 @@ var := 1
 
 变量可以通过连接表达式组合成文本
 
-```
+```assembly
 "the value is " var     ; 隐式连接
 "the value is " . var   ; 显示连接
 format("the value is {0}", var)  ; 格式化字符串
@@ -58,7 +65,7 @@ format("the value is {0}", var)  ; 格式化字符串
 
 * 简单数组（Simple Array）：<span style="color:red;font-weight:bold">索引从1开始</span>
 
-```
+```assembly
 arr := [1, 2, 3]  ; 定义数组
 value := arr[0]   ; 访问数组
 arr[2] = 2        ; 赋值
@@ -72,7 +79,7 @@ removed = arr.Pop()
 
 * 关联数组（Associative Array）：键值对
 
-```
+```assembly
 ; 定义关联数组
 asso_arr := {key:value, key2:value2, ...}
 asso_arr := Object("key", value, "key2", value2)
@@ -89,7 +96,7 @@ for key, value in asso_array {
 
 ## 类
 
-```
+```assembly
 class ClassName extends BaseClassName
 {
     InstanceVar := Expression		; 实例变量(实例属性)
@@ -129,7 +136,7 @@ class ClassName extends BaseClassName
   * `,`：分隔命令参数
   * 重音符：转义字符
 
-```
+```assembly
 MsgBox, The year is %A_Year%.`n
 ; 命令名与参数之间的逗号是可选的。但是参数之间的逗号不可省略
 ```
@@ -146,7 +153,7 @@ MsgBox, The year is %A_Year%.`n
 
 * 循环
 
-```
+```assembly
 loop count
 while (expression)
 for key , value in expression
@@ -160,87 +167,135 @@ for key , value in expression
 
 * 错误：try - catch
 
-# Hotkey & Hotstring
+# Hotkey
 
+```assembly
+; 基本hotkey。当该按键被按下时跳转执行此过程
+q::
+    send, You pressed a key.
+    return
+
+; 特殊按键的hotkey。另外，如果过程体只有一行，可以和标签放在同一行，并省略return
+Esc:: pause
+
+; 修饰键+普通按键的hotkey。在按下Ctrl + a时触发。修饰键列表见后文Hotkey Modifier
+^a::
+    send, You pressed Ctrl and A.
+    return
+
+; 多个按键触发的hotkey
+a & b::
+    send, You pressed A and B.
+    return
+
+; 特殊效果的修饰键。$前缀的按键不会被Send指令触发。详细修饰键列表见后文Hotkey Modifier
+; 假如去掉$，前面Ctrl + a以及a + b热键的send指令中的A会触发这一个热键
+$A::
+    Send, You pressed A. Send command won't trigger this.
 ```
-; 定义hotkey
-; 按键组合可以是多个按键（同时按下就生效）
-; 也可以是按键1 & 按键2（此时按住&前按键不放，并按下&后的键生效）
-按键组合::
-    指令
+
+# Hotstring
+
+```assembly
+; 定义hotstring。输完内容后按空格、回车、tab、括号、分号等EndChars触发
+; 触发后将会退格清除hotstring，然后运行后面的代码
+; EndChars可以用Hotstring("EndChars", "-()[]{}:;")动态更改
+::btw::
+    MsgBox You typed "btw".
     return
 
-; 另一种定义方式
-按键组合::指令
+; 不需要EndChars直接转换
+:*:hello:: Send, hello world
 
-; 定义hotstring。输完内容后按空格、回车、tab、括号、分号等EndChars进行转换
-按键序列::
-    指令
+; hotstring中包含空白符。`n`t分别表示enter、tab
+:*:hello`n:: Send, hello world
+
+; 即使hotstring前面是字符也能触发
+:?:fine::
+    Send, I'm fine  ; 假如输入define也会触发fine
     return
+
+; 不自动退格
+:B0:1+1=:: Send, 2
 ```
 
 # 按键
 
-```
-{特殊符号}能打出它们原本的意思，如
-{按键 down}, {按键 up}按下/放开某个按键
-~按键	按键效果不会被屏蔽	
-```
+## Hotkey Modifier（修饰键）
 
-| 符号               | 说明                                                |
-| ------------------ | --------------------------------------------------- |
-| `#`                | win                                                 |
-| `!`                | alt                                                 |
-| `^`                | ctrl                                                |
-| `+`                | shift                                               |
-| `<, >`             | 左边 / 右边的按键，如`<^`指左ctrl                   |
-| `*`                | 通配符                                              |
-| `$`                | `$`作前缀时强制使用keybord hook，阻止被send指令触发 |
-| `LButton, RButton` | 鼠标                                                |
-
-例
+用修饰键作为Hotkey前缀，可实现特殊功能
 
 ```
-F1:: send F1 pressed.
-~Esc:: send Esc pressed, and it will still function
-~$Space:: send Space pressed, it is neither triggered by send nor blocked
+<!a:: send, You pressed Left Alt + A.
+~b:: send, Do something without blocking keystroke
 ```
 
+| 符号 | 按键  | 备注                                                         |
+| ---- | ----- | ------------------------------------------------------------ |
+| #    | Win   | 如果发送的按键中包含L，等到Win键松开才会发送，以防止锁定电脑 |
+| !    | Alt   |                                                              |
+| ^    | Ctrl  |                                                              |
+| +    | Shift |                                                              |
+| &    |       | 两个按钮                                                     |
+| <, > |       | 成对按键左边/右边的一个，如`<+`表示左shift                   |
+| *    |       | 任意Modifier，如`*a`可以被Ctrl + a，Shift + a等组合触发      |
+| ~    |       | 不会阻挡原本的键盘事件                                       |
+| $    |       | 强制使用keybord hook，不会被send指令触发                     |
 
+## Key Names（特殊按键）
 
-# 指令
+在Send函数使用大括号括起来表示输出特殊符号（如`{Esc}, {Space}, {BackSpace}`、转义字符（如`{{}, {+}, {<}`）、Hotkey Modifier（如`{Ctrl}, {Alt}`）都如此
 
-## Send
+```assembly
+Send Esc        ; 输出"Esc"
+Send {Esc}      ; 输出键盘上的Esc键
+Send {Esc down} ; 按下Esc键
+Send {Esc up}   ; 松开Esc键
 
+; 用作Hotkey标签时不需要大括号
+Esc:: Send You pressed Esc.
+
+; Modifier单独输出
+Send +a         ; 输出Shift + a（变成大写A）
+Send {Shift}a   ; 输出shift，然后输出a
 ```
-send, 按键序列
-send,
-(
-按键序列
-)
+
+| 按键   | 字符                                          |
+| ------ | --------------------------------------------- |
+| 方向键 | Up, Down, Left, Right                         |
+| 鼠标   | LButton, RButton, MButton, WheelDown, WheelUp |
+
+特别地，`%A_ThisHotkey%`表示被按下的按键
+
+# Send
+
+send指令能产生各类键盘动作。例：
+
+```assembly
+Send, some random text
 ```
 
-## 鼠标
+# 鼠标
 
 * Click
 
-```
+```assembly
 click [up/down], [key], [x, y], [count], [Relative]
 
 click 2                      ; 在当前位置点击两次
 click up, right, 100, 200    ; 移动到(100, 200)然后松开右键
-clkck %x%, %y%, 0, Relative  ; 移动到相对当前位置(x, y)处然后不点击
+click %x%, %y%, 0, Relative  ; 移动到相对当前位置(x, y)处然后不点击
 ```
 
 * 使用send指令发送Click
 
-```
+```assembly
 send ^{click 100, 200}       ; 移动到(100, 200)进行Ctrl + LeftClick
 ```
 
 * 坐标模式
 
-```
+```assembly
 CoordMode, TargetType [, RelativeTo]
 ```
 
@@ -259,7 +314,7 @@ RelativeTo：TargetType 要关联的区域。如果省略, 则默认为 Screen
 3. Window [v1.1.05+]：与 Relative 效果相同，含义更清晰
 4. Client [v1.1.05+]：坐标相对于活动窗口的工作区，其中不包括标题栏，菜单栏(如果它含有标准菜单栏) 和边框。Client 坐标模式较少依赖于操作系统版本和主题
 
-## 其他
+# 其他指令
 
 sleep, 时间（单位：ms）
 Run, 文件路径/网址
@@ -330,12 +385,57 @@ $Esc::
     Return
 ```
 
-
-
-```
+```assembly
 ; 我的世界滑稽纪元2自动砍滑稽脚本
 
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+; 滑稽纪元2魔改版自动砍滑稽
+; 滑稽碎片放物品栏第8格，斧子放第九格，指针指着滑稽碎片黑色部分
+; 使用方法：u开始，i暂停
+
+u::
+    send 9
+    loop {
+        ; 检测有没有滑稽碎片
+        mouseGetPos x, y
+        pixelGetColor cur_color, x, y
+
+        if (cur_color < 0xEEEEEE) {
+            ; 放滑稽碎片
+            send 8
+            sleep 100
+            click right
+            sleep 100
+            send 9
+        }
+
+        ; 砍
+        sleep 1200
+        click
+    }
+    return
+
+i::
+    pause
+    return
 ```
 
-<span style="background-color:#c7d1f0">abc</span>
+```assembly
+; 按s反复移动鼠标，Esc停止
+~s::
+    flag := 1
+    while (flag == 1) {
+        MouseMove, 0, -80, 70, R
+        Sleep, 100
+        MouseMove, 0, 80, 70, R
+        Sleep, 100
+    }
+    return
+
+Esc:: flag := 0
+```
+

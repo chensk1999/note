@@ -89,10 +89,7 @@ StringVar, IntVar, DoubleVar, BooleanVar
 
 # widget
 
-大部分控件都有tkinter.widget和ttk.widget两种
-使用方法基本没有差异，最大的差异在于：tkinter.widget使用很多个属性来定义样式，
-ttk.widget使用style属性定义样式
-ttk的往往比较美观
+大部分控件都有tkinter.widget和ttk.widget两种，它们的使用方法基本没有差异，最大的差异在于：tkinter.widget使用很多个属性来定义样式，ttk.widget使用style属性定义样式。而且ttk的往往比较美观
 
 padding的几种方法：
 1. 有的控件，比如frame，自身就有padding属性。控件向里留了一段空白
@@ -105,13 +102,13 @@ padding的几种方法：
 
 ### 初始化
 
-```
+```python
 ttk.Widget(master, **kw)
-keywords : attribute = value
-e.g. text='Hello'
+# keywords : attribute = value
+# e.g. text='Hello'
 
-widget['attr']查看属性（好像也可以直接修改，不通过configure方法）
-str(widget)返回该控件的路径
+widget['attr']  # 查看属性（好像也可以直接修改，不通过configure方法）
+str(widget)     # 返回该控件的路径
 ```
 
 ### 属性

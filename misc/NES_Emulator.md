@@ -13,7 +13,7 @@
 
 当然，各种游戏机都会防备玩家的破解，因此这只是原则上可行，实际上困难重重。另外， simulation 和 emulation 在语义上有一点微妙的区别：前者强调模拟系统的状态，后者强调模拟系统的行为
 
-* **Hardware Overview** ![](./images/NES_MotherBoard.jpg)
+* **Hardware Overview** ![](../images/NES_MotherBoard.jpg)
     * CPU：负责游戏程序运行和声音处理
     * PPU：处理图像并产生视频信号，形式是composite TV signal，提供给模拟电视
     * Video Ram (VRAM)：存储图像
@@ -27,11 +27,11 @@
 
 ## 存储器组织
 
-<img src="./images/NES_CPU.png" style="zoom:67%;" />
+![](../images/NES_CPU.png)
 
 NES的RAM，ROM和IO都是统一编址，方式如下图。另外，由于地址线宽度刚好是数据线的两倍，不是像x86那样分段，而是两个字表示一个地址。它的存储器中有大量的镜像：文档中解释0x0800~0x1FFF是0x0000~0x07FF内容的重复，向0x0000写入时0x0800、0x1000、0x1800都会被写入同样的内容。我推测RAM只有2kB的空间，这四个地址被译码到同一个存储单元
 
-![](./images/NES_CPU_memory_map.png)
+![](../images/NES_CPU_memory_map.png)
 
 PRG-ROM位于游戏卡带（cartridge），一个卡带一般包含若干个PRG-ROM芯片，每个16kB。当游戏容量小于16kB时，它运行时被装入RAM（0x0200~0x0800）；当卡带有两片PRG-ROM时，一片被装入RAM，另一片被映射到PRG-ROM Lower Bank；当有两片以上的PRG-ROM时，第一片被装入RAM，第二片映射到PRG-ROM Lower Bank，剩下的被memory mapper（硬件，位于游戏卡带上，也叫做Memory Manage Chip，MMC）动态映射到Upper Bank
 
@@ -46,7 +46,7 @@ PRG-ROM位于游戏卡带（cartridge），一个卡带一般包含若干个PRG-
   * Index Register X (X)：8 bit，做计数器或者暂存偏移地址
   * Index Register Y (Y)：同X
 * 标志寄存器（Flag Register）
-  * <img src="./images/NES_CPU_Flag.png" style="zoom:67%;" />
+  * <img src="../images/NES_CPU_Flag.png" style="zoom:67%;" />
   * C：Carry Flag，上一次操作是否向上进位
   * Z：Zero Flag，上一条指令运算结果是否为0
   * I：Interrupt Disable Flag，是否屏蔽IRQ中断请求
@@ -135,13 +135,11 @@ CPU可以将PPU视作IO设备，通过IO端口访问。访问VRAM的方法是先
 
 ## 存储器组织
 
-![](./images/NES_PPU_memory_map.png)
+![](../images/NES_PPU_memory_map.png)
 
 NES可以显示52种颜色，存储一种颜色需要1个字节
 
 * **Palette**（调色板）：Image Palette和Sprite Palette分别记录背景的可用颜色、精灵的可用颜色。其中0x3F00，0x3F04，0x3F08一直到0x3F1C都是透明色（这些存储单元都是mirror），总计可用颜色13种
 * **Pattern Table**：存储一个8 x 8像素的图案，Pattern Table 0和Pattern Table 1分别存储Sprite Palette对应颜色最低位和第二低位。一个字节对应一行像素，最低字节对应最靠上的一行
-* **Name Table & Attribute Table**：
-
-# SimpleNES阅读笔记
+* **Name Table & Attribute Table**
 

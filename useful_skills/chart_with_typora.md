@@ -44,6 +44,47 @@ sequenceDiagram
     A --x B: Dotted line with a cross at the end (async)
 ```
 
+## State Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Still
+    Still --> [*]
+
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+```
+
+```mermaid
+stateDiagram-v2
+    %% 起止状态
+    [*] --> s1
+    s1 --> [*]
+
+    %% 先声明后连接。这样声明的节点可以包含空格等特殊字符，且长得不一样
+    s2: state with description
+
+    %% 连接线上的字
+    [*] --> s2: transition
+    
+    %% 补充说明。可以是right of 或者 left of
+    note right of s2
+        You can write notes
+    end note
+
+    %% 嵌套状态
+    state First{
+        [*] --> second
+        
+        %% 虚线框分隔
+        --
+        
+        [*]
+    }
+```
+
 
 
 # flow

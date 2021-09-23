@@ -37,16 +37,25 @@ sequenceDiagram
 `.gitignore`文件规定了不纳入git管理的文件模式。每行是一条规则，使用glob模式（一种简化的正则表达式，包括`*, ?, []`，`**`匹配任意中间目录）递归应用于整个工作区。特别地，以`/`开头防止递归，以`/`结尾指定目录，以`!`开头表示取反
 
 ```
-# 忽略所有的 .a 文件
-*.a
+#-------------------------------------------------------------------------------
+# 文件
 
-# 但跟踪所有的 lib.a，即便你在前面忽略了 .a 文件
-!lib.a
+# 忽略所有的.txt文件
+*.txt
 
-# 只忽略当前目录下的 TODO 文件，而不忽略 subdir/TODO
-/TODO
+# 忽略根目录的.txt文件，但不忽略其他文件夹的.txt文件
+/*.txt
 
-# 忽略任何目录下名为 build 的文件夹
+# 忽略a文件夹下的.txt文件，但不忽略a的子文件夹中的.txt文件
+a/*.txt
+
+# 跟踪所有的lib.txt，即便你在前面忽略了.txt文件
+!lib.txt
+
+#-------------------------------------------------------------------------------
+# 文件夹
+
+# 忽略所有名为 build 的文件夹以及它们的子文件夹，但不忽略子目录中的文件
 build/
 
 # 忽略 doc/notes.txt，但不忽略 doc/server/arch.txt
@@ -66,13 +75,6 @@ git中有一个特殊指针HEAD，它指向某个分支，标志着当前的分�
 
 # 常用指令
 
-## 配置
-
-```bash
-git config [--global] user.name "Chen Shaokun"
-git config [--global] user.email "chensk@mail.com"
-```
-
 ## 获取git仓库
 
 ```bash
@@ -83,6 +85,12 @@ git init
 # source是仓库地址，比如user@server:path/to/repo.git
 git clone <source> [name]
 ```
+
+## 用户配置
+
+```bash
+git config [--global] user.name "name"
+git config [--global] user.email "addr@mail.com"
 
 ## 文件操作
 

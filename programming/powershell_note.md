@@ -4,12 +4,6 @@
 
 PowerShell不区分大小写，指令命名一般格式是verb-noun，同时很多指令都有别名，有的是为了向前兼容，有的是为了缩短指令名字
 
-一个调用指令的简单例子：
-
-```powershell
-
-```
-
 使用参数时可以简化，只输入参数可以唯一识别的一部分的一部分，如，-common参数可以只输入-com（假设没有其他形参含有com），到这一步之后也可以用tab自动补全
 
 ## 流水线(pipeline)
@@ -61,6 +55,26 @@ tree [/f]   # 文件夹树[文件树]
 ping /?
 nslookup     # 查询域名的地址（DNS记录）
 ipconfig
+```
+
+# 语法
+
+## 变量
+
+```powershell
+$i = 1
+echo $i
+```
+
+## 控制流
+
+```powershell
+# for循环
+$sum = 0
+for ($i=0; $i -le 100; $i++)
+{
+    $sum += $i
+}
 ```
 
 

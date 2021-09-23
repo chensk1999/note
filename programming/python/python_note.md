@@ -487,6 +487,20 @@ class MyInt(int):
 
 
 
+继承int
+
+```python
+class myint(int):
+    def __new__(cls, value, payload):
+        x = int.__new__(cls, value)
+        x.payload = payload
+        return x
+
+i = myint(5, 'payload')
+```
+
+
+
 ## 静态方法与类方法
 
 ```python
@@ -627,8 +641,6 @@ p.y = 1.2       # TypeError
 在这个例子中，`Ineger`类没有储存x，y的数据，而是用`setattr`和`getattr`操作`obj.x`和`obj.y`。看上去，好像给`obj.x`赋值之前它是一个`Integer`对象，赋值完了就变成`int`对象了，其实不是这样的：因为绑定是类级别的，而访问的重载也是类级别的，所以赋值是通过`Point.x`访问了`p.x`
 
 一般来说，几乎不会用例子里的方法来绑定描述器，而是使用装饰器来绑定。如果只有一两个属性需要描述器，比起自己写，直接用property装饰器要方便得多
-
-
 
 ### property装饰器
 
@@ -877,8 +889,8 @@ raise ValueError('message')
 
 # 并发编程
 
-多进程：用多个进程同时进行任务    
-多线程：在一个进程下启动多个线程
+- 多进程：用多个进程同时进行任务
+- 多线程：在一个进程下启动多个线程
 
 一般而言，python的多进程适合计算密集型任务，多线程适合IO密集型任务
 
@@ -930,18 +942,26 @@ call(指令)	运行指令，等待到其结束，返回其return code
 
 Python的标准库提供了两个模块：`_thread`和threading，threading是高级模块，对`_thread`进行了封装。绝大多数情况下，只需要使用threading
 
-### threading模块
+```python
+import threading
+from threading import Thread
 
+# Some tasks for multithreading
+def task(wait=1):
+    from time import sleep
+    sleep(wait)
+    return 0
 
-函数
-current_thread()	返回当前线程的Thread object
+th1 = Thread(target=task, name='wait', args=(10,))
+th1.start()     # 开始运行
+th1.is_alive()  # 查看是否在运行
+th1.join()      # 等待到运行结束为止
 
+th2 = Thread(target=task, name='wait', args=(10,))
+th2.run()       # 运行并且等待到运行结束。好像是在当前线程运行？
 
-Thread类
-Thread(target=可调用对象, name=名字, args=(参数,))	名字仅仅用于打印，主线程叫做MainThread，不起名则自动命名为Thread-1等
-方法
-start
-join
+threading.enumerate()   # 查看所有活动的Thread
+```
 
 多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误
 Lock()函数
@@ -954,6 +974,16 @@ locked	返回是否上锁
 python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多核，想有效利用必须要多进程
 
 ThreadLocal可以帮助参数在不同线程中传递
+
+## concurrent.futures模块
+
+`concurrent.futures`提供了更高级的多进程&多线程api
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+```
+
+
 
 # 内建模块
 
@@ -979,7 +1009,7 @@ parser = argparse.ArgumentParser()
 * nargs - 捕获多少个值，缺省时取决于action
   * `'?', '+', '*'`：0个（设为默认值，用default指定）或者1个；至少一个，聚集到一个列表；任意个，聚集到列表
   * `int`：指定个数，被聚集到一个列表（即使只有一个也是列表）
-  * `argarse.REMAINDER`：所有剩余的东西
+  * `argparse.REMAINDER`：所有剩余的东西
 * type - `Callable[[str], Any]`，类型检查和类型转换
 * default - 当需要一个值却没有捕获到值时就设置为default，例：`parser.add_argument('bar', nargs='?', default='d')`，没有bar时就设为d
 
@@ -1009,7 +1039,23 @@ args.arg1  # '2'
 args.long  # None
 ```
 
+## code（自定义python解释器）
 
+```python
+import code
+
+ic = code.InteractiveConsole()
+
+need_more_input = False
+while True:
+    if need_more_input:
+        need_more_input = ic.push(input('... '))
+    else:
+        need_more_input = ic.push(input('>>> '))
+
+# 查看InteractiveConsole中的变量
+ic.locals['a']
+```
 
 ## collections（容器）
 
@@ -1770,7 +1816,11 @@ Make an iterator that computes the function using arguments from each of the ite
 
 每个模块、类、函数都构成作用域。和C不同，if-else，for，try-except等语句不构成作用域。作用域从小到大分别是Local - Enclosing - Global - Built-in，python在引用变量时，先在局部变量表中找，找不到就到嵌套作用域，然后是嵌套的嵌套，不断向上；在定义/修改变量时，只在局部变量中找，找到就修改，找不到就定义一个新变量。因此，内部可以直接*访问*外部变量，但是不能直接*修改*外部变量，除非使用了`nonlocal`和`global`声明
 
-
+```python
+# 直接访问作用域内的变量
+locals()
+globals()
+```
 
 ## 文档字符串(docstring)
 
@@ -1791,3 +1841,18 @@ Raises:
 """
 ```
 
+## 虚拟环境
+
+虚拟环境（Virtual Environment）是一个分离的python环境，可以在此环境安装第三方库而不影响其他python程序，比如给不同程序安装不同版本的库
+
+```bash
+# 建立虚拟环境
+python -m venv <env_name>
+
+# 打开虚拟环境
+cd env_name
+Scripts\activate.bat            # Windows
+source env_name/bin/activate    # Unix or MacOS
+```
+
+打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作

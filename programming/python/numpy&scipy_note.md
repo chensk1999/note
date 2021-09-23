@@ -126,25 +126,25 @@ array([False, False, False, False,  True])
         返回自身的一个拷贝
 ### 运算
 
-- **常量运算**
-
 常量与ndarray运算，两个shape相同的nearray进行运算，或者数学函数作用于ndarray，相当于其中的逐个元素进行运算
 
 ```python
->>> import numpy as np
->>> arr1 = np.array([1, 2, 3, 4, 5])
->>> arr2 = arr1**2
->>> arr2
-array([ 1,  4,  9, 16, 25], dtype=int32)
->>>
->>> arr1 * arr2		#注意两个array相乘是逐个元素相乘，而不是矩阵乘法
-array([  1,   8,  27,  64, 125])
->>>
->>> np.sqrt(arr2)
-array([1., 2., 3., 4., 5.])
+import numpy as np
+arr1 = np.array([1, 2, 3, 4, 5])
+arr2 = arr1**2
+
+arr1 * arr2		# 逐个元素相乘
+arr1 @ arr2      # 矩阵乘法
+np.dot(A, B)
+A.dot(B)         # 另两种矩阵相乘的做法
+
+np.sqrt(arr2)    # 逐个元素求平方根
+
+# 矩阵转置
+A.T
 ```
 
-不同shape的矩阵之间投影后逐元素运算
+不同shape的矩阵之间可以投影后逐元素运算
 
 ```python
 import numpy as np
@@ -157,17 +157,6 @@ img_color = np.zeros(shape=(600, 600, 3))
 img_gray = np.zeros(shape=(600, 600))
 # (600, 600, 3)和(600, 600)不能运算
 img_color - img_gray[:, :, None]    # (600, 600, 3)和(600, 600, 1)可以运算
-```
-
-- **矩阵运算**
-
-```python
-# 矩阵乘法。以下两种方法等价，不改变原矩阵
-np.dot(A, B)
-A.dob(B)
-
-# 矩阵转置
-A.T
 ```
 
 ## 函数

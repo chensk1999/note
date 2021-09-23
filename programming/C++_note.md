@@ -164,35 +164,20 @@ int& b = a;   //int&是指向int的引用，这样定义的b成为a的别名
 void increment(int &i)
 {
     i++;
-    /*
-    不同于按值传递，被调用函数内的变量和进行调用处的变量是同一个对象
-    它最大的价值在于引用结构和类：相比于按值传递，它不需要复制，可以
-    节省时间和内存；相比于用指针传参，它更加方便
-    引用传参的实参必须是一个变量，不能是表达式或常量
-    */
 }
 
 //使用const的引用传参
 void f(const double & a)
 {
     std::cout << a;
-    /*
-    如果希望参数值不被改变，最好使用const限定词
-    a的值在函数内部不能被修改，否则会报错（一些老的编译器上会出现一些奇怪结果）
-    如果实参不是左值/需要隐式转换，会为它创建一个临时变量
-    有const才会有临时变量，因为没有const时，如果创建了临时变量，可能我以为我改了
-    某个变量而实际上只有临时变量被改了，原变量没动；有const时，无论如何都不能改原
-    变量，所以就无所谓了
-    */
 }
 ```
 
+使用引用传参时，被调用函数内的变量和进行调用处的变量是同一个对象。它最大的价值在于引用结构和类：相比于按值传递，它不需要复制，可以节省时间和内存；相比于用指针传参，它更加方便。引用传参的实参必须是一个变量，不能是表达式或常量
 
+如果希望参数值不被改变，最好使用const限定词。const参数的值在函数内部不能被修改，否则会报错（一些老的编译器上会出现一些奇怪结果）。如果实参不是左值/需要隐式转换（比如说，常量），会为它创建一个临时变量。有const才会有临时变量，因为没有const时，如果创建了临时变量，可能我以为我改了某个变量而实际上只有临时变量被改了，原变量没动；有const时，无论如何都不能改原变量，所以就没有歧义了
 
-C++的内存处理简介
-自动存储：函数内部定义的变量使用自动存储空间（栈空间），称自动变量(automatic variable)，是一个局部变量，作用域是包含它的代码块（即大括号），执行代码块时变量被压入栈空间，代码块结束时被依次弹出
-静态存储：在函数外定义的变量/用关键词static声明的变量，整个程序执行期间存在
-动态变量：使用new分配的空间，在自由存储空间(free store)，或称堆空间，生存期可以随意控制
+另外，一般约定需要修改的使用`T*`传参，不修改的用`const T&`传参。尽量不要用`const T*`和`T&`
 
 # 函数
 
@@ -259,6 +244,8 @@ template <> void Func<job>(job &j1, job &j2)
 对同一个函数名，可以有非模板函数、显式具体化模板函数、常规模板以及它们的重载版本，三者优先级递减
 隐式实例化、显式实例化和显式具体化统称具体化
 
+### 自动推断类型
+
 c++11新增的特性
 
 ```c++
@@ -270,6 +257,32 @@ auto Func(T1 x, T2 y) -> decltype(x+y)
     return sum;
 }
 ```
+
+### 可变参数模板
+
+```c++
+// 定义
+template <class... T>
+void f(T... args);
+```
+
+通常会递归定义模板，每次处理一个参数
+
+```c++
+// 递归中止。注意递归中止要在前面声明，否则编译可能不通过
+template <class Last>
+void print(Last last)
+{
+    std::cout << last << std::endl;
+}
+
+// 模板定义
+template <class T, class... Rest>
+void print(T t, Rest... rest)
+{
+    std::cout << t;
+    print_types(...rest);
+}
 
 ## 内联函数(inline function)
 
@@ -292,6 +305,16 @@ int func(i, j=0, k=0);
 ```
 
 类似python的位置参数，必须是先有无默认值的、再是有默认值的。不同的是，调用的时候必须按位置传参，而且不允许跳过，比如func(1, , 2)是非法的
+
+一般不推荐使用默认参数，因为当同时有默认参数和函数重载时容易混乱
+
+## 匿名函数
+
+```c++
+[](int x, int y) -> int {return x + y;}
+```
+
+方括号内定义闭包
 
 # 内存模型与名称空间
 
@@ -352,7 +375,7 @@ C++允许将源代码分散在多个文件中，分别编译后连接起来，�
 
 ```c++
 // 第一种防止重复include的方法
-#pragma once //最开头加上这个宏，就不会被重复include。不再C++标准中，但是现代编译器广泛支持
+#pragma once //最开头加上这个宏，就不会被重复include。不在C++标准中，但是现代编译器广泛支持
 
 // 第二种方法：利用一个自选的宏
 #ifndef PROJNAME_FOLDERNAME_FILENAME_H_
@@ -493,7 +516,7 @@ class Time
 {
     //略
     friend ostream& operator<<(std::ostream& os, const time& t);
-}
+};
 
 ostream& operator<<(std::ostream& os, const time& t)
 {
@@ -506,7 +529,48 @@ ostream& operator<<(std::ostream& os, const time& t)
 }
 ```
 
-## 类型转换
+## 继承
+
+```c++
+// 基类
+class Animal
+{
+    void eat();
+    void sleep();
+};
+
+// 派生类
+class Dog: public Animal    // 以public方式继承Animal
+{
+    void bark();
+};
+```
+
+各种继承方式对不同成员的继承
+
+- public：公有成员→公有成员，保护成员→保护成员，私有成员→无（可通过基类的公有、保护方法访问）
+- protected：公有成员、保护成员→保护成员，私有成员→无
+- private：公有成员、保护成员→私有成员，私有成员→无
+
+# 异常处理
+
+```c++
+#include <exception>    // 包括std::except类
+#include <stdexcept>    // 包括其他派生类
+```
+
+
+
+```c++
+try {
+    func(a);
+    throw 1;
+} catch (std::invalid_argument e) {
+    cout << e;
+} catch (int i) {
+    cout << "1";
+}
+```
 
 
 
@@ -536,12 +600,58 @@ int main()
     // IO
     std::cin >> s1;
     getline(cin, s2);
+    
+    // 类型转换
+    std::stoi(s1);  // string to int
 }
 ```
 
 # 标准模板库
 
 标准模板库（Standard Template Library，STL）提供了一系列泛型的容器、迭代器、函数对象和算法的模板
+
+## List
+
+双向链表
+
+```c++
+#include <iostream>
+#include <list>
+
+int main()
+{
+    // 定义列表
+    list<int> L1;
+
+    // 迭代列表
+    list<int>::iterator it;
+    for (it=L1.begin() ; it!=L1.end() : it++) {
+        cout << *it << std::endl;
+    }
+    
+    // 首位元素
+    L1.front();
+    L1.back();
+    
+    // 元素个数
+    L1.empty();
+    L1.size();
+    L1.max_size();
+    
+    // 插入与删除
+    L1.insert(0, 0);
+    L1.erase(0);	
+    L1.clear();
+    
+    // push & pop
+    L1.push_back(5);
+    L1.pop_back();
+    L1.push_front(1);
+    L1.pop_front();
+}
+```
+
+
 
 # Stream
 
@@ -590,18 +700,25 @@ int main()
 
 # 杂项
 
-**类型转换**
+## 类型转换
 
 ```c++
 int i = 1;
 double d = static_cast<double>(i);  // 最安全的一类转换，错误在编译时就能检查出
 ```
 
-**输出宽度**
+## 输出格式
 
 ```c++
 #include <iomanip>
 
 std::cout << std::setw(12) << 'abcd';
+std::cout << std::setfill('0') << std::setw(8) << i;
+    // 相当于%08d
 ```
 
+## 显示中文
+
+C++一般默认utf-8编码，但命令行经常是GBK编码
+
+运行命令`chcp 65001`
