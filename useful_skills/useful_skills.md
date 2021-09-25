@@ -114,3 +114,17 @@ endif
 ```
 "C:\Program Files\7-Zip\7z.exe" x "shift-jis.zip" -mcp=932
 ```
+
+# 知网下载pdf文档
+
+1. 复制下载链接
+2. 将url中除了filename之外的参数都删掉
+3. 加上`dflag=pdfdown`参数
+
+例：
+
+原下载链接（caj文件）：  https://kns.cnki.net/KNS8/download?filename=XXX&tablename=YYY&dflag=cajdown
+
+下载pdf的链接：https://kns.cnki.net/KNS8/download?filename=XXX&dflag=pdfdown
+
+2021年9月25日可用
