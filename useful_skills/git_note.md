@@ -75,22 +75,28 @@ git中有一个特殊指针HEAD，它指向某个分支，标志着当前的分�
 
 # 常用指令
 
+## 配置
+
+```bash
+git config [--global] user.name "Chen Shaokun"
+git config [--global] user.email "chensk@mail.com"
+
+# 取消代理
+# 能解决代理导致的“failed to connect to github.com port 443”错误
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
 ## 获取git仓库
 
 ```bash
- # 在当前目录下建立.git子目录，即初始化一个仓库
+# 在当前目录下建立.git子目录，即初始化一个仓库
 git init
 
 # 克隆git仓库
 # source是仓库地址，比如user@server:path/to/repo.git
 git clone <source> [name]
 ```
-
-## 用户配置
-
-```bash
-git config [--global] user.name "name"
-git config [--global] user.email "addr@mail.com"
 
 ## 文件操作
 

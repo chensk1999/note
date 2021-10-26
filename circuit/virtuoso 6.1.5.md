@@ -64,6 +64,8 @@ Run mode - Parametic Set 只仿变量组（比如，v1 的 Value List 为 1 2 3�
 
 ## 其他细节
 
+将器件名（Instance Name）改成如`I0<5:0>`的形式就能放多个器件。同理，信号名也可以用如`VOUT<5:0>`的形式。假设要将这6个器件连成环，可以将输出写为`VOUT<5:0>`，输入写为`VOUT<0>,VOUT<5:1>`。其他接法也类似，用逗号隔开（记住不能有空格）
+
 使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
 
 噪声频率 0.01~10G。说是由宝贵的经验定下来的
