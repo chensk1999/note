@@ -111,20 +111,21 @@ endif
 
 使用例：
 
-```
+```powershell
 "C:\Program Files\7-Zip\7z.exe" x "shift-jis.zip" -mcp=932
 ```
 
 # 知网下载pdf文档
 
 1. 复制下载链接
-2. 将url中除了filename之外的参数都删掉
-3. 加上`dflag=pdfdown`参数
+3. 将url中的`dflag=cajdown`参数改为`dflag=pdfdown`。如果没有dflag参数，就自己加上
+3. 如果还是不能下载，尝试删掉其他不必要的参数
 
 例：
-
 原下载链接（caj文件）：  https://kns.cnki.net/KNS8/download?filename=XXX&tablename=YYY&dflag=cajdown
-
 下载pdf的链接：https://kns.cnki.net/KNS8/download?filename=XXX&dflag=pdfdown
 
+或者，更简单地，使用[油猴脚本](https://greasyfork.org/zh-CN/scripts/390733-%E7%9F%A5%E7%BD%91pdf%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B)
+
 2021年9月25日可用
+

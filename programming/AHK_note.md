@@ -154,7 +154,7 @@ MsgBox, The year is %A_Year%.`n
 * 循环
 
 ```assembly
-loop count
+loop %count%
 while (expression)
 for key , value in expression
 ```
@@ -225,7 +225,7 @@ $A::
 
 用修饰键作为Hotkey前缀，可实现特殊功能
 
-```
+```assembly
 <!a:: send, You pressed Left Alt + A.
 ~b:: send, Do something without blocking keystroke
 ```
@@ -314,12 +314,7 @@ RelativeTo：TargetType 要关联的区域。如果省略, 则默认为 Screen
 3. Window [v1.1.05+]：与 Relative 效果相同，含义更清晰
 4. Client [v1.1.05+]：坐标相对于活动窗口的工作区，其中不包括标题栏，菜单栏(如果它含有标准菜单栏) 和边框。Client 坐标模式较少依赖于操作系统版本和主题
 
-# 其他指令
-
-sleep, 时间（单位：ms）
-Run, 文件路径/网址
-Msgbox, 字符串
-SoundBeep
+# 窗口操作
 
 ```
 #ifWinActive/ifWinExist 窗口名称
@@ -329,9 +324,18 @@ SoundBeep
 注：后一个不带窗口名称的#ifWinActive/ifWinExist是标志了contest sensitivity的结束
 ```
 
+
+
+# 其他指令
+
+sleep, 时间（单位：ms）
+Run, 文件路径/网址
+Msgbox, 字符串
+SoundBeep
+
 # 示例
 
-```
+```assembly
 ; 植物大战僵尸的控制脚本（部分）
 
 ; 全局设置 & 全局变量
