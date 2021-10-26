@@ -114,3 +114,16 @@ endif
 ```
 "C:\Program Files\7-Zip\7z.exe" x "shift-jis.zip" -mcp=932
 ```
+
+# Github SSH Authentication (Windows)
+
+若未特别说明，以下操作在git bash内完成
+
+1. 检查有没有SSH密钥：`C:\Users\<user>\.ssh\`文件夹内有没有密钥文件（一般是`id_rsa`和`id_rsa.pub`）
+2. 如果没有，在电脑上生成SSH密钥对
+3. `eval "$(ssh-agent -s)"`（应该会输出Agent pid）
+4. `ssh-add <私钥文件>`
+5. 添加到账户：[settings](https://github.com/settings/profile) - SSH and GPG keys - New SSH key - title是给自己看的，key是公钥文件的内容（以文本格式打开然后复制粘贴）
+6. 测试能否连接：`ssh -T git@github.com`，成功会输出 You've successfully authenticated。
+
+遇到的一个问题：在windows下git有可能无法正确找到密钥位置。在我的电脑上，不知道为什么它会去Cadence安装目录的.ssh文件夹找密钥。目前解决方法是用git bash `ssh -vT git@github.com`看看它去哪里找了然后把密钥文件复制一份过去
