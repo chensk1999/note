@@ -658,3 +658,44 @@ module fast_fsm(
 endmodule
 ```
 
+# Verilog-AMS与Verilog-A
+
+Verilog-AMS（Analog and Mixed Signal extension）是Verilog的混合信号扩展。其数字域语法和verilog完全一样，可以理解为给verilog加入了模拟信号和用于描述模拟行为的`analog`块
+
+Verilog-A是只有模拟电路的Verilog-AMS子集。示例：
+
+```verilog
+// 定义模块。例子中是RLC三个器件的并联
+module shunt_rlc (t1, t2);
+    // 声明信号
+    electrical t1, t2;
+    // 声明参数
+    parameter real R = 1;
+    parameter real L = 1;
+    parameter real C = 1;
+    // 声明支路（可选）
+    // V(res) = V(t1, t2) = V(t1) - V(t2)
+    // I(res) = I(t1, t2) = 从t1流向t2的电流
+    branch (t1, t2) res;
+
+    // 定义模拟过程。大致相当于数字电路的always块
+    analog begin
+        I(res) <+ V(res) / R;
+        I(res) <+ idt(V(res)) / L;      // idt算符，对时间积分(integral dt)
+        I(res) <+ ddt(V(res)) * C;      // ddt算符，对时间微分(derivative dt)
+        // <+是贡献(contribution)算符，t1到t2电流是RLC电流的叠加
+        // 信号只能用贡献算符赋值，不能用=赋值
+    end
+endmodule
+```
+
+参数
+
+```verilog
+// 声明格式
+parameter [real|integer] name=<expr> [rangeLimit];
+
+parameter real a=1 from [0:inf)             // 取值范围[0, +∞)
+parameter real a=1 from (-5:5) exclude 0    // 取值范围(-5, 5)且不能取0
+```
+
