@@ -78,3 +78,21 @@ BodyTop
 
 如果不想做那么细致，可以调ArmUp00，直接去掉整条手臂
 双腿的做法是一样的，只需要把Arm全部换成Leg，ArmElbo换成LegKnee
+
+# Emuera
+
+## 宏（マクロ）
+
+保存与使用方法：shift+F1~F12保存宏，F1~F12使用宏。另外，ctrl+0~9可以切换不同的宏组（マクログループ），因此一共能保存12×10=120个宏。游戏退出后，宏保存在macro.txt
+
+语法：`\e`相当于esc，`\n`相当于回车，`()*n`表重复。使用例：`(0\e)*3`实现重复三次选择0选项
+
+## 调试（デバッグ）
+
+在命令行加上`-Debug`参数启动Emuera，就能在调试窗口看各种信息
+
+调试模式下，可以输入`@command`直接执行，比如`@PRINTV FLAG:200`（不过，作为防作弊机制，执行命令之后玩家名会倍更改为イカサマ）
+
+特殊调试指令：`REBOOT`重启，`OUTPUT`将文本输出到log，`EXIT`退出，`CONFIG`打开设置窗口，`DEBUG`打开调试窗口
+
+[语法](https://ja.osdn.net/projects/emuera/wiki/FrontPage)

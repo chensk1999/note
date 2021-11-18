@@ -122,12 +122,8 @@ git commit --amend   # 修订提交，将现在暂存区里的更改合并到上
 
 # 撤销修改到上一次提交
 git checkout -- <file>
-```
 
-## 检查文件
-
-```bash
-# 检查状态（查看modified，staged）
+# 检查文件状态（查看modified，staged）
 git status
 
 # 查看文件区别
@@ -163,18 +159,28 @@ git push <remote> [branch]
 
 ## 标签
 
-git有两种标签，轻量标签（lightweight）与附注标签（annotated），前者是一次提交的别名，后者可以包含各种信息，如打标签者的名字、邮箱、时间等
-
 ```bash
 # 查看标签
-git tag [--list pattern]
+git tag --list "v1.8.*"
 git show <tag>
 
-# 创建标签（注意默认的push不会把标签push到远程仓库）
-git tag [-a -m <message>] <tag> [commit]
+# 创建轻量标签（相当于提交的别名，除了名字什么都没有。通常只用作临时标签）
+git tag this-is-a-lightweight-tag
+
+# 创建附注标签（可以包含很多信息，一般建议用这个）
+git tag -a v1.4 -m "some message about the annotated tag"
+
+# 使用例：给过去的提交加标签
+git log --pretty=oneline
+git tag -a v1.2 9fceb02       # 9fceb02是对应提交的部分校验和
 
 # 删除标签
 git tag -d <tag>
+
+# 推送标签：push默认不推送标签
+git push origin <tagname>    # 推送一个标签
+git push origin --tags       # 推送全部标签
+git push --delete <tagname>  # 移除远程仓库的标签
 ```
 
 ## 分支
@@ -182,9 +188,6 @@ git tag -d <tag>
 ```bash
 # 查看分支
 git branch [-v]
-
-# 创建分支
-git branch <branch>
 
 # 切换分支
 git checkout <branch>
@@ -197,5 +200,64 @@ git merge <branch>
 
 # 删除分支
 git merge -d <branch>
+
+# 变基
+# 首先，撤销从upstream与branch分支点开始、到branch为止的所有commit
+# 然后移动到upstream，再逐个施加这些commit
+git rebase upstream [branch]
+
+# 例如
+git rebase master dev
+# A - B - C - master
+#      \ D - E - dev
+# 转变为
+# A - B - C - master
+#                \ D' - E' - dev
 ```
+
+# 工作流程
+
+```bash
+# 创建并切换到新分支。此举在于让master相对独立，不至于大家一起编辑master
+git checkout -b dev
+
+# 编辑文件
+
+# 在分支内提交更改
+git add --all
+git commit
+
+# 当master发生更改时，与主干同步。方便日后合并分支
+git fetch origin
+git rebase origin/master
+
+# 合并提交。将分支内的多个commit合并为一个
+# 方法1
+git rebase -i origin/master
+# 方法2
+git reset HEAD~5
+git add --all
+git commit -am "Here's the bug fix that closes #28"
+
+# 推送。如果因合并提交导致分支历史改变，git push --force
+git push
+
+# 确认无误后，合并到master分支
+git merge master
+```
+
+全部在master上弄的偷懒办法
+
+```bash
+# 修改并提交
+
+# 拉取master分支，并合并。有问题就手动解决
+git fetch
+git merge origin/master
+
+# 推送
+git push
+```
+
+
 

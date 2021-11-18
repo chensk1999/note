@@ -481,13 +481,11 @@ class MyInt(int):
         # 用super()引用被覆盖掉的父类(super class)的方法
 ```
 
-多重继承
+**多重继承**
 `class Dog(Animal, MammalMixIn)`
 常采用MixIn的方法，使类的继承具有一个主线+附加功能
 
-
-
-继承int
+**继承int**
 
 ```python
 class myint(int):
@@ -498,6 +496,8 @@ class myint(int):
 
 i = myint(5, 'payload')
 ```
+
+
 
 
 
@@ -535,8 +535,8 @@ b = Book()
 ## 魔术方法
 
 1. **构造和析构**：
-   1. `__init__`：初始化实例
-   2. `__new__`：创建但是不初始化实例，一个典型用途是从json等格式反序列化之前绕过`__init__`创建一个空的实例
+   1. `__init__`：创建并初始化实例
+   2. `__new__`：创建但是不初始化实例。如果同时定义了`__init__`和`__new__`，只会运行`__new__`。主要用在各种魔术，比如继承内建类（子类与继承一节）、实例化为其他类（杂项的未分类魔术）
    3. `__del__`析构方法，定义垃圾回收时的行为（注意：它不实现`del obj`，而是垃圾清除时的额外工作）
 2. **字符串显示**：`__str__` ，`__repr__`，`__format__`，对象的字符串输出和格式化，当用`str, repr, format`函数作用于对象时执行
 3. **上下文管理**：`__enter__`，`__exit__`，进入和退出with语句时分别执行
@@ -1820,6 +1820,24 @@ Make an iterator that computes the function using arguments from each of the ite
 # 直接访问作用域内的变量
 locals()
 globals()
+```
+
+## 未分类魔术
+
+实例化为其他类（摘录自pathlib。例子中，`PurePath()`会根据操作系统返回一个`PureWindowsPath`或者`PurePosixPath`实例）
+
+```python
+class PurePath(object):
+    def __new__(cls, *args):
+        if cls is PurePath:
+            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
+        return cls._from_parts(args)
+
+    @classmethod
+    def _from_parts(cls, args):
+        self = object.__new__(cls)
+        # 初始化各属性。略
+        return self
 ```
 
 ## 文档字符串(docstring)
