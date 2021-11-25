@@ -9,9 +9,12 @@
 
 # 原理图
 
+## 流程
+
 1. 打开 Library Manager，File - New - Cellview（注意这个窗口默认会在后台打开。检查一下任务栏），选择所属Library，填写 Cell 名字，选择 Type（或者填写 View）为schemetic，然后确认创建
 2. 编辑原理图：放置器件，连线，创建端口
 3. 创建符号：从导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
+4. 编辑符号：符号中只有pin（红色小方块以及端口名）是有电气属性的，绿色的线只是外观。`@partName`会显示为cell名称（比如BUF），`@instanceName`显示为元件名（比如U0）
 
 ## Schemetic Editor L 快捷键
 
