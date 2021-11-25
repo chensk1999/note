@@ -388,11 +388,6 @@ color names (e.g. "red") or hex RGB codes (e.g. "#ff340a")
 
 ## Menu
 
-```
-import tkinter as tk
-from tkinter import ttk
-```
-
     使用流程：
     root.option_add('*tearOff', False)  #不清楚有什么用，好像是排版不会乱
     创建一个tkinter.Menu实例作为根菜单
@@ -658,3 +653,14 @@ print(choice)
 from PIL import ImageTk, Image
 myimg = ImageTk.PhotoImage(Image.open('myimage.png'))
 ```
+
+# 其他
+
+```python
+import tkinter
+
+root = tkinter.Tk()
+root.withdraw()           # 隐藏根菜单
+root.clipboard_get()      # 操作剪贴板
+```
+

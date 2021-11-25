@@ -1413,9 +1413,11 @@ dump函数的ensure_ascii是python独有的，不是通用编码，所以在非p
 
 ```python
 import logging
-logging.basicConfig(level=logging.INFO,
-                    filename='save_images.log',
-                    format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    filename='log',
+    format='%(asctime)s %(levelname)s:%(name)s: %(message)s'
+)
 
 logger = logging.getlogger(logger_name)  # 建议用__name__
 logger.setLevel(logging.INFO)   # 只有大于这个等级的才输出
@@ -1822,24 +1824,6 @@ locals()
 globals()
 ```
 
-## 未分类魔术
-
-实例化为其他类（摘录自pathlib。例子中，`PurePath()`会根据操作系统返回一个`PureWindowsPath`或者`PurePosixPath`实例）
-
-```python
-class PurePath(object):
-    def __new__(cls, *args):
-        if cls is PurePath:
-            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
-        return cls._from_parts(args)
-
-    @classmethod
-    def _from_parts(cls, args):
-        self = object.__new__(cls)
-        # 初始化各属性。略
-        return self
-```
-
 ## 文档字符串(docstring)
 
 ### google风格
@@ -1874,3 +1858,39 @@ source env_name/bin/activate    # Unix or MacOS
 ```
 
 打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作
+
+## 其他
+
+实例化为其他类（摘录自pathlib。例子中，`PurePath()`会根据操作系统返回一个`PureWindowsPath`或者`PurePosixPath`实例）
+
+```python
+class PurePath(object):
+    def __new__(cls, *args):
+        if cls is PurePath:
+            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
+        return cls._from_parts(args)
+
+    @classmethod
+    def _from_parts(cls, args):
+        self = object.__new__(cls)
+        # 初始化各属性。略
+        return self
+```
+
+## 检测中文
+
+```python
+def is_cjk(char):
+    # CJK Unified Ideographs
+    # https://www.unicode.org/charts/PDF/U4E00.pdf
+    return ord(u'\u4e00') <= ord(char) <= ord(u'\u9fff')
+```
+
+其他unicode范围：
+
+- `3040~30FF`平假名和片假名
+- `3000~303F`：CJK标点
+- `FF00~FFEF`：全角标点、全角英数、半角片假名和半角谚文等
+
+符号的unicode其实挺混乱的。比如说，中文逗号是`0xFF0C`Fullwidth Comma，顿号是`0x3001`Ideographic Comma。日文则用Ideographic Comma做逗号
+

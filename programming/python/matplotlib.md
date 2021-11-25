@@ -169,7 +169,7 @@ ax1.set_xscale('log')  # 坐标系选取
 ax1.set_xlim(0, 1)     # 坐标范围。可以用get_xlim获取
 ax1.tick_params('x', which='both', left=False) # tick样式
 ax1.set_xticks(np.linspace(0, 1, 5))           # tick位置
-ax1.set_xticklabels([*'12345'])              # tick标签
+ax1.set_xticklabels([*'12345'])                # tick标签
 
 # 另一种设置tick的方式
 xt = ax1.get_xticks()
