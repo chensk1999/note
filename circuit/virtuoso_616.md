@@ -15,7 +15,7 @@
 
 ## Schemetic Editor L 快捷键
 
-### 增
+**增**
 
 | Key  | Usage    | Description |
 | ---- | -------- | ----------- |
@@ -24,7 +24,7 @@
 | L    | Label    | 线网标签    |
 | P    | Pin      | 端口        |
 
-### 改
+**改**
 
 | Key           | Usage            | Description                                                  |
 | ------------- | ---------------- | ------------------------------------------------------------ |
@@ -34,7 +34,8 @@
 | R             | Rotate           | 旋转。在移动/放置器件时按R旋转，Shift+R左右翻转，Ctrl+R上下翻转 |
 | U, Shift+U    | Undo, Redo       | 撤销上一步操作                                               |
 
-### 查
+**查**
+
 | Key           | Usage            | Description                                                  |
 | ------------- | ---------------- | ------------------------------------------------------------ |
 | E             | Descend and Read | 打开下层元件（阅读模式）                                     |
@@ -95,7 +96,7 @@ Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调
 
 ## Parametic Analysis
 
-在ADE L 选择 Tools - Parametic Analysis，可以扫变量（一次性仿变量多个取值）。用法很直觉就不写了
+在ADE L 选择 Tools - Parametic Analysis，可以扫变量（一次性仿变量多个取值）。用法很符合直觉就不写了
 
 在参数分析中温度（temp）也作为一个变量。像温度这样只需要几个特殊值的，可以不写 From To 之类的，直接设置 Inclusion List 为 0 27 85
 
@@ -115,7 +116,9 @@ ADE-XL
 
 绘制Outputs：Results - Plot Outputs - 仿真类型
 
-仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后**不要关掉Direct Plot Form窗口**，鼠标选择要绘制的信号（有的变量不会保存，这种情况Direct Plot报错。加入Outputs中能绘制，但可能导致仿真时间变长）
+仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后**不要关掉Direct Plot Form窗口**，鼠标选择要绘制的信号（有的变量不会保存，这种情况Direct Plot报错。加入Outputs中就会保存，或者设置保存选项）
+
+信号保存选项：Outputs - Save All，在此可以设置保存哪些仿真结果
 
 显示MOS管参数：选择DC仿真，选中Save DC Operating Point，仿真结束之后Results - Print - DC Operating Point可以打印静态参数
 
