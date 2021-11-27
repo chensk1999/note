@@ -119,7 +119,7 @@ ADE-XL
 
 绘制Outputs：Results - Plot Outputs - 仿真类型
 
-仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后**不要关掉Direct Plot Form窗口**，鼠标选择要绘制的信号（有的变量不会保存，这种情况Direct Plot报错。加入Outputs中就会保存，或者设置保存选项）
+仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后**不要关掉Direct Plot Form窗口**，鼠标选择要绘制的信号（有的变量不会保存，这种情况Direct Plot报错。加入Outputs中就会保存，或者设置保存选项：右键Analysis - Edit - Options - Output - Save，选择All）
 
 信号保存选项：Outputs - Save All，在此可以设置保存哪些仿真结果
 
@@ -200,3 +200,37 @@ ADE-XL
 # 其他
 
 电源宽度：1mA - 1um
+
+## 输出图片
+
+**方法1：输出点阵图**
+
+原理图和版图：File - Export Image
+
+仿真波形：File - Save Image
+
+**方法2：输出矢量图**
+
+首先在工作目录（cds.lib所在目录）或者根目录（CDS.log所在目录）创建`.cdsplotinit`文件（规定输出格式、输出尺寸等），内容如下：
+
+```
+EPS|Encapsulated Postscript: \
+    :manufacturer=Adobe: \
+    :type=epsf: \
+    :maximumPages#1: \
+    :resolution#300: \
+    :paperSize="Unlimited" 72000 72000:
+
+EPS Color|Encapsulated Postscript: \
+    :manufacturer=Adobe: \
+    :type=epsfC: \
+    :maximumPages#1: \
+    :resolution#300: \
+    :paperSize="Unlimited" 72000 72000:
+```
+
+服务器的`/cdsmgr/IC616/tools/plot/sample`文件夹下有更详细的示例，`/cdsmgr/IC616/doc/plot`有具体文档
+
+在原理图 / 版图选择File - Print，在弹出界面设置打印区域，并在Plot Options选择一个plotter（如果没有plotter可能是`.cdsplotinit`文件有误），勾选Send Plot To File并设置保存文件名。使用EPS时保存的是EPS文件，可以用linux的`ps2pdfwr`指令转换为pdf，比如`ps2pdfwr p.eps p.pdf`
+
+2021.11.27：不知道为什么存下来的都是单色图片。而且转为pdf之后是空白页

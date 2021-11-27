@@ -110,7 +110,8 @@ endif
 5. 添加到账户：[settings](https://github.com/settings/profile) - SSH and GPG keys - New SSH key - title是给自己看的，key是公钥文件的内容（以文本格式打开然后复制粘贴）
 6. 测试能否连接：`ssh -T git@github.com`，成功会输出 You've successfully authenticated。
 
-遇到的一个问题：在windows下git有可能无法正确找到密钥位置。在我的电脑上，不知道为什么它会去Cadence安装目录的.ssh文件夹找密钥。目前解决方法是用git bash `ssh -vT git@github.com`看看它去哪里找了然后把密钥文件复制一份过去
+
+如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值好像使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
 
 # 知网下载pdf文档
 
@@ -125,3 +126,22 @@ endif
 或者，更简单地，使用[油猴脚本](https://greasyfork.org/zh-CN/scripts/390733-%E7%9F%A5%E7%BD%91pdf%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B)
 
 2021年9月25日可用
+
+# 二进制文件和文本文件转换
+
+**hexdump**
+
+```bash
+hexdump -v -e '30/1 "%02x" "\n"' example.png > example.txt
+# -v: 遇到两行相同的不把后面的行省略为*号
+# -e：输出格式。说明：读取30个1字节的数据，以%02x格式打印，然后打印一个换行符。此格式和xxd的plain格式相同
+```
+
+**xxd**
+
+```bash
+xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
+xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
+```
+
+以上在是Unix指令。windows可以用WSL，或者git bash也可以

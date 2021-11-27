@@ -8,12 +8,42 @@
 
 # 原理图
 
+## 工程目录结构
+
+```bash
+Design Resources
+├─project.dsn # 工程数据库文件
+│ ├─SCHEMATIC     # 原理图
+│ ├─Design Cache  # 原理图中用到的器件
+│ └─Library       # 器件库
+├─Outputs
+└─Referenced Projects
+```
+
+## 流程
+
 1. 打开Design Entry CIS
 2. 在弹出的组件选择菜单中选择OrCAD Capture CIS
 3. 创建工程：File - New - Project。种类一般选择schematic
 4. 创建原理图：Design - New Schematic Page，或者在工程管理窗口选中SCHEMATIC文件夹，右键 - New Page
-5. 放置元件
-6. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
+5. 放置元件：Place - Part
+6. 连线：Place - Wire。不要把不同元件引脚相接代替连线，比较容易出bug
+7. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
+8. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
+
+## 快捷键
+
+| Key  | Usage         | Description                                                  |
+| ---- | ------------- | ------------------------------------------------------------ |
+| P    | **P**art      | 放置元件                                                     |
+| X    | No Connect    | 标记引脚不连接                                               |
+| W    | **W**ire      | 引线                                                         |
+| B    | **B**us       | 总线。总线名称例`DATA[0:31]`                                 |
+| E    | Bus **E**ntry | 总线入口。接入信号名如`DATA[0]`。Ctrl+拖动可以复制并自动递增信号编号 |
+| N    | **N**et Alias | 线网别名。一个原理图页内同名网络在电气上互联                 |
+|      |               |                                                              |
+
+
 
 ## 元件库
 
