@@ -1,6 +1,6 @@
-# LISP简介
+Cadence SKILL是Virtuoso以及部分Cadence公司的软件使用的语言。它是一种Lisp方言
 
-Cadence SKILL 是 Lisp 方言，其编程与我学过的其他语言都截然不同，因此首先需要学习 Lisp 的基本思想。我主要参考了 ANSI Common Lisp，但只会着重记录 Lisp 区别于命令式编程语言的特点，不会集中于Common Lisp 独有的功能
+# LISP简介
 
 LISP有以下几种数据类型
 
@@ -11,7 +11,9 @@ LISP有以下几种数据类型
 
 特别地，nil 表示表示逻辑非或者空列表。一般用 t 表示逻辑真（也可以用任何非 nil 对象表示逻辑真）
 
-Lisp 有点像 Python ，所有变量都是对象，同时只有隐式的指针，而且两者的 GC 也非常相似。甚至它的元编程范式在 Python 中都有一定程度的对应（lambda函数、map、reduce等）
+
+
+Lisp与Python有许多相似之处（因为Python借鉴了Lisp），所有变量都是对象，同时只有隐式的指针，而且两者的 GC 也非常相似。甚至Lisp的元编程范式在Python中都有一定程度的对应（lambda函数、map、reduce等）
 
 ## 表达式
 
@@ -28,7 +30,6 @@ Lisp 有点像 Python ，所有变量都是对象，同时只有隐式的指针�
 ### Quote
 
 ```lisp
-; quote
 ; 单位元，(quote arg) -> arg。可缩写为'arg
 ; 特别地，quote作用的对象不会被求值
 nil         ; 求值得到自身

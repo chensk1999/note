@@ -65,20 +65,20 @@ Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调
 
 ## 流程
 
-方法1：testbench
+**方法1：testbench**
 
 1. 准备好想要仿真的元件的 Symbol
 2. 创建一个原理图用作测试台（testbench），名字可以加上后缀 _test 之类的。放置待仿真元件并加上驱动、负载。驱动和负载要尽量与电路实际工作时相同，可以使用实际器件，也可以使用analogLib库的理想器件，甚至可以自己写Verilog-A。analogLib常用元件：gnd, vdc, vpulse等
 3. 从导航栏选择 Launch - ADE L （Analog Design Environment）打开仿真菜单。之后操作皆在此菜单进行
 4. 在Design Variables一栏右键，按需编辑变量。原理图的全部变量都要有一个数值
 5. 选择Analyses - Choose，添加需要仿真的内容（或者右侧有AC，DC等文字的图标）
-   1. tran：瞬态（transient）仿真，仿真电路行为。记得写 stop time！有 conservative，moderate，liberal三种模式，精度递减，耗时也递减
+   1. tran：瞬态（transient）仿真，仿真电路行为。记得写 stop time！有 conservative、moderate、liberal三种模式，conservative精度最高，moderate次之，liberal精度最低。一般模拟电路用conservative或者moderate，数字电路用liberal
    2. dc：直流静态工作点仿真。勾选 Save DC Operating Point 可以仿单个工作点，或者选择一个sweep，仿工作点随变量的变化
 6. 选择Outputs - To Be Plotted - Select On Schematic，选择输出的变量。选择节点是该处电流，导线是该处电压
 7. Simulation - Netlist and Run（或者点击右侧绿色图标）
 8. Session - Save State（或者Toolbar的保存图标），推荐保存为Cellview
 
-方法2：在端口提供激励（简单，但是只能用标准激励，而且不能带负载。这样仿出来和实际工作状态不同，尽量不要用）
+**方法2：在端口提供激励**（简单，但是只能用标准激励，而且不能带负载。这样仿出来和实际工作状态不同，尽量不要用）
 
 1. 在元件原理图界面选择 Launch - ADE L 打开仿真菜单
 2. 选择Setup - Stimuli，给各个端口提供驱动。驱动可以用变量（比如，将驱动的 DC Voltage 设置为 x，那么进行DC仿真时就可以扫这个参数）
