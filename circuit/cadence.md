@@ -10,14 +10,26 @@
 
 ## 工程目录结构
 
+在文件浏览器能看到以下几种文件：
+
+- `.opj`：Project file，包含了Design Resources的信息
+- `.dsn`：Design file，设计文件，包含原理图
+- `.olb`：Library file，元件库
+
+在工程管理窗口可以看到如下文件结构：
+
 ```bash
 Design Resources
-├─project.dsn # 工程数据库文件
+├─project.dsn
 │ ├─SCHEMATIC     # 原理图
-│ ├─Design Cache  # 原理图中用到的器件
-│ └─Library       # 器件库
-├─Outputs
-└─Referenced Projects
+│ └─Design Cache  # 原理图中用到的器件
+├─project.olb
+│ ├─part          # 元件（一般不会在同一个工程中包含原理图和元件库）
+│ └─Library Cache
+└─Library
+  └─example.olb   # 导入的元件库（一般不必导入）
+Outputs
+Referenced Projects
 ```
 
 ## 流程
@@ -31,9 +43,13 @@ Design Resources
 7. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
 8. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
 9. 添加封装信息
-   1. 单个元件
+   1. 在属性窗口编辑PCB Footprint属性。详见后面属性窗口部分（主要对于阻容等无源器件）
+   2. 编辑元件库，然后在Design Cache更新元件。更新时选中Replace schematic part properties（比较少用）
+10. DRC：Tools - Design Rules Check
+11. 生成网表：Tools - Create Netlist，选择PCB Editor，Netlist Files填Allegro
+12. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard
 
-注意：各种工具都是上下文相关的，如果没有选中合适的对象，工具将不可选中或者不显示。比如，必须激活原理图编辑菜单才能放置元件
+注意：各种工具都是**上下文相关**的，如果没有选中合适的对象，工具将不可选中或者不显示。比如，必须激活原理图编辑菜单才能放置元件
 
 ## 快捷键
 
@@ -52,6 +68,7 @@ Design Resources
 
 **Edit**
 | Key       | Usage                   | Description                                                  |
+| --------- | ----------------------- | ------------------------------------------------------------ |
 | H         | Mirror **H**orizontally | 左右翻转                                                     |
 | V         | Mirror **V**ertically   | 上下反转                                                     |
 | Alt+拖动  |                         | 移动元件，会切断连接关系                                     |
@@ -62,6 +79,18 @@ Design Resources
 - 浏览工程：选中工程文件，Edit - Browse - Parts
 - 搜索对象：Edit - Find，快捷键Ctrl + F。搜索框右边望远镜图标再右边的三角图标可以打开搜索选项
 - 批量更换/更新元件：选中Design Cache中的元件，右键 - Replace Cache / Update Cache
+
+**属性窗口**
+
+打开属性窗口：
+
+1. 双击元件
+2. 选中单个或多个元件，右键 - Properties，或Edit - Properties，或Ctrl + E
+3. 选中工程文件或者原理图页面，右键 - Object Properties，或Edit - Object Properties
+
+点击表格上方的Pivot按钮，或者选中整个表格 - 右键 - Pivot可以更改表格排列。单个元件竖排容易看，多个元件横排容易看
+
+可以在表格内多选然后右键 - Edit批量编辑
 
 ## 元件库
 
@@ -75,6 +104,7 @@ Design Resources
 4. 批量修改管脚：选中需要改的管脚，右键 - Edit Properties。注意不要选到管脚以外的东西
 5. 编辑全部管脚：View - Package，然后Edit - Properties。完了之后可以把View改回Part。（此方法无法编辑管脚类型）
 6. 加形状：Place - Line, Rectangle, etc，并调整边框
-7. 其他属性：Options - Part Properties, Package Properties，或者在Part View或者Package View双击打开。如果是Multipart，给每部分的Part Properties添加一个属性用于区分不同芯片，比如叫package（注意group是PCB Editor的保留字，不可以用）
+7. 封装信息：Options - Package Properties - PCB Footprint
+8. 其他属性：Options - Part Properties, Package Properties，或者在Part View或者Package View双击打开。如果是Multipart，给每部分的Part Properties添加一个属性用于区分不同芯片，比如叫package（注意group是PCB Editor的保留字，不可以用）
 
 默认各种东西（线条，文字，etc）只能放到格点，可以在Options - Preferences - Grid Display - Pointer snap to grid设置

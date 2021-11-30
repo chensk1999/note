@@ -199,7 +199,7 @@ git checkout -b <branch>
 git merge <branch>
 
 # 删除分支
-git merge -d <branch>
+git branch -d <branch>
 
 # 变基
 # 首先，撤销从upstream与branch分支点开始、到branch为止的所有commit
