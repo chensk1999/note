@@ -35,20 +35,25 @@ Design Resources
 
 ## 快捷键
 
-| Key  | Usage         | Description                                                  |
-| ---- | ------------- | ------------------------------------------------------------ |
-| P    | **P**art      | 放置元件                                                     |
-| X    | No Connect    | 标记引脚不连接                                               |
-| W    | **W**ire      | 引线                                                         |
-| B    | **B**us       | 总线。总线名称例`DATA[0:31]`                                 |
-| E    | Bus **E**ntry | 总线入口。接入信号名如`DATA[0]`。Ctrl+拖动可以复制并自动递增信号编号 |
-| N    | **N**et Alias | 线网别名。一个原理图页内同名网络在电气上互联                 |
+| Key       | Usage                   | Description                                                  |
+| --------- | ----------------------- | ------------------------------------------------------------ |
+| P         | **P**art                | 放置元件                                                     |
+| X         | No Connect              | 标记引脚不连接                                               |
+| W         | **W**ire                | 引线                                                         |
+| B         | **B**us                 | 总线。总线名称例`DATA[0:31]`                                 |
+| E         | Bus **E**ntry           | 总线入口。接入信号名如`DATA[0]`。Ctrl+拖动可以复制并自动递增信号编号 |
+| N         | **N**et Alias           | 线网别名。一个原理图页内同名网络在电气上互联                 |
+| R         | **R**otate              | 旋转。选中元件之后才能旋转，可能切断连接关系                 |
+| H         | Mirror **H**orizontally | 左右翻转                                                     |
+| V         | Mirror **V**ertically   | 上下反转                                                     |
+| Alt+拖动  |                         | 移动元件，会切断连接关系                                     |
+| Ctrl+拖动 |                         | 复制元件                                                     |
 
 ## 编辑
 
 - 浏览工程：选中工程文件，Edit - Browse - Parts
 - 搜索对象：Edit - Find，快捷键Ctrl + F。搜索框右边望远镜图标再右边的三角图标可以打开搜索选项
-- 批量更换元件：选中Design Cache中的元件，右键 - Replace Cache
+- 批量更换/更新元件：选中Design Cache中的元件，右键 - Replace Cache / Update Cache
 
 ## 元件库
 
