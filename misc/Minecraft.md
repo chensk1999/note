@@ -1,3 +1,10 @@
+# gamerule
+
+```
+/gamerule mobGriefing true
+/gamerule keepinventory true
+```
+
 # AoA (Advent of Ascension)
 
 ## 资源
