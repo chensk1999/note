@@ -30,10 +30,14 @@ Design Resources
 6. 连线：Place - Wire。不要把不同元件引脚相接代替连线，比较容易出bug
 7. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
 8. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
+9. 添加封装信息
+   1. 单个元件
 
 注意：各种工具都是上下文相关的，如果没有选中合适的对象，工具将不可选中或者不显示。比如，必须激活原理图编辑菜单才能放置元件
 
 ## 快捷键
+
+**Place**
 
 | Key       | Usage                   | Description                                                  |
 | --------- | ----------------------- | ------------------------------------------------------------ |
@@ -44,6 +48,10 @@ Design Resources
 | E         | Bus **E**ntry           | 总线入口。接入信号名如`DATA[0]`。Ctrl+拖动可以复制并自动递增信号编号 |
 | N         | **N**et Alias           | 线网别名。一个原理图页内同名网络在电气上互联                 |
 | R         | **R**otate              | 旋转。选中元件之后才能旋转，可能切断连接关系                 |
+| T         | **T**ext                | 文字                                                         |
+
+**Edit**
+| Key       | Usage                   | Description                                                  |
 | H         | Mirror **H**orizontally | 左右翻转                                                     |
 | V         | Mirror **V**ertically   | 上下反转                                                     |
 | Alt+拖动  |                         | 移动元件，会切断连接关系                                     |

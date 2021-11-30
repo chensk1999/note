@@ -231,6 +231,15 @@ EPS Color|Encapsulated Postscript: \
 
 服务器的`/cdsmgr/IC616/tools/plot/sample`文件夹下有更详细的示例，`/cdsmgr/IC616/doc/plot`有具体文档
 
-在原理图 / 版图选择File - Print，在弹出界面设置打印区域，并在Plot Options选择一个plotter（如果没有plotter可能是`.cdsplotinit`文件有误），勾选Send Plot To File并设置保存文件名。使用EPS时保存的是EPS文件，可以用linux的`ps2pdfwr`指令转换为pdf，比如`ps2pdfwr p.eps p.pdf`
+在原理图 / 版图选择File - Print，在弹出界面设置打印区域，并在Plot Options选择一个plotter（如果没有plotter可能是`.cdsplotinit`文件有误），勾选Send Plot To File并设置保存文件名。保存的是EPS文件，可以用linux的`ps2pdfwr`指令转换为pdf，使用例：`ps2pdfwr p.eps p.pdf`
 
 2021.11.27：不知道为什么存下来的都是单色图片。而且转为pdf之后是空白页
+
+## 去除上锁文件
+
+**注意：有可能误删文件。请务必小心**
+
+```bash
+find ./ -i name "*.cdslck*" -exec rm -rf "{}" \;
+```
+
