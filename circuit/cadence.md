@@ -1,12 +1,25 @@
 #   Cadence组件简介
 
-- Design Entry CIS：板级原理图设计（HDL：芯片开发原理图设计）
-- PCB Editor：PCB布局布线
+- DB Doctor：错误诊断、修复数据错误
+- Design Entry CIS：板级原理图设计工具的启动器
+  - OrCAD Capture CIS：主要的原理图设计工具
+- Design Entry HDL：芯片开发原理图设计工具的启动器
+- Pad Designer：编辑焊盘
+- PCB Editor：PCB设计工具的启动器
+  - Allegro Constraint Manager：约束管理器
+  - Allegro PCB Editor：主要的PCB设计工具
 - PCB Libraries：元件封装库编辑器
 - PCB Router：自动布线工具
+- PCB PI：电源完整性仿真
 - PCB SI、SigXplorer：信号完整性仿真
+- Project Manager：各种东西的启动器
 
 # 原理图
+
+打开原理图编辑器：
+
+1. 打开Design Entry CIS
+2. 在弹出的组件选择菜单中选择OrCAD Capture CIS
 
 ## 工程目录结构
 
@@ -21,10 +34,12 @@
 ```bash
 Design Resources
 ├─project.dsn
-│ ├─SCHEMATIC     # 原理图
+│ ├─SCHEMATIC     # 原理图文件夹。其中包含了若干页的原理图
 │ └─Design Cache  # 原理图中用到的器件
 ├─project.olb
-│ ├─part          # 元件（一般不会在同一个工程中包含原理图和元件库）
+│ ├─part1         # 元件（一般不会在同一个工程中包含原理图和元件库）
+│ ├─part2
+│ ├─...
 │ └─Library Cache
 └─Library
   └─example.olb   # 导入的元件库（一般不必导入）
@@ -34,20 +49,18 @@ Referenced Projects
 
 ## 流程
 
-1. 打开Design Entry CIS
-2. 在弹出的组件选择菜单中选择OrCAD Capture CIS
-3. 创建工程：File - New - Project。种类一般选择schematic
-4. 创建原理图：Design - New Schematic Page，或者在工程管理窗口选中SCHEMATIC文件夹，右键 - New Page
-5. 放置元件：Place - Part
-6. 连线：Place - Wire。不要把不同元件引脚相接代替连线，比较容易出bug
-7. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
-8. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
-9. 添加封装信息
+1. 创建工程：File - New - Project。种类一般选择schematic
+2. 创建原理图：Design - New Schematic Page，或者在工程管理窗口选中SCHEMATIC文件夹，右键 - New Page
+3. 放置元件：Place - Part
+4. 连线：Place - Wire。不要把不同元件引脚相接代替连线，比较容易出bug
+5. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
+6. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
+7. 添加封装信息
    1. 在属性窗口编辑PCB Footprint属性。详见后面属性窗口部分（主要对于阻容等无源器件）
    2. 编辑元件库，然后在Design Cache更新元件。更新时选中Replace schematic part properties（比较少用）
-10. DRC：Tools - Design Rules Check
-11. 生成网表：Tools - Create Netlist，选择PCB Editor，Netlist Files填Allegro
-12. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard
+8. DRC：Tools - Design Rules Check
+9. 生成网表：Tools - Create Netlist，选择PCB Editor，Netlist Files填Allegro
+10. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard，或Tools - Bill of Materials
 
 注意：各种工具都是**上下文相关**的，如果没有选中合适的对象，工具将不可选中或者不显示。比如，必须激活原理图编辑菜单才能放置元件
 
@@ -108,3 +121,14 @@ Referenced Projects
 8. 其他属性：Options - Part Properties, Package Properties，或者在Part View或者Package View双击打开。如果是Multipart，给每部分的Part Properties添加一个属性用于区分不同芯片，比如叫package（注意group是PCB Editor的保留字，不可以用）
 
 默认各种东西（线条，文字，etc）只能放到格点，可以在Options - Preferences - Grid Display - Pointer snap to grid设置
+
+# PCB
+
+打开PCB设计软件：
+
+1. 打开PCB Editor
+2. 
+
+## 流程
+
+（教程Part16有更完整的流程）
