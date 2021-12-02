@@ -127,8 +127,45 @@ Referenced Projects
 打开PCB设计软件：
 
 1. 打开PCB Editor
-2. 
+2. 选择Allegro PCB Design XL
+
+窗口（Toolbar在View - Cutomize Toolbar设置，另外几个在View - Windows设置）：
+
+- 主窗口
+- Toolbar
+- Options：激活指令之后有对应设置
+- Find：控制你能选中哪些对象
+- Visibility：控制显示哪些对象
+- World View：缩略图。中键+拖动或者Shift+左键拖动能够移动显示区域
+- Command：命令行&命令信息
+
+Class和Subclass：Allegro有若干类（比如：Pin、Board Geometry），每个类拥有若干子类（如，大部分电气连线都有子类Top、Board Geometry类有子类Silkscreen Top），每个对象都属于某个子类。比如说，走线的类是etch，子类是它所在的层；元件包含了焊盘、丝印等部分，各自属于不同的类和子类。Display - Visibility可以调整不同类的显示
 
 ## 流程
 
 （教程Part16有更完整的流程）
+
+类似OrCAD，Allegro的的工具也是上下文相关的，需要选中相应对象 / 激活相应指令才能使用
+
+## 元件封装
+
+教程p20
+
+1. 编辑焊盘。运行Pad Designer
+   1. Parameter：略。主要是通孔的设置，不经常用
+   2. Layers：首先选择Layer，然后编辑下面的选项。尺寸可以参考[贴片元件封装IPC7351标准](https://www.ipc.org/TOC/IPC-7351.pdf)
+   3. 保存为`.pad`文件
+2. 运行Allegro PCB Editor，File - New，Drawing Type选Package Symbol
+3. 放置焊盘：Layout - Pins
+4. 绘制元件框：Add - Line，Class和Subclass设置为Package Geometry - Assembly Top
+5. 绘制place bound、丝印等
+
+## 常用指令
+
+```bash
+# 鼠标点击&移动
+x 0 0
+ix 3
+iy -4
+```
+
