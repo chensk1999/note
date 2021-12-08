@@ -145,11 +145,28 @@ Class和Subclass：Allegro有若干类（比如：Pin、Board Geometry），每�
 
 （教程Part16有更完整的流程）
 
-类似OrCAD，Allegro的的工具也是上下文相关的，需要选中相应对象 / 激活相应指令才能使用
+1. 创建电路板：File - New，Drawing Type选择Board。（或者用Board Wizard，但后者创建方法不太一样）
+2. 调整绘图区尺寸：Setup - Design Parameters - Design，调整图纸大小
+   1. Size：单位是mil时Accuracy设1~2足够了。Size选项选Other（另外几个是预设大小，不一定合适）
+   2. Extents：图纸左下角坐标&图纸宽度、高度。左下角最好是负数坐标，因为一般把原点作为电路板左下角，而电路板边框紧贴图纸边缘不好看。图纸要比电路板大一些，因为1) 布局时可以把器件放到一边，2) 留出空间放drill legend。一般比板子宽100mm / 4000mil足够
+3. 添加电路板板框：Add - Line，Class/Subclass设为Board Geometry, Outline。最好用x, ix, iy指令直接输入坐标。画好后最好倒角防止电路板割手：Manufacture - Drafting - Chamfer或Fillet（Chamfer倒45度角，Fillet倒圆弧形），然后选择角的两条边
+4. 设置布局区：Setup - Areas - Package Keepin。布局布线与板边缘要留一定距离，因此布局布线布线区比板框要小
+5. 设置布线区：Setup - Areas - Route Keepin同上绘制。或者或者Edit - Z-Copy，Copy to Calss/Sublcass设置为Route Keepin, ALL，然后点击Package Keepin的Shape（记得在Find面板选中Shape）
+6. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Mechanical Symbols
+7. 设置板层：Setup - Cross Section。设置好平面层之后可以直接填充
+   1. Type：布线层Conductor、介质层Dielectric、平面层（电源平面，地平面等）Plane
+   2. Negative：是否负片。好像是平面层负片，信号层正片
+
+
+
+1. 导入网表：File - Import - Logic
+2. 摆放元件：Place - Manually。右键 - Mirror或者Options - Mirror，就会把元件沿纵轴翻转180°放到底层
+
+类似OrCAD，Allegro的的工具也是上下文相关的，需要选中相应对象 / 激活相应指令才能使用。另外，在Allegro进行绝大多数操作，需要先激活命令，执行操作，然后结束命令（通常是右键 - Done）。命令结束之后回到Idle状态，无法进行操作
 
 ## 元件封装
 
-教程p20
+教程20~26讲。目前只学了最基础的
 
 1. 编辑焊盘。运行Pad Designer
    1. Parameter：略。主要是通孔的设置，不经常用
@@ -160,6 +177,12 @@ Class和Subclass：Allegro有若干类（比如：Pin、Board Geometry），每�
 4. 绘制元件框：Add - Line，Class和Subclass设置为Package Geometry - Assembly Top
 5. 绘制place bound、丝印等
 
+## PCB和原理图联动
+
+1. 同时打开原理图工程和PCB工程
+2. OrCAD - Options - Preferences - Miscellaneous - 勾选Enable Intertool Communication
+3. 在Allegro激活place manual指令，然后在原理图选中元件，再回到Allegro就能直接放置
+
 ## 常用指令
 
 ```bash
@@ -169,3 +192,24 @@ ix 3
 iy -4
 ```
 
+## 布局布线基础知识
+
+1. 数字器件要远离模拟器件；模数混合器件的数字部分也要朝着数字器件
+2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
+3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
+4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
+
+教程没看的部分
+
+1. 20~26讲：元件封装
+2. 37~46讲：约束。和16.6设置方法不一样
+   1. 第37讲：约束规则设置对话框简介，各部分关系
+   2. 第38讲：约束规则设置方法
+   3. 第39讲：线宽线距约束规则设置示例
+   4. 第40讲：区域约束规则设置示例
+   5. 第41讲：设置器件模型，加载模型库，赋予器件模型；constraint manager objects显示设置；创建总线
+   6. 第42讲：设置拓扑约束（方法1）
+   7. 第43讲：设置拓扑约束（方法2）
+   8. 第44讲：线长约束规则设置
+   9. 第45讲：相对延时约束规则设置
+   10. 第46讲：差分约束规则设置
