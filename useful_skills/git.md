@@ -259,5 +259,15 @@ git merge origin/master
 git push
 ```
 
+# 守护进程
 
+git daemon是git内置的极简服务器
+
+```bash
+# git daemon默认不允许push，需要设置允许push。不过，daemon没有权限控制，允许push有安全隐患
+git config daemon.receivepack true
+
+# 启动服务
+git daemon --base-path="D:\git" --export-all
+```
 
