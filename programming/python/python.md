@@ -1,9 +1,9 @@
-# 控制语句
+# 基本语法
 
 ## 循环，条件
 
 ```python
-for var in iter:
+for var in it:
     do_something(var)
 
 while condition1:
@@ -21,7 +21,43 @@ a = 1
 b = a if a > 0 else 0
 ```
 
+## 赋值表达式
 
+assignment expression是3.8版本新增特性，有时也叫Named Expressions。其格式是`NAME := expr`，其中的运算符`:=`被非正式地称为海象运算符（walrus operator）
+
+赋值表达式同时实现赋值和表达式的功能。同时，所有能够使用`=`赋值的地方都不允许用`:=`赋值，以防止混乱
+
+赋值表达式是为了让代码更简洁而引入的。千万不要为了使用赋值表达式反而让代码更复杂更难看懂
+
+```python
+# 不使用:=
+foo = bar()
+if foo:
+    return foo
+
+# 使用:=
+if foo := bar():
+    return foo
+
+# 不使用:=
+match1 = pattern1.match(data)
+if match1:
+    return match1
+else:
+    match2 = pattern2.match(data)
+    if match2:
+        return match2
+    else:
+        return None
+
+# 使用:=
+if match1 := pattern1.match(data):
+    return match1
+elif match2 := pattern2.match(data):
+    return match2
+else:
+    return None
+```
 
 # 数据类型
 
@@ -983,8 +1019,6 @@ ThreadLocal可以帮助参数在不同线程中传递
 from concurrent.futures import ThreadPoolExecutor
 ```
 
-
-
 # 内建模块
 
 ## argparse（命令行参数）
@@ -1127,7 +1161,7 @@ chain['z']  # = 1，有重复键时只对第一个进行操作
 
 注意：进行修改和删除时只作用于第一个字典，遍历时重复键也只有第一个。如果不需要保留原本字典，或许用dict.update更好
 
-## configparse（使用配置文件）
+## configparse（配置文件）
 
 一般建议把配置（比如说登录的端口，etc.）单独放进一个文件而不是硬编码在程序里面，此模块就是专门用来解析config.ini文件的
 
@@ -1438,20 +1472,6 @@ logger.info('message')
 | walk      | 递归遍历全部子文件、文件夹，生成(path, dirs, files)        |
 | startfile | 打开文件                                                   |
 
-### os.path
-
-pathlib提供了更丰富的功能，应该优先考虑用pathlib
-
-| function | usage              |
-| -------- | ------------------ |
-| abspath  | 绝对路径           |
-| relpath  | 相对路径           |
-| join     | 连接多段路径       |
-| split    | 分割路径           |
-| isdir    | 判断是否合法文件夹 |
-| isfile   | 判断是否合法文件   |
-| splitext | 分割扩展名         |
-
 ## pathlib（路径）
 
 pathlib提供不涉及IO操作的纯路径类（`PurePath, PurePosixPath, PureWindowsPath`）和具体路径类（`Path, PosixPath, WindowsPath`），最常用的是`Path`类，它会按照需要自动实例化为`PosixPath`或者`WindowsPath`。在不需要访问操作系统时`PurePath`也有一定用处
@@ -1465,7 +1485,7 @@ p = Path('.')
 p.exists()
 p.is_dir()
 p.is_file()
-p.resolve() # 绝对路径
+p.resolve() # 转换为绝对路径
 p.parent    # 父目录的路径
 p.anchor    # 盘符
 p.name      # 文件名/目录名
@@ -1509,47 +1529,33 @@ obj = pickle.loads(pickle_bytes)
 ```python
 import re
 
-pattern = r'\d{1,5}'
-string = 'temp=12'
-match = re.search(pattern, string)
-match.group()
-```
+pattern = r'abc(\d{3})(\s)'     # 括号括起来部分成为group
+string = 'abc123 def, abc456 ghi'
 
+# 匹配字符串
+match = re.match(pattern, string)         # 从头开始匹配
+f_match = re.fullmatch(pattern, string)   # 全字符串匹配
+search = re.search(pattern, string)       # 搜索第一个结果
+findall = re.findall(pattern, string)     # 搜索全部非重叠结果，返回为一个list
+finditer = re.finditer(pattern, string)   # 同findall，但返回迭代器
 
+# 处理匹配结果
+# group
+match.group()        # 整个匹配字符串。此处是'abc123 '
+match.group(0)       # 同上
+match.group(1)       # 第一组，此处为'123'
+match.group([1, 2])  # 第一、第二组的tuple，此处为('123', ' ')
+match[0]             # 下标访问，和match.group[i]效果相同
+# 其他
+match.groups()       # 返回所有组的tuple
+match.groupdict()    # 返回{组名:内容}，组命名方式是'(?P<name>\d)'
+match.start(1)       # 第一组的起始index。end方法同理
+match.span(0)        # (start, stop)
+match.string         # 整个字符串（即匹配时的string参数）
 
-函数
-
-```
-match(pattern, string)		从字符串开头开始匹配，如果匹配成功返回相应Match对象，否则返回None
-fullmatch			匹配整个字符串
-search			如果查找到，返回pattern第一次出现的Match对象
-sub(pattern, repl, string)	将string中符合pattern的部分替换为repl。repl can be either a string or a callable object which returns a string
-subn			同sub，返回(替换后字符串, 替换次数)
-split(pattern, string, maxsplit=0)	按照pattern分割
-findall			返回所有满足pattern的部分的List
-finditer			Return an iteraort yielding Match objects
-compile			编译pattern字符串
-purge			clear regular expression cache
-escape(pattern)		在pattern中非字母，数字，_的字符前加\
-```
-
-### Match类
-
-```
-re.match(pattern, string)匹配成功返回一个Match对象
-方法
-group		如果pattern中有分组，则返回第n个分组对应的子串。0则返回整个字符串
-groups		返回（从1开始）的group对应字串组成的tuple
-span(group)	返回一个二元素tuple，装着相应group的span（开始、结束位置）
-start(group)		index of the start of the substring matched by group
-```
-
-### Pattern类
-
-```
-compile(pattern)
-方法
-match	按照pattern匹配字符串，类似re.match
+# 其他功能
+re.split(pattern, string)
+re.sub(pattern, 'repl', string)
 ```
 
 ## sqlite3（嵌入式SQL数据库）
@@ -1677,8 +1683,6 @@ with wave.open('test.wav', 'rb') as fp:
 with open('mywav.wav', 'wb') as fp:
     # 三个相应的set方法
 ```
-
-
 
 # 有用的第三方库
 
