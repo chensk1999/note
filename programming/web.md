@@ -6,6 +6,12 @@ HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述�
 
 # HTML
 
+HTML(超文本标记语言，Hyper-Text Markup Language)是用于创建网页的标准标记语言
+
+HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```）结束，起止标签中间的内容就是元素的内容，标签可以没有内容，甚至可以在起始的同时终止（比如，换行标签`<br />`。一些不规范写法将其写成`<br>`，可能会被当作缺少终止标签）
+
+不同种类的标签定义了不同的网页元素（如，标题`<title>`，段落`<p>`，etc.）。标签常具有属性，属性可能规定了其样式，也可能是用于区分不同标签的，比如`<img src="logo.png" width=100 />`具有src和width两个属性
+
 ## 基础
 
 ```html
@@ -46,7 +52,7 @@ HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述�
             font-size          文字尺寸，如20px
             text-align         对齐方式，如center
             在旧版本，有font, center, strike标签，color, bgcolor属性用来实现样式
-            现在均不建议使用
+            现在建议只使用style
         </p>
         
         <!-- 图像 -->
@@ -135,6 +141,33 @@ HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述�
 效果如下：
 
 <img src="./images/html_layout.png" style="zoom:50%;" />
+
+## 实体引用
+
+实体引用（Character Entity Reference）相当于HTML的转义字符，格式是`&entity_name;`
+
+| 实体引用        | 显示的字符        |
+| --------------- | ----------------- |
+| `&lt; &gt;`     | `< >`             |
+| `&amp;`         | `&`               |
+| `&apos; &quot;` | `' "`             |
+| `&#25105;`      | 我（unicode字符） |
+
+# XML
+
+XML（EXtensible Markup Language）是类似HTML的标记语言，但注重传输数据而非显示数据。XML没有预定义标签，标签名对大小写敏感，允许嵌套标签（但必须是严格的嵌套），每个XML文档有且仅有一个根元素
+
+## XML命名空间(XML Namespaces)
+
+<前缀:标签名 xmlns:前缀="命名空间">
+<root xmlns:前缀="命名空间">（在根元素中声明）
+一个命名空间被定义后，拥有相同前缀的元素都与该空间相关联
+命名空间通常使用对应的url
+
+## XHTML
+
+XHTML是结合了XML和HTML的一种标记语言
+语法规则大体与XML相同，功能大体与HTML4相同
 
 # CSS
 

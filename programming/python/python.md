@@ -870,8 +870,6 @@ import module as m                m.function
 from module import *              function()    (防止函数重名)
 ```
 
-
-
 # IO
 
 ```python
@@ -932,40 +930,32 @@ raise ValueError('message')
 
 ## 多进程
 
-Unix/Linus系统可采用os.fork()，windows系统下使用multiprocessing等模块
-
-因为进程的数量远远多于CPU的核心数，实质上是各个任务交替执行
-
-os.getpid()	返回当前进程编号
+Unix/Linus系统可采用`os.fork()`，windows系统下使用`multiprocessing`等模块。因为进程的数量远远多于CPU的核心数，实质上是各个任务交替执行
 
 ### multiprocessing模块
 
+```python
+from multiprocessing import Process, Pool, Queue
 
-Process类可以放一个进程
-方法
-Process(target=函数, args=(参数, ) )
-start	开始子进程
-join	等待该子进程结束后再继续主进程
-terminate	终止进程
+def f(x):
+    return x ** 2
 
+process = Process(target=f, args=(3.5, ))
+process.start()       # 开始子进程
+process.join()        # 等待子进程结束
+process.terminate()   # 终止进程
 
-Pool可以装很多个子进程
-Pool(同时执行的最大进程个数)
-apply_async	(async=Asynchronous)，向池中添加一个进程
-close		关闭池子，同时开始进程
-join		等待到所有进程结束
+pool = Pool(5)    # 最多放5个子进程的pool
+pool.apply_async       # 向池中添加一个进程
+pool.close()           # 关闭池子，同时开始进程
+pool.join()            # 等待到所有进程结束
 
+queue = Queue  # 用于子进程之间通信
+queue.put
+queue.get
+```
 
-Queue可以帮助子进程间通信
-注：Pool和Queue不是类，是bound method BaseContext.Queue of <multiprocessing.context.DefaultContext object
-Queue和Pool函数可以创建相应的object，这些对象有相应的方法
-put	装入数据
-get	取出数据
-empty	清空数据
-qsize	返回现有数据个数
-注：如果读取的时候queue里没有数据，就等到有东西了再继续
-
-特别注意：主进程的全部数据都是通过pickle序列化传入子进程，故很多时候multiprocessing失败是因为pickle失败了
+注意：主进程的全部数据都是通过pickle序列化传入子进程，故很多时候multiprocessing失败是因为pickle失败了
 
 ### subprocess模块
 
@@ -976,7 +966,7 @@ call(指令)	运行指令，等待到其结束，返回其return code
 
 ## 多线程
 
-Python的标准库提供了两个模块：`_thread`和threading，threading是高级模块，对`_thread`进行了封装。绝大多数情况下，只需要使用threading
+Python的标准库提供了两个模块：`_thread`和`threading`，`threading`是高级模块，对`_thread`进行了封装。绝大多数情况下，只需要使用`threading`
 
 ```python
 import threading
@@ -1628,7 +1618,11 @@ from urllib import request
 req = request.Request(url)
 req.add_header(key, value)
 response = request.urlopen(req)  #也可以直接用url做参数，但是这样就不能加header
+
+# 读取response
+response.geturl()
 response.getcode()  # HTTP status code
+response.info()     # meta-information
 response.read()     # 网页内容
 
 # POST request
@@ -1637,15 +1631,14 @@ req = request.Request('https://passport.weibo.cn/sso/login')
 response = request.urlopen(req, data=login_data)
 
 # Proxy
-proxy_handler = request.ProxyHandler({'http': 'http://www.example.com:3128/'})
+proxy_handler = request.ProxyHandler({'http': 'http://www.proxy.com:3128/'})
 opener = request.build_opener(proxy_handler)
-response = opener.open(request)
-request.install_opener(opener)  # install at module level
+response = opener.open(req)     # 使用代理opener进行request
+request.install_opener(opener)  # 模块级使用代理opener
 
 # download network object
-# urlretrieve is deprecated, maybe better use fp.write(response.read())
-request.urlretrieve(url, filename, hook)
-    # hook是一个callable，将在开始时和每加载一个chunk后调用
+with open('example.jpg', 'wb') as fp:
+    fp.write(response.read())
 ```
 
 ### parse
@@ -1756,12 +1749,6 @@ python中的回收策略以引用计数为主，当一个对象的引用数为0�
 
 `True, False`, 大于小于等于et cetera判断对象的值（注意nan和任何数判断都是False）。`A is B`判断是否同一个对象（特别的，`A is None`判断是否是None），与或非`and or not`，括号分组
 
-### 作用域
-
-`nonlocal`：声明非局域变量
-
-`global`：声明全局变量
-
 ### 其他
 
 ```python
@@ -1823,6 +1810,10 @@ Make an iterator that computes the function using arguments from each of the ite
 每个模块、类、函数都构成作用域。和C不同，if-else，for，try-except等语句不构成作用域。作用域从小到大分别是Local - Enclosing - Global - Built-in，python在引用变量时，先在局部变量表中找，找不到就到嵌套作用域，然后是嵌套的嵌套，不断向上；在定义/修改变量时，只在局部变量中找，找到就修改，找不到就定义一个新变量。因此，内部可以直接*访问*外部变量，但是不能直接*修改*外部变量，除非使用了`nonlocal`和`global`声明
 
 ```python
+# 声明非局域变量和全局变量
+nonlocal a
+global MAX_SIZE
+
 # 直接访问作用域内的变量
 locals()
 globals()
