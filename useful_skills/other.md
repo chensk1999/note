@@ -1,8 +1,14 @@
-# Windows hotkeys
+# Windows
+
+## hotkeys
 
 win + R：运行。建立一个文件夹，把它加入系统环境变量PATH中，再把想要的东西的快捷方式放进去，就能够直接从win + R启动
 
 win + Tab: 虚拟桌面
+
+## windows 10关闭网络搜索
+
+使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
 
 # mingw编译&make
 

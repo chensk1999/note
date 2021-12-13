@@ -279,6 +279,9 @@ git config daemon.receivepack true
 
 # 启动服务
 git daemon --base-path="D:\git" --export-all
+
+# 从git daemon复制
+git clone git://192.168.0.1/repo
 ```
 
 # gitignore

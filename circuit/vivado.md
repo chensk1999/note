@@ -38,3 +38,10 @@ IBUFDS instance_name (
 ```
 
 其中，在xdc里面配置`create_clock -period 32.000 -waveform {0.000 20.000} [get_ports clk]`就会自动生成全局时钟缓冲。除了差分缓冲器之外几种好像也有办法用约束生成
+
+# 重新安装驱动
+
+如果Hardware Manager无法连接到FPGA（显示No hardware target is open），需要重装驱动
+
+1. 打开`<Vivado install path>\data\xicom\cable_drivers\nt64`文件夹
+2. 运行`install_drivers_wrapper.bat`
