@@ -19,7 +19,72 @@ lookfor [cmd]   % 显示指令参数的帮助
 quit            % 退出
 ```
 
-# 控制流
+# 编程
+
+matlab编程最终是是为交互式执行服务的
+
+## 脚本与函数
+
+脚本可以包含代码以及局部函数。局部函数不能和其他函数文件重名
+
+函数放在`.m`文件中，一个文件对应一个函数，且主函数名必须为文件名
+
+```matlab
+function [x1,x2] = quadratic(a,b,c)
+    % 这行注释称作H1行，lookfor命令可查看此行。通常写大写的函数名和函数功能简要描述
+    % H1行以及之后紧跟的注释可以用help命令查看。通常写输入输出说明以及调用说明
+
+    d = sqrt(b^2 - 4*a*c);
+    x1 = (-b + d) / (2*a);
+    x2 = (-b - d) / (2*a);
+    % 注意：不用return返回结果。它仅作退出函数用
+end
+
+% 同一个文件中定义的其他函数称作子函数，只能在该文件内被调用
+function result = cmp(a, b)
+    if a > b
+        result = a;
+    else
+        result = b;
+    end
+end
+```
+
+```matlab
+% 匿名函数
+power = @(x, n) x .^ n
+result = power(7, 3)
+```
+
+## 类
+
+定义类
+
+```matlab
+classdef MyClass
+    properties
+        value {mustBeNumeric}
+    end
+    
+    methods
+        function r = roundOff(obj)
+            r = round([obj.value], 2);
+        end
+    end
+end
+```
+
+使用类
+
+```matlab
+a = MyClass
+a.value = 3.2
+a.roundOff()
+```
+
+# 语法
+
+## 控制流
 
 ```matlab
 % if分支
@@ -63,37 +128,6 @@ for i = 0:100
 end
 
 % break & continue。该是怎样就怎样
-```
-
-# 函数
-
-```matlab
-% 函数应该放在一个.m文件中，一个文件对应一个函数
-% 主函数名必须为文件名
-function [x1,x2] = quadratic(a,b,c)
-    % 这行注释称作H1行，lookfor命令可查看此行。通常写大写的函数名和函数功能简要描述
-    % H1行以及之后紧跟的注释可以用help命令查看。通常写输入输出说明以及调用说明
-
-    d = sqrt(b^2 - 4*a*c);
-    x1 = (-b + d) / (2*a);
-    x2 = (-b - d) / (2*a);
-    % 注意：不用return返回结果。它仅作退出函数用
-end
-
-% 同一个文件中定义的其他函数（第一个之外的函数）称作子函数，只能在该文件内被调用
-function result = cmp(a, b)
-    if a > b
-        result = a;
-    else
-        result = b;
-    end
-end
-```
-
-```matlab
-% 匿名函数
-power = @(x, n) x .^ n
-result = power(7, 3)
 ```
 
 # 数据类型

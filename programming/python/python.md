@@ -1689,7 +1689,7 @@ pydocmd simple modulename+ > doc.md
 
 注意加号不可省略。生成多个模块的文档只需要同时给多个模块名字（用空格隔开）
 
-## sounddevice
+## sounddevice（录音和播放声音）
 
 ```python
 import sounddevice as sd
@@ -1726,6 +1726,24 @@ with sd.Stream(callback=func):
 sounddevice每隔一定时间会调用一次回调函数。如果没有回调函数，将会在阻塞模式（blocking mode）下运行，使用read write方法进行IO
 
 `callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, )`
+
+## openpyxl（操作excel表格）
+
+```python
+import openpyxl as xl
+
+# 打开表格
+wb = xl.load_workbook('example.xlsx')
+sheet = wb['Sheet1']
+
+# 读写表格内容
+i = sheet['A1'].value
+area = sheet['A1':'C2']
+area[1][1]  # B1 Cell
+sheet['A2'] = 2
+```
+
+
 
 # 杂项
 
