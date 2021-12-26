@@ -68,7 +68,7 @@ fig.close()
 
 # 图片元素
 
-![](../images/parts_of_figure.webp)
+![](../../images/parts_of_figure.webp)
 
 * **Figure**
 

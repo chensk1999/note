@@ -92,7 +92,7 @@ always @(posedge clk) begin
 end
 ```
 
-![](./images/verilog_non-blocking.png)
+![](../images/verilog_non-blocking.png)
 
 可见时钟正跳变沿到来时b的D输入还是上一个周期的a，故输出始终有`b == ~a`
 
@@ -105,7 +105,7 @@ always @(*) begin
 end
 ```
 
-![](./images/verilog_blocking.png)
+![](../images/verilog_blocking.png)
 
 如果违反以上两个原则，比如在时序逻辑电路中使用阻塞赋值`a = ~a; b = a;`，综合后就是a经过一个非门连到b的D端，当电路比较复杂的时候会产生一大坨难以理解的逻辑门 / 查找表。在组合逻辑使用非阻塞赋值或者在一个always块中混合使用两种赋值同理
 
@@ -285,7 +285,7 @@ module combo (input a, b, c, d, e,
 endmodule
 ```
 
-![](./images/verilog_combo_with_always.png)
+![](../images/verilog_combo_with_always.png)
 
 上图是Quartus综合的结果，reg变量z综合为组合逻辑的输出，而不是寄存器或者触发器。使用Vivado综合，得到的是一个查找表。如果更改项目的硬件，综合结果大概还会有不同吧。同时也可以看出，reg不一定是锁存器/触发器输出。需要具体问题具体分析
 
@@ -353,7 +353,7 @@ module dff(d, clk, rst_n, q);
 endmodule
 ```
 
-![](./images/verilog_dff_sync_schematic.png)
+![](../images/verilog_dff_sync_schematic.png)
 
 一个module中可以包含其他的module，比如下例是一个4bit移位寄存器：
 
@@ -377,7 +377,7 @@ module shift_reg(
 endmodule
 ```
 
-![](./images/verilog_dff_shift_reg_schematic.png)
+![](../images/verilog_dff_shift_reg_schematic.png)
 
 端口连线时，可以用如`.name()`的方式表示引脚悬空
 

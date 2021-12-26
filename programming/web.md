@@ -140,7 +140,7 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
 
 效果如下：
 
-<img src="./images/html_layout.png" style="zoom:50%;" />
+![](../images/html_layout.png)
 
 ## 实体引用
 

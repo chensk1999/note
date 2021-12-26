@@ -105,7 +105,7 @@ void List<T>::remove(int index)
 3. 将 Seq[r] 移动到 i 位置
 4. 重复，直到整个表都已经排序
 
-N步迭代，涉及查找、移动两种操作。对于向量，二分查找平均O(logN)、移动平均O(N)，总共O(N*(N + logN)) = <span style="background-color:#FFFF00">O(N^2)</span>；对于列表，只能用顺序查找O(N)，删除和插入O(1)（查找时已经定位了移动的源和目标，只需修改一下指针的值），总共O(N * (N + 1)) = <span style="background-color:#FFFF00">O(N^2)</span>
+N步迭代，涉及查找、移动两种操作。对于向量，二分查找平均O(logN)、移动平均O(N)，总共O(N*(N + logN)) = **O(N^2)**；对于列表，只能用顺序查找O(N)，删除和插入O(1)（查找时已经定位了移动的源和目标，只需修改一下指针的值），总共O(N * (N + 1)) = **O(N^2)**
 
 相比之下不难发现，向量在做静态查找时效率更高，而需要动态修改的场合列表的效率更高
 
@@ -163,7 +163,7 @@ $$
 
 栈（Stack）的操作只能从一端进行入栈（Push）和出栈（Pop）操作，这一端称作栈顶，另一端称作栈底。其特征是后进先出（last in first out，LIFO）
 
-<img src="./images/DS_Stack.png" style="zoom: 20%;" />
+![](../images/DS_Stack.png)
 
 ## 括号匹配
 
@@ -233,6 +233,8 @@ int evaluate(const char exp[])
 
 ## 逆波兰表达式
 
+TODO
+
 ## 回溯法求解八皇后问题
 
 如何在国际象棋棋盘上放8个皇后，使每一个皇后无法一步吃掉其他皇后？已知国际象棋棋盘大小为8x8，皇后移动范围是横、竖、对角线
@@ -241,7 +243,7 @@ int evaluate(const char exp[])
 2. **试探**：在第二行第一列放一个试探棋子，检查它能否被已经放置的棋子一步吃掉。如果能，就将试探棋子移动到下一列，继续试探；如果不能，将其入栈，试探下一行
 3. **回溯**：重复试探到某一行每个位置都不允许放时，栈顶棋子出栈，恢复到了还在试探上一个棋子的状态，然后继续试探
 
-所有可能的试探过程（也称作搜索空间）可以构成一棵树。对于八皇后问题，比如说，假设某次试探第四行每个位置都不允许放了，那就说明前三个的放置是不允许的，剩余的五六七八行都没有试探必要了，排除了搜索树的一整颗子树。这一技巧也称作<span style="background-color:#FFFF00">剪枝（pruning）</span>
+所有可能的试探过程（也称作搜索空间）可以构成一棵树。对于八皇后问题，比如说，假设某次试探第四行每个位置都不允许放了，那就说明前三个的放置是不允许的，剩余的五六七八行都没有试探必要了，排除了搜索树的一整颗子树。这一技巧也称作**剪枝（pruning）**
 
 N皇后问题一共有$N^N$种棋局。简单的实验显示，剪枝后试探次数 / 全棋局数 = $O(e^N)$，N = 8时大约只有0.1%的棋局被测试。但复杂度仍然为$O(N^N)$，我的实验也只能做到N = 14，再多就非常花时间了
 
@@ -301,21 +303,19 @@ std::list<solution> queens(const int n)
 }
 ```
 
-
-
 ## Hanoi塔
 
-
+TODO
 
 # 队列
 
 队列（Queue）只能从队头（front）入队（enqueue）、队尾（rear）出队（dequeue），符合先进先出（first in first out，FIFO）的规律
 
-<img src="./images/DS_Queue.png" style="zoom: 30%;" />
+![](../images/DS_Queue.png)
 
 ## 排队事件模拟
 
-
+TODO
 
 # 二叉树
 
@@ -404,15 +404,15 @@ void pre_trav(BinTree tree)
 
 * **中序遍历**（Inorder Traversal）
 
-<img src="./images/DS_BinaryTree_InorderTraversal.png" style="zoom:75%;" />
+![](../images/DS_BinaryTree_InorderTraversal.png)
 
 * **后序遍历**（Postorder Traversal）
 
-<img src="./images/DS_BinaryTree_PostorderTraversal.png" style="zoom:75%;" />
+![](../images/DS_BinaryTree_PostorderTraversal.png)
 
 * **层次遍历**（Level Order Traversal）
 
-<img src="./images/DS_BinaryTree_LevelOrderTraversal.png" style="zoom:67%;" />
+![](../images/DS_BinaryTree_LevelOrderTraversal.png)
 
 ```c++
 void level_trav(BinTree tree)
@@ -483,7 +483,7 @@ A   E   G  ┌┴┐
 
 如果二叉树中任一个节点，左子树的所有节点 &le; 本节点 &le; 右子树的所有节点，它是一棵二叉搜索树。不难发现，二叉搜索树的充要条件是中序遍历单调非降
 
-* **搜索**：从根节点开始，如果节点值 &lt; key，移动到右节点；如果节点值 &gt; key，移动到左节点，重复直到无法移动或者节点值 = key为止
+* **搜索**：从根节点开始，如果节点值 \< key，移动到右节点；如果节点值 \> key，移动到左节点，重复直到无法移动或者节点值 = key为止
 
 * **插入**：先进行搜索，找到最后落到的位置，然后插入为这个位置的子节点
 
@@ -491,7 +491,7 @@ A   E   G  ┌┴┐
 
 * **旋转**：也称作zigzag，属于等价变换，是调整平衡的方式
 
-<img src="./images/DS_BinaryTree_zigzag.png" style="zoom:60%;" />
+![](../images/DS_BinaryTree_zigzag.png)
 
 
 
@@ -505,7 +505,7 @@ A   E   G  ┌┴┐
 
 # 图
 
-G = (V, E)，图（Graph）由<span style="background-color:#FFFF00">顶点（Vertex，Node）</span>和<span style="background-color:#FFFF00">边（Edge，Arc）</span>组成。评价复杂度时，一般包含顶点数 |V| 和边数 |E| 两部分，并且，不难看出，$|E| = O(|V|^2)$。根据边是否有向，可以分为有向图（Directed Graph，digraph）、无向图（Undirected Graph，undigraph）和混合图（Mixed Graph）
+G = (V, E)，图（Graph）由**顶点**（Vertex，Node）和**边**（Edge，Arc）组成。评价复杂度时，一般包含顶点数$|V|$和边数$|E|$两部分，并且，不难看出，$|E| = O(|V|^2)$。根据边是否有向，可以分为有向图（Directed Graph，digraph）、无向图（Undirected Graph，undigraph）和混合图（Mixed Graph）
 
 ## 图的实现
 
@@ -532,16 +532,16 @@ class Graph
 
 * **广度优先搜索**（Breadth first search，BFS）
 
-<span style="background-color:#FFFF00">越靠近起始点的越先被访问</span>。作用于树，就是层次遍历
+**越靠近起始点的越先被访问**。作用于树，就是层次遍历
 
 1. 将所有节点标记为未访问
 2. 定义一个FIFO队列（前沿集）存储将要访问的节点，选定一个起始节点，加入前沿集
 3. 从前沿集取出一个节点，访问它，将它标记为已访问，然后将它所有未访问邻居加入前沿集
 4. 重复第三步直到前沿集空。对于无向图，此时所有连通分量（Connected Component）都被访问；对于有向图，所有可达分量（Reachable Component）都必定被访问过了。如果还有没访问的，重新选取起始节点，重复第二步
 
-如果遍历的同时记录每个节点是被谁加入到前沿集中的，就给每个点定下了唯一的父节点，构成了一棵<span style="background-color:#FFFF00">广度优先搜索树</span>（BFS Tree）。下图是BFS树实例，从S点起始，然后访问A和B，最后是C和D。S为根节点，实线是树的边（同时也是图的边），虚线是图的边但不是树的边，也称作跨边（Cross Edge）。假如一次遍历没有抵达所有顶点，多次遍历产生的BFS树构成BFS森林
+如果遍历的同时记录每个节点是被谁加入到前沿集中的，就给每个点定下了唯一的父节点，构成了一棵**广度优先搜索树**（BFS Tree）。下图是BFS树实例，从S点起始，然后访问A和B，最后是C和D。S为根节点，实线是树的边（同时也是图的边），虚线是图的边但不是树的边，也称作跨边（Cross Edge）。假如一次遍历没有抵达所有顶点，多次遍历产生的BFS树构成BFS森林
 
-<img src="./images/DS_Graph_遍历树.png" style="zoom: 33%;" />
+![](../images/DS_Graph_trav.png)
 
 BFS需要记录每个顶点状态，前沿集辅助队列，故空间复杂度O(|V|)。如果还要记录BFS树，则为O(|V|+|E|)。需要初始化节点状态，每个节点访问一次，每条边都要访问（寻找邻居），故时间复杂度O(|V|+|E|)
 
