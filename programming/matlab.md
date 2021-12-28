@@ -14,6 +14,9 @@ clear           % 删除所有变量
 clc             % 清屏。clear command window
 home            % 滚屏，将光标移动到左上
 
+format short    % 更改数字显示格式
+                % 可选选项：short, long, short e, long e, bank, +, rat, compact, loose
+
 help [cmd]      % 显示指令帮助
 lookfor [cmd]   % 显示指令参数的帮助
 quit            % 退出
@@ -21,23 +24,25 @@ quit            % 退出
 
 # 编程
 
-matlab编程最终是是为交互式执行服务的
+## 脚本
 
-## 脚本与函数
+脚本可以包含代码以及局部函数，运行脚本等同于直接在命令行逐行执行代码（即，脚本变量和交互式界面的变量是共通的）
 
-脚本可以包含代码以及局部函数。局部函数不能和其他函数文件重名
+局部函数不能和其他函数文件重名
+
+## 函数
 
 函数放在`.m`文件中，一个文件对应一个函数，且主函数名必须为文件名
 
 ```matlab
 function [x1,x2] = quadratic(a,b,c)
-    % 这行注释称作H1行，lookfor命令可查看此行。通常写大写的函数名和函数功能简要描述
+    % 这行注释称作H1行，lookfor命令可查看此行。通常写函数名和函数功能简要描述
     % H1行以及之后紧跟的注释可以用help命令查看。通常写输入输出说明以及调用说明
 
     d = sqrt(b^2 - 4*a*c);
     x1 = (-b + d) / (2*a);
     x2 = (-b - d) / (2*a);
-    % 注意：不用return返回结果。它仅作退出函数用
+    % 注意：不用return返回结果。return仅作退出函数用
 end
 
 % 同一个文件中定义的其他函数称作子函数，只能在该文件内被调用
@@ -48,19 +53,56 @@ function result = cmp(a, b)
         result = b;
     end
 end
-```
 
-```matlab
 % 匿名函数
-power = @(x, n) x .^ n
-result = power(7, 3)
+power = @(x, n) x .^ n;
+result = power(7, 3);
+
+% 输入输出参数控制
+% 如果调用时实参少于形参，仍然能够调用（反之，实参多于形参则不行）
+% 本例中，假如以my_sum(1, 2)方式调用，进入函数时c未定义，c的值由前三行动态定义
+% 输出参数可以用nargout和varargout动态定义
+function result = my_sum(a, b, c)
+    if nargin() == 2
+        c = 0;
+    end
+    result = a + b + c;
+end
+
+% 参数解析器：可选参数、键值对参数
+% varargin是接收任意个实参的特殊形参
+% 也可以将普通参数和解析器结合使用，比如example(a, varargin)
+function result = parser_example(varargin)
+    p = inputParser();
+    is_scalar_num = @(x) isnumeric(x) && isscalar(x);
+    
+    % 添加参数
+    p.addRequired('a', is_scalar_num);     % 参数a，用is_scalar_num检查合法性
+    p.addOptional('b', 0, is_scalar_num);  % 可选参数b，默认值0
+    p.addParameter('mode', 'rb');          % 可选键值对参数mode，默认值是'rb'
+    
+    % 解析
+    p.parse(varargin{:});
+    p.Results    % 包含各参数的struct
+    
+    % (optional) 将解析结果赋值给变量
+    fields = fieldnames(p.Results);
+    for i = 1:length(fields)
+        field = fields(i);
+        eval(sprintf('%s = p.Results.%s;', field, field));
+    end
+end
+
+% 调用例
+parser_example(1);
+parser_example(1, 'mode', 'wb');
+parser_example(1， 2, 'mode', 'wb');
 ```
 
 ## 类
 
-定义类
-
 ```matlab
+% 定义
 classdef MyClass
     properties
         value {mustBeNumeric}
@@ -72,11 +114,8 @@ classdef MyClass
         end
     end
 end
-```
 
-使用类
-
-```matlab
+% 使用
 a = MyClass
 a.value = 3.2
 a.roundOff()
@@ -132,16 +171,18 @@ end
 
 # 数据类型
 
-## 矩阵与向量
+## 数组
+
+Matlab的大多数数据都是数组。数字是零维数组，向量是一维数组，矩阵是二维数组
 
 ```matlab
-% 定义矩阵/向量
-A = [11 12 13; 21 22 23; 31 32 33];
+% 定义数组
+r = [1 2 3];        % 行向量
+c = [1; 2; 3;];     % 列向量
+A = [11 12 13; 21 22 23; 31 32 33];  % 矩阵
 B = A * 2;
-r = [1 2 3];    % 行向量，只有一行的矩阵
-c = [1; 2; 3;]; % 列向量
 
-% 特殊矩阵/向量的定义
+% 特殊数组的定义
 zeros(5)        % 五阶零方阵
 ones(4, 3)      % 4x3填1的矩阵
 eye(4)          % 四阶单位阵
@@ -149,42 +190,50 @@ lin = 1:1:10    % initval:step:endval，定义一个包括endval的线性行向�
 
 % 矩阵运算
 A + B           % 矩阵加法
-A - 1           % 逐元素运算
+A - 1           % 矩阵减法
 A * 2           % 数乘
 A * B           % 矩阵乘法
 A .* B          % 逐元素乘法
 A / B           % 矩阵除法，相当于A * inv(B)
 A ./ B          % 逐元素相除
-A \ B           % 矩阵左除法，相当于inv(A) * B。相当于求A*x=B的解
+A \ B           % 矩阵左除法，相当于pinv(A) * B，或求A*x=B的解
 A .\ B          % 逐元素左除法，相当于B ./ A
 A ^ 2           % 矩阵乘方
 A .^ 2          % 逐元素乘方
 A'              % 矩阵转置
 A.'             % 转置，但复数不取共轭
 
-% 矩阵索引：索引从1开始
+% 数组索引：索引从1开始
 A(1, 2)         % 第1行第2列
 A(2, :)         % 第二行。注意：A(2)是第二行第一个元素
 A(1:2, 2:3)     % 1~2行的2~3列
 A([3, 1], :)    % 第3行和第1行
 
-# 添加/删除矩阵元素
+% 添加/删除数组元素
 [A[0, :], 14]   % 一维矩阵拼接
 A(:, 2) = []    % 删除第二列
 A(:, :, 2) = A  % 插入到第三维
 a = 1, a(5) = 2 % 给标量插入新元素构成向量。未定义部分填0
 
-# 寻找元素
-[row, col] = find(A==12)
+% 数组大小
+size(A)         % 对于标量、向量和矩阵，返回[row col]；对于高维数组，返回各维度的长度
+length(A)       % 等于max(size(A))
+numel(A)        % 数组包含元素数量，等于prod(size(A))
+ndims(A)        % 数组维数
 
 % 拼接矩阵
+[M, c]
+[M, r]
 cat(1, M, r)
 cat(2, M, c)
+
+% 其他
+[row, col] = find(A==12)      % 寻找元素
 ```
 
-## Cell Array
+## 元胞数组
 
-大致相当于指针数组，或者numpy中类型为Object的数组，每个元素可以指向任意一种对象
+元胞（Cell Array）是可以包含任意类型数据的容器。1×1元胞数组有时也直接称作元胞
 
 ```matlab
 % 定义Cell Array
@@ -192,7 +241,25 @@ c1 = {1 'A'; 3.5 {2 2} }
 c2 = cell(5, 3)         % 5x3的空cell
 
 % 访问Cell Array
-c1{1}
+c1(1, 1)    % 圆括号访问元胞集，得到{1}
+c1{1, 1}    % 花括号访问元胞内容，得到1
+```
+
+## 结构体
+
+结构体（struct）是用字段将数据组合在一起的数据结构
+
+```matlab
+% 圆点表示法定义。此例子定义的结构体包含a和b两个字段
+s.a = 1
+s.b = 'value'
+
+% struct函数定义
+s = struct('a', 1, 'b', 'value')
+s = struct()    % 定义没有字段的结构体
+
+% 访问结构体
+disp(s.a)
 ```
 
 ## 字符串
@@ -213,12 +280,9 @@ strtrim('  hello, world  ')     % 去除开头结尾空白
 % regexp, regexpi, regexprep, isspace, symvar
 ```
 
-# IO
+# 文件操作
 
 ```matlab
-format short    % 更改数字显示格式
-                % 可选选项：short, long, short e, long e, bank, +, rat, compact, loose
-
 fprintf('a = %d', 1);
 disp([1 2 3]);
 
@@ -233,6 +297,8 @@ data2 = importdata('example.jpeg');
 clip = importdata('-pastespecial');    % 保存剪贴板内容
 % 一般load适合读取.mat文件或纯数字数据，importdata适合读有行列名的文本文件
 ```
+
+TODO:其他的函数：fopen+fread+fclose
 
 # 绘图
 
