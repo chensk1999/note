@@ -167,6 +167,8 @@ Class和Subclass：Allegro有若干类（比如：Pin、Board Geometry），每�
 ## 布线
 
 1. Route - Connect。多选焊盘再点击可以一次布多根线
+2. 添加过孔：双击 / 右键 - Add Via
+3. 走线设置Bubble：Hug不动已经布好的线，当新的线被挡住时紧靠已有的线；Shove推挤原有的线，为新的线腾出空间。如果选shove via，过孔也可以被推挤（Full优先推挤过孔，Manual优先推挤线而保持过孔不动）
 
 元件自动扇出：Route - Fanout By Pick，右键 - Setup设置扇出参数，然后选中要扇出的元件
 
@@ -204,6 +206,10 @@ iy -4
 2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
 3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
 4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
+
+## 其他
+
+走线拐角显示断开：Setup - Design Parameters - Display - Enhanced display modes - Connect line endcaps
 
 # 教程目录
 

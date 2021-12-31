@@ -22,105 +22,6 @@ lookfor [cmd]   % 显示指令参数的帮助
 quit            % 退出
 ```
 
-# 编程
-
-## 脚本
-
-脚本可以包含代码以及局部函数，运行脚本等同于直接在命令行逐行执行代码（即，脚本变量和交互式界面的变量是共通的）
-
-局部函数不能和其他函数文件重名
-
-## 函数
-
-函数放在`.m`文件中，一个文件对应一个函数，且主函数名必须为文件名
-
-```matlab
-function [x1,x2] = quadratic(a,b,c)
-    % 这行注释称作H1行，lookfor命令可查看此行。通常写函数名和函数功能简要描述
-    % H1行以及之后紧跟的注释可以用help命令查看。通常写输入输出说明以及调用说明
-
-    d = sqrt(b^2 - 4*a*c);
-    x1 = (-b + d) / (2*a);
-    x2 = (-b - d) / (2*a);
-    % 注意：不用return返回结果。return仅作退出函数用
-end
-
-% 同一个文件中定义的其他函数称作子函数，只能在该文件内被调用
-function result = cmp(a, b)
-    if a > b
-        result = a;
-    else
-        result = b;
-    end
-end
-
-% 匿名函数
-power = @(x, n) x .^ n;
-result = power(7, 3);
-
-% 输入输出参数控制
-% 如果调用时实参少于形参，仍然能够调用（反之，实参多于形参则不行）
-% 本例中，假如以my_sum(1, 2)方式调用，进入函数时c未定义，c的值由前三行动态定义
-% 输出参数可以用nargout和varargout动态定义
-function result = my_sum(a, b, c)
-    if nargin() == 2
-        c = 0;
-    end
-    result = a + b + c;
-end
-
-% 参数解析器：可选参数、键值对参数
-% varargin是接收任意个实参的特殊形参
-% 也可以将普通参数和解析器结合使用，比如example(a, varargin)
-function result = parser_example(varargin)
-    p = inputParser();
-    is_scalar_num = @(x) isnumeric(x) && isscalar(x);
-    
-    % 添加参数
-    p.addRequired('a', is_scalar_num);     % 参数a，用is_scalar_num检查合法性
-    p.addOptional('b', 0, is_scalar_num);  % 可选参数b，默认值0
-    p.addParameter('mode', 'rb');          % 可选键值对参数mode，默认值是'rb'
-    
-    % 解析
-    p.parse(varargin{:});
-    p.Results    % 包含各参数的struct
-    
-    % (optional) 将解析结果赋值给变量
-    fields = fieldnames(p.Results);
-    for i = 1:length(fields)
-        field = fields(i);
-        eval(sprintf('%s = p.Results.%s;', field, field));
-    end
-end
-
-% 调用例
-parser_example(1);
-parser_example(1, 'mode', 'wb');
-parser_example(1， 2, 'mode', 'wb');
-```
-
-## 类
-
-```matlab
-% 定义
-classdef MyClass
-    properties
-        value {mustBeNumeric}
-    end
-    
-    methods
-        function r = roundOff(obj)
-            r = round([obj.value], 2);
-        end
-    end
-end
-
-% 使用
-a = MyClass
-a.value = 3.2
-a.roundOff()
-```
-
 # 语法
 
 ## 控制流
@@ -167,6 +68,148 @@ for i = 0:100
 end
 
 % break & continue。该是怎样就怎样
+```
+
+## 函数句柄
+
+函数句柄（function handle）类似于C的函数指针
+
+```matlab
+f = @sin;
+g = @(x, n) x .^ n;    % 匿名函数句柄
+```
+
+# 编程
+
+## 脚本
+
+脚本可以包含代码以及局部函数，运行脚本等同于直接在命令行逐行执行代码（即，脚本变量和交互式界面的变量是共通的）
+
+局部函数不能和其他函数文件重名
+
+## 函数
+
+函数放在`.m`文件中，一个文件对应一个函数，且主函数名必须为文件名
+
+### 定义
+
+```matlab
+function [x1,x2] = quadratic(a,b,c)
+    % 这行注释称作H1行，lookfor命令可查看此行。通常写函数名和函数功能简要描述
+    % H1行以及之后紧跟的注释可以用help命令查看。通常写输入输出说明以及调用说明
+
+    d = sqrt(b^2 - 4*a*c);
+    x1 = (-b + d) / (2*a);
+    x2 = (-b - d) / (2*a);
+    % 注意：不用return返回结果。return仅作退出函数用
+    % 注意2：如果调用时实参数量<形参数量，仍能调用，缺少的参数在函数体内未定义（反之，实参多于形参则不行）
+end
+
+% 同一个文件中定义的其他函数称作子函数，只能在该文件内被调用
+function result = cmp(a, b)
+    if a > b
+        result = a;
+    else
+        result = b;
+    end
+end
+```
+
+### 调用
+
+matlab支持两种调用格式：
+
+```matlab
+max(1, 2)      % 正常的调用
+max 1 2        % 类似指令的调用。使用此方式，所有参数都被视作char
+```
+
+调用时，实参数量可以少于形参；接受返回值的左值数量也可以少于返回值个数
+
+如果实参数量少于形参，缺少的参数在函数体内等同于未定义，如果需要用到缺失的参数，将提示参数个数不足。反之（实参数量多于形参）则报错。进一步地可以在函数体内动态定义这些参数，实现类似于默认参数的效果
+
+如果接收返回值的变量个数少于返回值个数，多出来的返回值被“丢弃”。反之，如果多于返回值个数，报错。
+
+```matlab
+function [result, cnt] = my_sum(a, b, c)
+    if ~exist(b)        % 使用exist动态定义
+        b = 0;
+    end
+    if nargin() == 2    % 使用nargin动态定义
+        c = 0;
+    end
+    result = a + b + c;
+    cnt = nargin();
+end
+
+result = my_sum(1, 2);
+[result, cnt] = my_sum(32);
+```
+
+### 可变长输入输出
+
+`varargin` / `varargout`是特殊的输入参数 / 输出变量，可以获取任意个参数 / 返回任意个值。它们是元胞行向量
+
+```matlab
+function varargout = var_io(varargin)
+    for i = 1:nargout()
+        varargout{i} = varargin{i};
+    end
+end
+```
+
+### 参数解析器
+
+使用参数解析器可实现参数类型检查、可选参数、可选键值对参数
+
+```matlab
+function result = parser_example(varargin)
+    p = inputParser();
+    is_scalar_num = @(x) isnumeric(x) && isscalar(x);
+    
+    % 添加参数
+    p.addRequired('a', is_scalar_num);     % 参数a，用is_scalar_num检查合法性
+    p.addOptional('b', 0, is_scalar_num);  % 可选参数b，默认值0
+    p.addParameter('mode', 'rb');          % 可选键值对参数，参数名是mode，默认值是'rb'
+    
+    % 解析
+    p.parse(varargin{:});
+    p.Results    % 包含各参数的struct
+    
+    % (optional) 将解析结果赋值给变量
+    fields = fieldnames(p.Results);
+    for i = 1:length(fields)
+        field = fields(i);
+        eval(sprintf('%s = p.Results.%s;', field, field));
+    end
+end
+
+% 调用例
+parser_example(1);
+parser_example(1, 'mode', 'wb');
+parser_example(1， 2, 'mode', 'wb');
+```
+
+## 类
+
+```matlab
+% 定义
+classdef MyClass
+    properties
+        value {mustBeNumeric}
+    end
+    
+    methods
+        function r = roundOff(obj)
+            r = round([obj.value], 2);
+        end
+    end
+end
+
+% 使用
+a = MyClass
+a.value = 3.2
+a.roundOff()
 ```
 
 # 数据类型
@@ -262,7 +305,9 @@ s = struct()    % 定义没有字段的结构体
 disp(s.a)
 ```
 
-## 字符串
+## 字符与字符串
+
+用单引号括起来的文本字符（char），用双引号括起来的文本是字符串（string）。因为一般不会用matlab做字符处理，不分清楚也没有大碍
 
 ```matlab
 % 格式化字符串/格式化输出

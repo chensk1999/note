@@ -5,31 +5,8 @@
 工作区（working directory）就是我们看见的文件目录；暂存区（index, or stage）标记了下一次要提交的内容，通常在`.git/index`文件夹；版本库（repository）就是`.git`文件夹下的其他东西，包括了所有历史版本和快照。版本库内的内容总是有办法恢复的，但是没有commit的内容可以被弄丢
 
 ```mermaid
-sequenceDiagram
-    participant working directory
-    participant index / stage
-    participant repository
-
-    working directory ->> index / stage: git add
-    index / stage ->> repository: git commit
-    working directory ->> repository: git commit -a
-    repository ->> working directory: git checkout
-```
-
-
-
-## 文件状态
-
-```mermaid
-sequenceDiagram
-    participant untracked
-    participant unmodified
-    participant modified
-    participant staged
-
-    untracked ->> staged: git add
-    modified ->> staged: git add
-    staged ->> unmodified: git commit
+ graph LR
+    工作区 --暂存--> 暂存区 --提交-->版本库
 ```
 
 ## 分支
@@ -42,7 +19,7 @@ git版本库里有三类对象：
 
 分支就是指向commit对象的可变指针，一般用master表示主支
 
-git中有一个特殊指针HEAD，它指向当前活动的commit。当进行提交时，HEAD自动向前移动到新的commit。另外，如果HEAD
+git中有一个特殊指针HEAD，它指向当前活动的commit。当进行提交时，HEAD自动向前移动到新的commit。另外，如果HEAD不指向一个分支，称作detached HEAD状态
 
 # 工作流程
 
