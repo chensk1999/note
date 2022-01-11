@@ -153,14 +153,10 @@ s = sorted(L, key=lambda x: x[1], reverse=True )
 # 使用collections.itemgetter或operator.attrgetter运行速度更快，而且支持多关键字排序
 ```
 
-
-
 ## 元组(tuple)
 
 同列表，不过使用圆括号()，且不能改变存储的值
 只有一个元素的tuple要写成(elecment1 , )以和普通的括号区分
-
-
 
 ## 字典(dict)
 

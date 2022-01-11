@@ -135,6 +135,8 @@ ADE-XL
 
 设置电路初值：ADE - Simulation - Convergence Aids - Initial Condition
 
+快捷键：A、B设置Point Marker，M添加Point Marker，H、V添加Horizontal / Vertial Marker
+
 # 版图
 
 版图可以用 Layout Editor L 或者 XL，两者差别之一是 XL 可以用 Connectivity - Generate - Selected From Source 选项从原理图直接生成器件。首先点击 Selected From Source，切到 Schemetic Editor，选择若干元件，再切回来就能放置

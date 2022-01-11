@@ -388,9 +388,9 @@ ax.GridLineStyle = '--';
 % ║  5  ║  6  ║
 % ╚═════╩═════╝
 tab2 = uitab(tabgroup, 'title', 'TAB 2');
-ax1 = subplot(2, 2, 1, 'parent', tab2);     % 不用tab时用fig做parent
-ax2 = subplot(2, 2, [2 4 6], 'parent', tab2);
-ax3 = subplot(2, 2, [3 5], 'parent', tab2);
+ax1 = subplot(3, 2, 1, 'parent', tab2);     % 不用tab时用fig做parent
+ax2 = subplot(3, 2, [2 4 6], 'parent', tab2);
+ax3 = subplot(3, 2, [3 5], 'parent', tab2);
 ```
 
 另外，matlab还提供了`uifigure`和`uiaxes`，ui类据说比较合适用于嵌入到应用程序中
