@@ -176,7 +176,8 @@ function result = parser_example(varargin)
     p.parse(varargin{:});
     p.Results    % 包含各参数的struct
     
-    % (optional) 将解析结果赋值给变量
+    % (not recommended) 将解析结果赋值给变量
+    % matlab元编程好像有些奇怪结果，最好不要用eval
     fields = fieldnames(p.Results);
     for i = 1:length(fields)
         field = fields(i);
@@ -454,3 +455,15 @@ xlabel(ax, 'xlabel');
 ylabel(ax, 'ylabel');
 grid(ax);
 ```
+
+# 其他
+
+```matlab
+% 取整
+x = 1.5;
+floor(x)     % 向下取整
+ceil(x)      % 向上取整
+round(x)     % 四舍五入取整
+fix(x)       % 向0取整
+```
+

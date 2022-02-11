@@ -1,67 +1,110 @@
-# 基本例子
+# 基础知识
+
+tkinter是跨平台gui工具包Tcl/Tk（更具体地说，Tcl是一种脚本语言，Tk是使用Tcl编写的gui框架，两者并称Tcl/Tk）的python接口（Tk interface）
+
+```bash
+python -m tkinter    # 检查是否安装tkinter，以及其版本
+```
+
+## 实例
+
+Tcl的控件是树状的，根窗口为Tk实例，各种控件如同windows的文件一样树状排布。Tk包含三个基本要素：控件、几何管理与事件处理
+
+```python
+import tkinter as tk
+from tkinter import ttk     # themed tk
+
+# 根窗口
+root = tk.Tk()
+
+# 添加内容
+frm = ttk.Frame(root, padding=10)
+frm.grid()
+ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
+ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
+
+# 运行gui
+root.mainloop()
+```
+
+# 控件
+
+控件（widget）是gui的一个对象（比如，按钮、文本框、窗口）。控件呈树状组织，tk和ttk各自提供了许多种控件
+
+有下例所示三种设置控件的方式。参数名索引和config方法也可以用来获取参数值
 
 ```python
 import tkinter as tk
 from tkinter import ttk
+
+root = tk.Tk()
+
+# 用关键字参数初始化
+btn1 = ttk.Button(root, text='Yes')
+
+# 用参数名索引设置
+btn2 = ttk.Button(root)
+btn2['text'] = 'No'
+
+# 使用config方法设置
+btn3 = ttk.Button(root)
+btn3.config(text='Cancel')
+
+# 显示并运行
+btn1.pack()
+btn2.pack()
+btn3.pack()
+root.mainloop()
 ```
 
-# 基础知识
+## tk widget
 
-Tcl的控件是树状的，根窗口为Tk实例，各种控件如同windows的文件一样树状排布
-三个基本要素：widgets, geometry management, and event handling
+| 种类     | 用途                                      |
+| -------- | ----------------------------------------- |
+| Spinbox  | 选择；上下箭头切换选项                    |
+| Listbox  | 列表框；显示多个单行文本                  |
+| Text     | 显示多行文本                              |
+| Menu     | 菜单栏、下拉菜单和弹出菜单                |
+| Toplevel | 窗口                                      |
+| Canvas   | 画布，显示图形/图片，也是所有widget的父类 |
 
-## themed widgets
+## ttk widget
 
-```
-基本
-    Frame       框架；在屏幕上显示一个矩形区域，多用来作为容器
-    LabelFrame  带标题的Frame
+大部分控件都有tkinter.widget和ttk.widget两种，它们的使用方法基本没有差异，最大的差异在于：tk使用很多个属性来定义样式，ttk使用style属性定义样式。而且ttk的往往比较美观
 
-接受输入
-    Button      按钮
-    Checkbutton 选择；在选项前打勾的单选框
-    Radiobutton 单选按钮；类似Checkbutton，不过选项之间是互斥的
-    Entry       输入文本
-    Combobox    列表框；从下拉列表中选择一个
-    Scale       拉滚动条选择数值
+**显示内容**
 
-显示
-    Label       标签；显示文本和位图
-    Progressbar 进度条
+| 种类        | 用途           |
+| ----------- | -------------- |
+| Frame       | 框架；用作容器 |
+| LabelFrame  | 带标题的Frame  |
+| Label       | 显示文本和位图 |
+| Progressbar | 进度条         |
 
-特殊
-    Scrollbar   滚动条控件，当内容超过可视化区域时使用，如列表框
-    Sizegrip    调整大小(小方块状，用鼠标拖动可以调整窗口大小)
-    Seperator   分割线
-    PanedWindow 可以往里面放多个控件，然后在PanedWindow之内可以拖动各个控件的大小
-                使用add方法添加控件，orient参数控制摆放的方向
-    Notebook    可以往里面放多个控件，选择一个显示
-                add(widget, text='title')添加控件
-    Treeview    树状浏览器
-    Menubutton  菜单按钮控件，用于显示菜单项
-    Message     消息控件；用来显示多行文本，与label比较类似
-    tkMessageBox用于显示你应用程序的消息框
-```
+**输入**
 
+| 种类        | 用途                                            |
+| ----------- | ----------------------------------------------- |
+| Button      | 按钮                                            |
+| Checkbutton | 选择；在选项前打勾的单选框                      |
+| Radiobutton | 单选按钮；类似Checkbutton，不过选项之间是互斥的 |
+| Entry       | 输入文本                                        |
+| Combobox    | 列表框；从下拉列表中选择一个                    |
+| Scale       | 拉滚动条选择数值                                |
 
+**特殊**
 
-## widgets
-
-```
-显示
-    Spinbox     选择；上下箭头切换选项
-    Listbox     列表框；显示多个单行字符串
-    Text        显示多行文本
-
-窗口与菜单
-    Menu        菜单控件；显示菜单栏,下拉菜单和弹出菜单
-    Toplevel    提供一个单独的对话框
-
-特别
-    Canvas      画布，显示图形/图片
-```
-
-
+| 种类         | 用途                                                         |
+| ------------ | ------------------------------------------------------------ |
+| Scrollbar    | 滚动条，当内容超过可视化区域时使用，如列表框                 |
+| Sizegrip     | 调整大小（小方块状，用鼠标拖动可以调整窗口大小）             |
+| Seperator    | 分割线                                                       |
+| PanedWindow  | 可以往里面放多个控件，然后在PanedWindow之内可以拖动各个控件的大小。使用add方法添加控件，orient参数控制摆放的方向 |
+| Notebook     | 可以往里面放多个控件，选择一个显示。add(widget, text='title')添加控件 |
+| Treeview     | 树状浏览器                                                   |
+| Menubutton   | 显示菜单项                                                   |
+| Message      | 显示多行文本，与label比较类似                                |
+| tkMessageBox | 用于显示你应用程序的消息框                                   |
 
 ## toplevel
 
@@ -74,8 +117,6 @@ update()         刷新
 update_idletasks 刷新各种显示，但是不会处理event
 ```
 
-
-
 ## 全局变量
 
 ```
@@ -85,35 +126,14 @@ StringVar, IntVar, DoubleVar, BooleanVar
     set     设置
 ```
 
+## 通用的使用方法
 
+### padding
 
-# widget
-
-大部分控件都有tkinter.widget和ttk.widget两种，它们的使用方法基本没有差异，最大的差异在于：tkinter.widget使用很多个属性来定义样式，ttk.widget使用style属性定义样式。而且ttk的往往比较美观
-
-padding的几种方法：
 1. 有的控件，比如frame，自身就有padding属性。控件向里留了一段空白
 2. grid方法的padx, pady参数。在控件的左右/上下留一段空白
 3. grid方法的ipanx, ipady参数。与2的差别详见grid方法
 4. columnconfigure, rowconfigure方法的pad参数。在某一行的上下/某一列的左右留空白
-
-
-## 通用的使用方法
-
-### 初始化
-
-```python
-ttk.Widget(master, **kw)
-# keywords : attribute = value
-# e.g. text='Hello'
-
-widget['attr']  # 查看属性（好像也可以直接修改，不通过configure方法）
-str(widget)     # 返回该控件的路径
-```
-
-### 属性
-
-大部分属性都能通过configure属性来设置/获取，有的也可以通过instance['attribute']获取
 
 #### 样式
 
@@ -169,120 +189,28 @@ iconify()
     Display widget as icon
 ```
 
-
-
-#### 几何管理器
-
-```
-grid()
-    指定某个控件显示在父控件的哪个位置
-    column, row
-        格子的位置
-    columnspan, rowspan
-        跨行/列显示
-    sticky='NSEW'
-        当格子比控件大时，决定了控件粘在哪一边
-        nsew四个字母中至少一个组成的字符串/字符列表
-        没有时居中，一个方向或两个相邻方向，只粘在一边，相对方向，如'we'，则把控件拉大
-    padx, pady
-        在格子之间留白。padx相当于横向把格子中间留空，pady相当于纵向
-        一个参数，在左右/上下留同样宽的空白；二元，不同宽度
-    ipadx, ipady
-        internal padding
-        相对比较少用的方式。和padx, pady有微妙的差别
-        例如一个20*20 + pad=5的控件，
-        使用pad，会向几何管理器要20*20的空间，然后再周围围一圈空白
-        用ipad，会要30*30空间，依据sticky决定怎么在这里面放下一个20*20的控件
-columnconfiugre, rowconfigure(index, cnf={}, **kw)
-    修改第index行/列的显示方式
-    minsize 行/列的最小尺寸，表示相对值
-    weight  窗口变大时，行/列相应变大的程度。默认为0，表示相对值
-    pad     留空
-grid_slaves(row=None, column=None)
-    Return a list of all slaves of this widget in its packing order
-grid_info()
-    Return information about the options for positioning this widget in a grid
-grid_configure(cnf={}, **kw)
-    修改grid参数。关键字同grid方法
-grid_remove()
-    把控件从当前mapping中移除（仍然保留它的grid参数）
-
-lift(aboveThis=None)
-    把该widget堆叠到abouveThis之上/提高一层
-lower(belowThis=None)
-    把widget塞到底下，类似lift。它们也可以用于窗口次序的管理
-focus_set()
-    Direct input focus to this widget
-focus()
-    和focus_set基本相同
-    treeview的focus方法能够指定item
-focus_force()
-    Direct input focus to this widget even if the application does not have the focus
-    注：用在窗口上能够取得窗口的focus
-
-place(**kw)
-    geometry manager，直接控制把控件放在哪个位置
-pack(**kw)
-    geometry manager
-forget()
-    把控件从当前mapping中移除。其几何管理器参数也会被删除
-```
-
-#### 其他方法
-
-```
-wait_variable(var)
-    wait until the variable is modified
-    参数必须是tkinter.Var
-wait_window(window=None)
-    wait until a WIDGET is destroyed
-    if no parameter is given self is used
-wait_visibility(window=None)
-    wait until the visibility of a WIDGET changes.(e.g. it appears).
-    if no parameter is given self is used
-
-bind(sequence=None, func=None, add=None)
-    把事件-操作关系绑定给控件
-    sequence    表示事件的str
-    func        事件发生时调用它；如果返回值时'break‘， 则阻止后续其他bind
-    add         布尔值，specifies whether FUNC will be called
-                additionally to the other bound function or
-                whether it will replace the previous function
-bind_class(self, className, sequence=None, func=None, add=None)
-    绑定给整个class
-bind_all()
-    绑定给全部控件
-依据绑定的位置不同，有五种不同优先级的event handler，从高到低为
-application level   bind_all
-top level           root.bind
-class level         bindIclass
-instance level      widget.bind
-item level          widget.bind_tag
-触发事件时，从最低级开始，到为止，每个等级选择一个
-最符合的event handler执行
-```
-
-
-
 ## Button
 
 ### 属性
 
-​        state
-​        if 'disabled' in state : 不能选择
-
-​        default     默认为normal，若调整为active，会使用系统默认的按钮样式
+```python
+state
+if 'disabled' in state : 不能选择
+default     默认为normal，若调整为active，会使用系统默认的按钮样式
+```
 
 ### 方法
 
-​        invoke()
-​            invoke the command callback of the button
+```
+invoke()
+invoke the command callback of the button
+```
 
 ## Canvas
 
 ### 属性
 
-​        scrollregion    画布大小
+scrollregion    画布大小
 
 ### 方法
 
@@ -317,8 +245,6 @@ move        移动物品
 raise
 lower       更改堆叠次序
 ```
-
-
 
 ## Checkbutton
 
@@ -356,7 +282,6 @@ lower       更改堆叠次序
 
     if 'readonly' in state : 不能输入，但还能复制
     if 'invalid' in state : 变灰色
-
 
 <attribute>
     textvariable    输入内容会即时地赋值给textvariable
@@ -556,6 +481,99 @@ tag_bind(tagname, sequence=None, callback=None)
 
 identify_row(event.y)
     返回相应行
+```
+
+# 几何管理器
+
+几何管理器控制各个控件的位置。所有控件都必须指定几何管理器，否则不会显示出来
+
+```
+grid()
+    指定某个控件显示在父控件的哪个位置
+    column, row
+        格子的位置
+    columnspan, rowspan
+        跨行/列显示
+    sticky='NSEW'
+        当格子比控件大时，决定了控件粘在哪一边
+        nsew四个字母中至少一个组成的字符串/字符列表
+        没有时居中，一个方向或两个相邻方向，只粘在一边，相对方向，如'we'，则把控件拉大
+    padx, pady
+        在格子之间留白。padx相当于横向把格子中间留空，pady相当于纵向
+        一个参数，在左右/上下留同样宽的空白；二元，不同宽度
+    ipadx, ipady
+        internal padding
+        相对比较少用的方式。和padx, pady有微妙的差别
+        例如一个20*20 + pad=5的控件，
+        使用pad，会向几何管理器要20*20的空间，然后再周围围一圈空白
+        用ipad，会要30*30空间，依据sticky决定怎么在这里面放下一个20*20的控件
+columnconfiugre, rowconfigure(index, cnf={}, **kw)
+    修改第index行/列的显示方式
+    minsize 行/列的最小尺寸，表示相对值
+    weight  窗口变大时，行/列相应变大的程度。默认为0，表示相对值
+    pad     留空
+grid_slaves(row=None, column=None)
+    Return a list of all slaves of this widget in its packing order
+grid_info()
+    Return information about the options for positioning this widget in a grid
+grid_configure(cnf={}, **kw)
+    修改grid参数。关键字同grid方法
+grid_remove()
+    把控件从当前mapping中移除（仍然保留它的grid参数）
+
+lift(aboveThis=None)
+    把该widget堆叠到abouveThis之上/提高一层
+lower(belowThis=None)
+    把widget塞到底下，类似lift。它们也可以用于窗口次序的管理
+focus_set()
+    Direct input focus to this widget
+focus()
+    和focus_set基本相同
+    treeview的focus方法能够指定item
+focus_force()
+    Direct input focus to this widget even if the application does not have the focus
+    注：用在窗口上能够取得窗口的focus
+
+place(**kw)
+    geometry manager，直接控制把控件放在哪个位置
+pack(**kw)
+    geometry manager
+forget()
+    把控件从当前mapping中移除。其几何管理器参数也会被删除
+```
+
+#### 其他方法
+
+```
+wait_variable(var)
+    wait until the variable is modified
+    参数必须是tkinter.Var
+wait_window(window=None)
+    wait until a WIDGET is destroyed
+    if no parameter is given self is used
+wait_visibility(window=None)
+    wait until the visibility of a WIDGET changes.(e.g. it appears).
+    if no parameter is given self is used
+
+bind(sequence=None, func=None, add=None)
+    把事件-操作关系绑定给控件
+    sequence    表示事件的str
+    func        事件发生时调用它；如果返回值时'break‘， 则阻止后续其他bind
+    add         布尔值，specifies whether FUNC will be called
+                additionally to the other bound function or
+                whether it will replace the previous function
+bind_class(self, className, sequence=None, func=None, add=None)
+    绑定给整个class
+bind_all()
+    绑定给全部控件
+依据绑定的位置不同，有五种不同优先级的event handler，从高到低为
+application level   bind_all
+top level           root.bind
+class level         bindIclass
+instance level      widget.bind
+item level          widget.bind_tag
+触发事件时，从最低级开始，到为止，每个等级选择一个
+最符合的event handler执行
 ```
 
 # 事件
