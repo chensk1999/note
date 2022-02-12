@@ -507,9 +507,9 @@ ex.method()       # 引用类方法
 子类继承了父类的全部方法，在子类中定义与父类重名的方法将会覆盖掉父类方法
 
 ```python
-class MyInt(int):
-    def __init__(self, i):
-        super().__init__(i)
+class Child(Parent):
+    def __init__(self, arg):
+        super(Child, self).__init__(arg)
         # 用super()引用被覆盖掉的父类(super class)的方法
 ```
 
@@ -1669,7 +1669,7 @@ with wave.open('test.wav', 'rb') as fp:
     fp.tell()              # 获取文件指针位置
 
 # 写wav文件
-with open('mywav.wav', 'wb') as fp:
+with wave.open('mywav.wav', 'wb') as fp:
     # 三个相应的set方法
 ```
 

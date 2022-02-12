@@ -2,7 +2,7 @@
 
 numerical python
 
-## 数据类型
+# 数据类型
 
 | type              | description                                |
 | ----------------- | ------------------------------------------ |
@@ -15,60 +15,69 @@ numerical python
 
 默认数据类型`int_`, `float_`, `complex_`
 
-## ndarrray
+# ndarrray
 
 N维定长数组，表示一个标量/矢量/矩阵/张量
+
 要求元素数据类型统一，可以进行优化过的矩阵操作
 
-### indexing
+## indexing
 
-- **simple indexing**
-
- 一维同list；高维数组可以用类似`array[1, -1]`的方式引用
-
-- **bool indexing**
-
-用一个同shape的布尔数组来索引
+**Basic indexing**
 
 ```python
+x = np.arange(12)
+A = np.reshape(x, (3, 4))
+T = np.reshape(x, (2, 2, 3))
+
+# 单元素引用（int或slice）
+# 注意：和python内建类的slice不同，np的切片不会复制数组内容
+x[0]     # 数组第0个元素
+A[1]     # 矩阵第2行
+A[1:2]   # 矩阵1~2行
+T[1]     # N维数组第一个维度为1的部分
+
+# 多元素引用（int, slice, ellipsis或np.newaxis）
+# 注意：假如用A[1][2]，结果不变但性能会变差
+# 注意2：A[1, 2]和A[(1, 2)]效果相同（语法糖）
+# 注意3：np.newaxis是None的别名
+A[0, 2]      # 矩阵第0行第2列
+A[0:1, 2]    # 矩阵0~1行第2列
+A[:, 2]      # 矩阵第二列
+A[1, 2, np.newaxis]
+             # 在最后扩张一个维度（此例子中，结果从6扩张为[6]）
+T[..., 0]    # 最后一个维度为0的部分
+```
+
+**Advanced indexing**
+
+当引用参数不是basic indexing支持的类型（`int, slice, ellipsis, np.newaxis, None`）时，称作advanced indexing
+
+```python
+# integer array indexing
+x = np.arange(9).reshape(3, 3)
+y = x[np.array([0, 2, 1]), :]
+# y的第0、1、2行分别是x的0、2、1行。相当于把x的1、2行互换
+
+# bool indexing
+# 用一个同shape的布尔数组来索引。结果是1维数组
 arr = np.array([1, 3, 2, 1])
 bool_arr = [True, True, False, True]
 arr[bool_arr]   # array([1, 3, 1])
 arr[arr > 1]    # array([3, 2])
 ```
 
-- **fancy indexing**
-
-用一个array-like object进行索引。用ndarray做fancy indexing好像会有奇怪的错误
+## 初始化
 
 ```python
-arr = np.eye(8)
-arr[[0, 2, 4]]       # 第0, 2, 4行
-arr[[1, 1], [2, 5]]  # (1, 1)和(2, 5)元素
-```
-
-- **slice**
-
-类似内建的切片，但切片的部分不会被复制
-
-```python
-arr = np.ones(shape=(10, 8))
-array[0:5, ::-1]
-```
-
-
-
-### 初始化
-
-```python
-#一般的
+# 一般的
 array(object, dtype=None)
    返回根据object(array-like)构建的ndarray
 asarray(object, dtype=None)
     和array差不多（少几个可选参数）
     当object为ndarray时，不复制，返回原对象
 
-#一维的
+# 一维的
 arange([start, ]stop[, step], dtype=None)
     和range函数效果相同，不过返回的是ndarray
 linspace(start, stop, num=50, endpoint=True, dtype=None)
@@ -81,7 +90,7 @@ logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None)
     返回以base^start为首项的等比数列列表
     start, stop     float, 序列起止点
 
-#在整个array填充指定值
+# 在整个array填充指定值
 ones(shape, dtype=None, order='C')
     返回指定形状的填满1的数组
 ones_like(a, dtype=None, order='K')
@@ -93,7 +102,7 @@ empty_like  同ones_like，不初始化
 full        同ones，shape后面要一个fill_value，用它填满
 full_like   同ones_like，a后面要一个fill_value，用它填满
 
-#单位矩阵
+# 单位矩阵
 eye(N, M=None, k=0, dtype=<class 'float'>, order='C')
     在指定“对角线”填1，其他填0
     N, M    行列数
@@ -101,20 +110,20 @@ eye(N, M=None, k=0, dtype=<class 'float'>, order='C')
 identity(n, dtype=None)
     返回指定大小单位方阵
 
-#特殊的
->>> arr = np.arange(0, 5)
->>> gt = arr>3
-array([False, False, False, False,  True])
+# 特殊的
+arr = np.arange(0, 5)
+gt = arr>3
+# gt = array([False, False, False, False, True])
 ```
 
-### 属性
+## 属性
 
     shape       ndarray的形状，即有几个维度、每个维度有多长
                 ()          0维数组（标量）
                 (5,)        长度为5的一维数组
                 (3, 8, 8)   容量为3*8*8的三维数组
     dtype       数据类型
-### 方法
+## 方法
 
     reshape(shape, order='C')
         修改ndarray的shape，但是总长度不能变
@@ -124,7 +133,7 @@ array([False, False, False, False,  True])
         即使dtype和self的类型相同，同样会返回一个拷贝
     a.copy(order='C')
         返回自身的一个拷贝
-### 运算
+## 运算
 
 常量与ndarray运算，两个shape相同的nearray进行运算，或者数学函数作用于ndarray，相当于其中的逐个元素进行运算
 
@@ -159,7 +168,21 @@ img_gray = np.zeros(shape=(600, 600))
 img_color - img_gray[:, :, None]    # (600, 600, 3)和(600, 600, 1)可以运算
 ```
 
-## 函数
+## 拼接数组
+
+```python
+arr1 = np.array([1, 2, 3])
+arr2 = np.array([4, 5, 6])
+
+# 沿着某条axis拼接，如将两个一维数组拼成更长一维数组
+arr3 = np.concatenate([arr1, arr2], axis=0)
+
+# 拼至一条新axis，如将两个一维数组拼成二维数组
+arr4 = np.stack([arr1, arr2], axis=0)   # shape = (2, 3)
+arr5 = np.stack([arr1, arr2], axis=1)   # shape = (3, 2)，相当于上一个的转置
+```
+
+# 函数
 
 ```python
 np.argmax(A)        #返回第一个最大值在扁平化数组（相当于A.reshape((n,))）中的index
@@ -175,7 +198,7 @@ set_printoptions	#设置打印格式（全局），参数举例：
                     #linewidth=90 一行的长度，到了这么多字符就自动换行
 ```
 
-## 随机
+# 随机
 
 ```python
 import numpy as np
@@ -316,19 +339,5 @@ arr.sort(axis=0)        # 沿第一根axis排序。返回None，原数组变为[
 arr = np.array([[1, 6, 5], [7, 2, 3]])
 a[:, a[0, :].argsort()]
 a[a[:, 0].argsort()]
-```
-
-## 拼接数组
-
-```python
-arr1 = np.array([1, 2, 3])
-arr2 = np.array([4, 5, 6])
-
-# 沿着某条axis拼接，如将两个一维数组拼成更长一维数组
-arr3 = np.concatenate([arr1, arr2], axis=0)
-
-# 拼至一条新axis，如将两个一维数组拼成二维数组
-arr4 = np.stack([arr1, arr2], axis=0)   # shape = (2, 3)
-arr5 = np.stack([arr1, arr2], axis=1)   # shape = (3, 2)，相当于上一个的转置
 ```
 

@@ -26,26 +26,20 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 }
 ```
 
-
-
 # Vim
 
 ## 模式
 
-- 在Normal以外的模式，`Esc`回到Normal；在Normal模式按快捷键进入其他模式
-- Insert：类似一般的文本编辑器
-- Replace
-- Visual：选择
-- Command-Line：在Normal模式输入指令可以直接执行。指令都以`:`开头
+用vim编辑时，需要在不同模式间切换。在Normal模式按下下表的快捷键进入对应模式，其他模式Esc回到Normal
 
-| Mode         | Keystroke |
-| ------------ | --------- |
-| Insert       | i         |
-| Replace      | shift + r |
-| visual       | v         |
-| Visual Line  | shift + v |
-| Visual Block | ctrl + v  |
-| Command Line | :         |
+| Keystroke | Mode         | Description                  |
+| --------- | ------------ | ---------------------------- |
+| i         | Insert       | 类似一般的文本编辑器         |
+| v         | visual       | 选择                         |
+| :         | Command Line | 执行命令（执行后回到Normal） |
+| shift + r | Replace      |                              |
+| shift + v | Visual Line  |                              |
+| ctrl + v  | Visual Block |                              |
 
 ## Normal
 
@@ -60,12 +54,19 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 | `ctrl + u`, `ctrl + d` | 上下滚屏                                             |
 | `gg, G`                | 文件开头、文件结尾                                   |
 
+**搜索**
+
+1. `/`（正向搜索），或`?`（反向搜索）
+2. 输入搜索关键字，Enter
+3. 按n和N查看各个结果
+
 **编辑**
 
 | Keystroke     | Usage                                                        |
 | ------------- | ------------------------------------------------------------ |
 | `oO`          | 下方 / 上方插入行                                            |
 | `d, c`        | 删除（delete），更改（change，相当于delete然后进入Insert模式） |
+| `dd`          | 删除一行                                                     |
 | `x`           | 删除一个字符                                                 |
 | `u, ctrl + r` | 撤销 & 重做（undo & redo）                                   |
 | `y, p`        | 复制 & 粘贴（yank & paste）                                  |
@@ -75,10 +76,12 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 ```shell
 h5j         # 向下移动5行
 d3w         # 删除3个词
-
+d2d         # 删除2行
 ```
 
+## Visual
 
+进入这个模式之后
 
 ## Command-Line
 

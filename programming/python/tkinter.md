@@ -6,9 +6,11 @@ tkinter是跨平台gui工具包Tcl/Tk（更具体地说，Tcl是一种脚本语�
 python -m tkinter    # 检查是否安装tkinter，以及其版本
 ```
 
-## 实例
+Tcl/Tk在安装python时一起安装。如果没有tkinter，需要重新安装python，并且在安装时勾选Tcl/Tk
 
-Tcl的控件是树状的，根窗口为Tk实例，各种控件如同windows的文件一样树状排布。Tk包含三个基本要素：控件、几何管理与事件处理
+## 例子
+
+Tk包含三个基本要素：控件、几何管理与事件处理
 
 ```python
 import tkinter as tk
@@ -17,11 +19,15 @@ from tkinter import ttk     # themed tk
 # 根窗口
 root = tk.Tk()
 
-# 添加内容
+# 添加控件
 frm = ttk.Frame(root, padding=10)
+lbl = ttk.Label(frm, text="Hello World!")
+btn = ttk.Button(frm, text="Quit", command=root.destroy)
+
+# 几何管理
 frm.grid()
-ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
-ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
+lbl.grid(column=0, row=0)
+btn.grid(column=0, row=1)
 
 # 运行gui
 root.mainloop()
@@ -29,9 +35,7 @@ root.mainloop()
 
 # 控件
 
-控件（widget）是gui的一个对象（比如，按钮、文本框、窗口）。控件呈树状组织，tk和ttk各自提供了许多种控件
-
-有下例所示三种设置控件的方式。参数名索引和config方法也可以用来获取参数值
+控件（widget）是gui的对象（比如，按钮、文本框、窗口）。控件呈树状，根节点为Tk实例（即下面例子的root）
 
 ```python
 import tkinter as tk
@@ -39,18 +43,18 @@ from tkinter import ttk
 
 root = tk.Tk()
 
-# 用关键字参数初始化
+# 用关键字参数初始化控件
 btn1 = ttk.Button(root, text='Yes')
 
-# 用参数名索引设置
+# 用参数名索引设置控件
 btn2 = ttk.Button(root)
 btn2['text'] = 'No'
 
-# 使用config方法设置
+# 使用config方法设置（参数名索引和config方法也可以用来获取参数值）
 btn3 = ttk.Button(root)
 btn3.config(text='Cancel')
 
-# 显示并运行
+# 添加几何管理器并运行
 btn1.pack()
 btn2.pack()
 btn3.pack()
@@ -117,25 +121,18 @@ update()         刷新
 update_idletasks 刷新各种显示，但是不会处理event
 ```
 
-## 全局变量
-
-```
-StringVar, IntVar, DoubleVar, BooleanVar
-**属性**
-    get     获取
-    set     设置
-```
-
-## 通用的使用方法
-
-### padding
+## padding
 
 1. 有的控件，比如frame，自身就有padding属性。控件向里留了一段空白
 2. grid方法的padx, pady参数。在控件的左右/上下留一段空白
 3. grid方法的ipanx, ipady参数。与2的差别详见grid方法
 4. columnconfigure, rowconfigure方法的pad参数。在某一行的上下/某一列的左右留空白
 
-#### 样式
+## 通用属性与方法
+
+### 属性
+
+样式
 
 ```
 width, height   宽度，高度。不指定就会由geometry manager自动分配
@@ -146,7 +143,7 @@ width, height   宽度，高度。不指定就会由geometry manager自动分配
     sytle           风格
 ```
 
-#### 显示内容
+显示内容
 
 ```
     text            显示的文字
@@ -159,7 +156,7 @@ width, height   宽度，高度。不指定就会由geometry manager自动分配
                 "n", "ne", "e", "se", "s", "sw", "w", "nw" or "center"
     justify         类似anchor， 当文字有多行时更好用。"left", "center" or "right"`
 ```
-#### 交互
+交互
 
 ```
     command         按钮被按下时执行的指令
@@ -167,7 +164,7 @@ width, height   宽度，高度。不指定就会由geometry manager自动分配
 
 ### 方法
 
-#### 控件状态
+控件状态
 
 ```
 configure()
@@ -189,9 +186,11 @@ iconify()
     Display widget as icon
 ```
 
-## Button
+## 独特属性与方法
 
-### 属性
+### Button
+
+属性
 
 ```python
 state
@@ -199,20 +198,20 @@ if 'disabled' in state : 不能选择
 default     默认为normal，若调整为active，会使用系统默认的按钮样式
 ```
 
-### 方法
+方法
 
 ```
 invoke()
 invoke the command callback of the button
 ```
 
-## Canvas
+### Canvas
 
-### 属性
+属性
 
 scrollregion    画布大小
 
-### 方法
+方法
 
 ```
 create_line(x1, y1, ..., xn, yn, **kw)
@@ -246,9 +245,9 @@ raise
 lower       更改堆叠次序
 ```
 
-## Checkbutton
+### Checkbutton
 
-### 属性
+属性
 
         variable    每当按钮被点击时会改变
         onvalue     被选中时的值，默认为'1'
@@ -256,21 +255,22 @@ lower       更改堆叠次序
         当variable既不是on value又不是off value时，state flag 'alternate' is set
         可以用instate方法把它改回来
 
-### 方法
+方法
+
         select
         deselect    仅限tk，ttk直接设置variable
 
-## Combobox
+### Combobox
 
     Combobox会产生一个&lt;ComboboxSelected&gt;虚拟事件，可以把它绑定给控件
     widget.bind('&lt;&lt;ComboboxSelected&gt;&gt;', function)
 
-### 属性
+属性
 
         textvariable    被选中的选项会即时地赋值给textvariable，代表Combobox的值
         values          选项列表
 
-### 方法
+方法
 
         get     get current value
         set
@@ -278,23 +278,19 @@ lower       更改堆叠次序
                                 否则，返回当前被选中的项目的index
                                 如果当前值不在values中，返回-1
 
-## Entry
+### Entry
 
     if 'readonly' in state : 不能输入，但还能复制
     if 'invalid' in state : 变灰色
 
-<attribute>
+属性
     textvariable    输入内容会即时地赋值给textvariable
     show            当show!=''时，显示show而不是输入的文本（如密码显示成*号）
-</attribute>
-<method>
+方法
     delete(first, last=None)    删除index = [first,last]区间的字符(0-based)
     insert(index, string)       在index处插入string
-</method>
 
-</class>
-
-## Label
+### Label
 
 标签可以直接用font, foreground, background属性来修改样式。当某个
 样式只需要使用一次时，这比使用sytle要方便
@@ -311,7 +307,7 @@ TkTooltipFont       A font for tooltips.
 foreground（字体颜色）和background参数
 color names (e.g. "red") or hex RGB codes (e.g. "#ff340a")
 
-## Menu
+### Menu
 
     使用流程：
     root.option_add('*tearOff', False)  #不清楚有什么用，好像是排版不会乱
@@ -347,9 +343,7 @@ color names (e.g. "red") or hex RGB codes (e.g. "#ff340a")
         post(x, y)
             在(x, y)展开一个菜单（例如右键打开菜单）
     </method>
-</class>
-
-## Progressbar
+### Progressbar
 
     <attribute>
         orient      "horizontal" or "vertical"
@@ -363,27 +357,23 @@ color names (e.g. "red") or hex RGB codes (e.g. "#ff340a")
         step(amount=1.0)    增加进度条
         start(interval=50)  自动滚动进度条，每次1%，每过interval毫秒一次
     </method>
-</class>
-
-## Radiobutton
+### Radiobutton
 
     <attribute>
         variable    同一组radiobutton共享同一个全局变量variable
         value       当被选中时，把value赋值给variable；同时充当on value
-## Scale
+### Scale
 
-​    <attribute>
-​        length      像素数
-​        from_
-​        to          选择范围上下界。注意from是保留词，故用from_
-​        resolution  选择的精度，默认为1，即只能选整数
-​    </attribute>
-​    <method>
-​        set         设置
-​        get         获得
-​    </method>
+属性
+        length      像素数
+        from_
+        to          选择范围上下界。注意from是保留词，故用from_
+        resolution  选择的精度，默认为1，即只能选整数
+方法
+        set         设置
+        get         获得
 
-## Scrollbar
+### Scrollbar
 
     ttk.Scrollbar(parent, orient, command)
         parent  被scrollbar拖动的控件
@@ -397,12 +387,12 @@ color names (e.g. "red") or hex RGB codes (e.g. "#ff340a")
     scrollbar通过scrollbar['command']告诉parent显示那些部分，
     parent通过parent['yscrollconfigure']告诉scrollbar自己正在显示哪些部分
 
-## Toplevel
+### Toplevel
 
 一个新窗口。实例被创建的同时打开窗口
 它的方法应该都是针对窗口的，可以直接应用于根窗口
 
-### 方法
+方法
 
 ```
 destroy()   关闭窗口
@@ -415,9 +405,7 @@ minsize()   最小尺寸，返回值为(width, hight)
 maxsize()   最大尺寸
 ```
 
-
-
-## Treeview
+### Treeview
 
 ```
 columns     展示内容时每一列的名称
@@ -427,7 +415,7 @@ selectmode  'extended' default, 'browse' 一次只能选一个, 'none' 不能选
              注意：只限制了用户选择的能力，仍然可以用指令选择
 ```
 
-### 方法
+方法
 
 ```
 insert(parent, index, iid=None, **kw)
@@ -487,6 +475,47 @@ identify_row(event.y)
 
 几何管理器控制各个控件的位置。所有控件都必须指定几何管理器，否则不会显示出来
 
+## pack
+
+pack是最简单的几何管理器，适合用作展示或者用于元素非常少的界面
+
+```python
+import tkinter as tk
+from tkinter import ttk
+
+root = tk.Tk()
+buttons = [ttk.Button(root, text=str(i)) for i in range(0, 4)]
+
+buttons[0].pack(side='top', expand=True)
+buttons[1].pack(side='left', fill='y')
+buttons[2].pack(side='top')
+buttons[3].pack(side='top')
+
+root.mainloop()
+```
+
+- side参数将可用空间分为两部分，并占据其中一块（比如说，第7行将整个窗口分为两部分，将`button[0]`放在上面的一块；第8行将剩余部分分为两块，`button[1]`占据左边，即整个窗口的左下部分）
+- expand若为True，扩大控件填充当前的可用空间
+- fill在指定的方向（水平`x`、垂直`y`、全部`both`）填充任何可用空间。（与expand的底层实现好像是不同的。从效果上来说，fill能填满可用空间，expand以某种神秘规则扩大控件）
+
+上述代码应该会产生类似下图的gui
+
+```
+  ┌───┐
+  │ 0 │
+  └───┘
+┌───┐┌───┐
+│   ││ 2 │
+│ 1 │└───┘
+│   │┌───┐
+│   ││ 3 │
+└───┘└───┘
+```
+
+## grid
+
+grid是最常用的几何管理器
+
 ```
 grid()
     指定某个控件显示在父控件的哪个位置
@@ -533,16 +562,78 @@ focus()
 focus_force()
     Direct input focus to this widget even if the application does not have the focus
     注：用在窗口上能够取得窗口的focus
-
-place(**kw)
-    geometry manager，直接控制把控件放在哪个位置
-pack(**kw)
-    geometry manager
-forget()
-    把控件从当前mapping中移除。其几何管理器参数也会被删除
 ```
 
-#### 其他方法
+## 其他
+
+```python
+btn = ttk.Button(text='example')
+
+btn.place(x=0, y=0)   # 可以任意放置的几何管理器
+btn.forget()          # 把控件从当前mapping中移除。其几何管理器参数也会被删除
+```
+
+# 事件处理
+
+将用户操作（事件）与控件绑定，就能对事件进行反应
+
+```python
+import tkinter as tk
+from tkinter import ttk
+
+root = tk.Tk()
+label = ttk.Label(root, text='hello')
+label.pack(fill='both')
+label.bind('<Button-1>', on_click)  # 当<Button-1>（鼠标左键点击）时，触发on_click函数
+
+def on_click(event):
+    print(f'Click on x={event.x}, y={event.y}')
+
+root.mainloop()
+```
+
+上面例子中，回调函数`on_click`只能接受event参数，并且返回值无法被接收，因此很难用。更常用的做法是用类的继承实现回调函数
+
+```python
+class IncrementalLabel(ttk.Label):
+    def __init__(self, parent):
+        super(IncrementalLabel, self).__init__(parent, text='1')
+        self.bind('<Button-1>', self.increment)
+
+    def increment(self, event):
+        self['text'] = int(self['text']) + 1
+```
+
+## 事件
+
+**鼠标事件**
+
+| event字符串               | 说明                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| `<Button-1>`              | 左键点击。也可以用`<ButtonPress-1>`或`<1>`。中、右键分别为2，3 |
+| `<B1-Motion>`             | 左键拖动                                                     |
+| `<ButtonRelease-1>`       | 左键松开                                                     |
+| `<Double-Button-1>`       | 左键双击                                                     |
+| `<Enter>`, `<Leave>`      | 鼠标进入 / 离开控件的范围                                    |
+| `<FocusIn>`, `<FocusOut>` | focus移动到控件 / 移出控件                                   |
+| `<Configure>`             | 控件大小改变                                                 |
+| `<Key>`                   | 任一个键盘按键                                               |
+
+**键盘事件**
+
+不带尖括号的字符表示相应的按键，如`1`表示按下键盘上的数字1
+
+Return (回车), BackSpace, Space, Delete, Escape, Tab
+Up, Down, Right, Left
+Shift-按钮 (按住shift同时按按钮)
+
+Shift_L, Control_L, Alt_L (任何一个shift/ctrl/alt键都可以)
+Caps_Lock, Prior(page up), Next(page down)
+Cancel, Pause, End, Home, Print, Insert
+Num_Lock, Scroll_Lock
+F1 ~ F12
+
+## 方法
 
 ```
 wait_variable(var)
@@ -575,54 +666,6 @@ item level          widget.bind_tag
 触发事件时，从最低级开始，到为止，每个等级选择一个
 最符合的event handler执行
 ```
-
-# 事件
-
-## 鼠标事件
-
-| <event字符串>（尖括号均省略） | 说明                                                   |
-| ----------------------------- | ------------------------------------------------------ |
-| Button-1                      | 左键点击。也可以用ButtonPress-1或1。中、右键分别为2，3 |
-| B1-Motion                     | 左键拖动                                               |
-| ButtonRelease-1               | 左键松开                                               |
-| Double-Button-1               | 左键双击                                               |
-| Enter                         | 鼠标进入控件的范围                                     |
-| Leave                         | 鼠标离开控件的范围                                     |
-| FocusIn                       | focus移动到控件                                        |
-| FocusOut                      | focus移出控件                                          |
-| Configure                     | 控件大小改变                                           |
-| Key                           | 任一个键盘按键                                         |
-
-## 键盘事件
-
-不带尖括号的字符表示相应的按键，如&lt;1&gt;表示左键，1表示按下键盘上的数字1
-
-### 常用键盘事件
-
-Return (回车), BackSpace, Space, Delete, Escape, Tab
-Up, Down, Right, Left
-Shift-按钮 (按住shift同时按按钮)
-
-### 不常用键盘事件
-
-Shift_L, Control_L, Alt_L (任何一个shift/ctrl/alt键都可以)
-Caps_Lock, Prior(page up), Next(page down)
-Cancel, Pause, End, Home, Print, Insert
-Num_Lock, Scroll_Lock
-F1 ~ F12
-
-## 属性
-
-| 名称           | 描述                                                   |
-| -------------- | ------------------------------------------------------ |
-| widget         | 产生事件的控件                                         |
-| x, y           | 事件发生时鼠标的坐标，单位为pixel                      |
-| x_root, y_root | 当前鼠标与x, y的相对位置                               |
-| type           | 事件类型                                               |
-| num            | The button number (mouse button events only)           |
-| char           | The character code (keyboard events only), as a string |
-| keysym         | The key symbol (keyboard events only)                  |
-| keycode        | The key code (keyboard events only)                    |
 
 # 子模组
 
@@ -673,6 +716,29 @@ myimg = ImageTk.PhotoImage(Image.open('myimage.png'))
 ```
 
 # 其他
+
+## Tk变量
+
+```python
+import tkinter as tk
+
+root = tk.Tk()
+
+# 定义tk变量
+i = tk.IntVar(root, 0)
+
+# 访问tk变量
+i.set(i.get() + 1)
+
+# 使用例
+label = tk.Label(root, textvariable=i)
+label.pack()
+root.mainloop()
+```
+
+类似地，有`StringVar`，`IntVar`，`DoubleVar`，`BooleanVar`四种类型
+
+
 
 ```python
 import tkinter
