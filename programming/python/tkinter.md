@@ -1,5 +1,7 @@
 # 基础知识
 
+参考：[Tk Docs](https://tkdocs.com/tutorial/index.html)，[Tkinter 8.5 Reference](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html)
+
 tkinter是跨平台gui工具包Tcl/Tk（更具体地说，Tcl是一种脚本语言，Tk是使用Tcl编写的gui框架，两者并称Tcl/Tk）的python接口（Tk interface）
 
 ```bash
@@ -206,6 +208,22 @@ invoke the command callback of the button
 ```
 
 ### Canvas
+
+```python
+canvas = tk.Canvas(root)
+
+# 绘制
+line_id = canvas.create_line(0, 0, 10, 10, fill='red')
+img = tk.PhotoImage(file='sample.jpg')
+img_id = canvas.create_image(0, 0, image=img, anchor=tk.NW)
+
+# 修改
+canvas.itemconfigure(line_id, width=2)
+canvas.coords(line_id, 0, 0)
+canvas.delete(img_id)
+```
+
+
 
 属性
 
@@ -606,18 +624,18 @@ class IncrementalLabel(ttk.Label):
 
 ## 事件
 
+事件用事件序列（Event Sequence）表示，比如`<Control-KeyPress-K>`。一个序列中可以包含多个事件，当它们同时发生时触发，比如上例子中同时按下Ctrl和K才能触发事件
+
 **鼠标事件**
 
-| event字符串               | 说明                                                         |
-| ------------------------- | ------------------------------------------------------------ |
-| `<Button-1>`              | 左键点击。也可以用`<ButtonPress-1>`或`<1>`。中、右键分别为2，3 |
-| `<B1-Motion>`             | 左键拖动                                                     |
-| `<ButtonRelease-1>`       | 左键松开                                                     |
-| `<Double-Button-1>`       | 左键双击                                                     |
-| `<Enter>`, `<Leave>`      | 鼠标进入 / 离开控件的范围                                    |
-| `<FocusIn>`, `<FocusOut>` | focus移动到控件 / 移出控件                                   |
-| `<Configure>`             | 控件大小改变                                                 |
-| `<Key>`                   | 任一个键盘按键                                               |
+| event字符串          | 说明                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| `<Button-1>`         | 左键点击。也可以用`<ButtonPress-1>`或`<1>`。中、右键分别为2，3 |
+| `<B1-Motion>`        | 左键拖动                                                     |
+| `<ButtonRelease-1>`  | 左键松开                                                     |
+| `<Double-Button-1>`  | 左键双击                                                     |
+| `<Enter>`, `<Leave>` | 鼠标进入 / 离开控件的范围                                    |
+| `<Key>`              | 任一个键盘按键                                               |
 
 **键盘事件**
 
@@ -632,6 +650,15 @@ Caps_Lock, Prior(page up), Next(page down)
 Cancel, Pause, End, Home, Print, Insert
 Num_Lock, Scroll_Lock
 F1 ~ F12
+
+**其他事件**
+
+| 事件序列                  | 说明|
+| ------------------------- | ------------ |
+| `<FocusIn>`, `<FocusOut>` | focus移动到控件 / 移出控件 |
+| `<Configure>`             | 控件大小改变 |
+
+详细列表可以参考[这里](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/key-names.html)
 
 ## 方法
 
