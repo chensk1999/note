@@ -273,6 +273,7 @@ cat(2, M, c)
 
 % 其他
 [row, col] = find(A==12)      % 寻找元素
+[M, I] = max(A);              % 寻找最大元素以及其index
 ```
 
 ## 元胞数组
@@ -326,6 +327,18 @@ strtrim('  hello, world  ')     % 去除开头结尾空白
 % regexp, regexpi, regexprep, isspace, symvar
 ```
 
+因为字符被当作字符数组，进行遍历操作的时候可以用元胞数组
+
+```matlab
+files = {'1.csv', '2.csv', '3.csv'};
+data = {};
+for i = 1:length(files)
+    file = files{i};
+    data{i} = importdata(file, ',', 1);
+```
+
+
+
 # 文件操作
 
 ```matlab
@@ -340,7 +353,8 @@ dlmwrite('data.txt', M, ',')    % 保存ascii delimited file
 % 读取文件。大部分文件（比如excel表、csv、空格/逗号分隔的文本文件）都能自动解析成好用的形式
 data1 = load('workspace.mat');
 data2 = importdata('example.jpeg');
-clip = importdata('-pastespecial');    % 保存剪贴板内容
+data3 = importdata('example.csv', ',', 1); % 分隔符是','，第1行是文件头
+clip = importdata('-pastespecial');        % 保存剪贴板内容。注意windows剪贴板有长度限制
 % 一般load适合读取.mat文件或纯数字数据，importdata适合读有行列名的文本文件
 ```
 
@@ -435,9 +449,9 @@ LineSpec字符串可用于方便地设置线型、点型和颜色：
 
 % 设置曲线标签
 line1.DisplayName = 'line 1';
-legend(line2, 'line 2');        % 两种方法等同
+legend(line2, 'line 2');        % 设置并且显示。但是会把其他的legend隐藏掉
 lgd = legend(ax);               % legend不可用Name+Value（与添加多个标签混淆）设置，但可以设置lgd的属性
-legend(ax, 'location', 'north');% 等同于lgd.Location = 'north'
+legend(ax, 'location', 'north');% 等同于lgd.Location = 'north'。其他位置还有'NorthEast'等
 legend(ax, 'boxoff');           % 等同于lgd.Box = 'off'
 legend(ax, 'show');             % show, hide, toggle显示/隐藏；'off'删除
 
@@ -448,6 +462,9 @@ yspan = ymax - ymin;
 ax.XLim = [xmin xmax];
 ax.YLim = [ymin - 0.1*yspan, ymax + 0.1*yspan];
 
+% log scale
+set(ax, 'XScale', 'log')
+
 % 设置标题和坐标轴标签
 % 这些都是axes的属性，可以通过修改ax.Title、ax.GridLineStyle等属性来修改
 title(ax, 'title');
@@ -455,6 +472,10 @@ xlabel(ax, 'xlabel');
 ylabel(ax, 'ylabel');
 grid(ax);
 ```
+
+# Simulink
+
+Simulink是基于模型的设计工具，可以作为Matlab的附加功能安装
 
 # 其他
 

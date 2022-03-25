@@ -11,9 +11,7 @@ LISP有以下几种数据类型
 
 特别地，nil 表示表示逻辑非或者空列表。一般用 t 表示逻辑真（也可以用任何非 nil 对象表示逻辑真）
 
-
-
-Lisp与Python有许多相似之处（因为Python借鉴了Lisp），所有变量都是对象，同时只有隐式的指针，而且两者的 GC 也非常相似。甚至Lisp的元编程范式在Python中都有一定程度的对应（lambda函数、map、reduce等）
+Lisp与Python有许多相似之处（因为Python借鉴了Lisp）：所有变量都是对象，只有隐式的指针，而且两者的 GC 也非常相似。甚至Lisp的元编程范式在Python中都有一定程度的对应（lambda函数、map、reduce等）
 
 ## 表达式
 
@@ -30,8 +28,7 @@ Lisp与Python有许多相似之处（因为Python借鉴了Lisp），所有变量
 ### Quote
 
 ```lisp
-; 单位元，(quote arg) -> arg。可缩写为'arg
-; 特别地，quote作用的对象不会被求值
+; 单位元，(quote arg) -> arg。可缩写为'arg，quote作用的对象不会被求值
 nil         ; 求值得到自身
 'nil        ; quote单位元性质，得到nil自身
 (+ 3 5)     ; 求值得8
@@ -53,14 +50,14 @@ SYMBOL      ; 10。符号求值得到它指向的对象
 (cons '(1 2) nil)   ; ((1 2))
 
 ; car
-; 据传是Contents of the Address part of Register number的缩写
-; 有说法认为来自于最早的Lisp实现此功能时使用的的CPU指令
 ; 取列表的首元素
+; 据传是Contents of the Address part of Register number的缩写
+; 也有说法认为来自于最早的Lisp实现此功能时使用的的CPU指令
 (car '(1 2 3))      ; 1
 
 ; cdr
-; 据传是Contents of the Decrement part of Register number的缩写
 ; 取列表首元素之后的元素，即链表首节点的Next指针
+; 据传是Contents of the Decrement part of Register number的缩写
 (cdr '(1 2 3))      ; (2 3)
 ```
 
@@ -543,13 +540,19 @@ win_id = newWindow()    ; 打开新窗口。win_id是一个vtype对象
 clearAll()              ; 或者不开新窗口，而是清除上次绘制的图，在原窗口重新绘图
 ; 又或者，什么都不做，直接绘图，和之前的图叠起来
 
-; 绘图
-plot(VIN IOUT ?expr '("VIN" "IOUT"))
-
 ; 窗口与子窗口操作
 sub0 = currentSubwindow()   ; 获取当前活动的子窗口
 currentSubwindow(sub0)      ; 切换子窗口
 currentWindow()             ; 获取/设置当前绘图窗口
 sub1 = addSubwindow()       ; 创建并切换到新的子窗口
+
+; 绘图
+plot(VIN IOUT ?expr '("VIN" "IOUT"))
+
+; log scale
+ocnSetAttrib(?XScale 'log)
+
+; 打印结果
+ocnPrint(VOUT ?output "out.csv" ?precision 6 ?from 0 ?to 1 ?step 0.01 ?numberNotation 'scientific)
 ```
 

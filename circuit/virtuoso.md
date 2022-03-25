@@ -1,9 +1,9 @@
 # 总览
 
 1. 创建Library：CIW - File - New - Library，输入要创建的库名，选择Attach to an existing techfile，选择要用的工艺库（如果不链接到工艺库，版图设计时无工艺层）
-2. 创建schemetic：打开 Library Manager ，从上方导航栏选择 File - New - Cellview，选择所属Library，填写 Cell 名字，选择 Type（或者填写 View）为schemetic，然后确认创建
-3. 编辑原理图：放置器件，连线，创建引脚
-4. 创建符号：从导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
+2. 创建schemetic：打开 Library Manager ，从上方导航栏选择 File - New - Cellview，选择所属Library，填写 Cell 名字，选择要创建的 Type，然后确认创建
+3. 编辑原理图
+4. 创建符号：从Schematic L导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
 5. 前仿真
 6. 创建 layout：打开 schemetic，选择 Launch - layout
 
@@ -61,6 +61,12 @@ Edit - Renumber Instances：重新编号
 
 Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调整可以选中的东西。如果设置错误，可能导致无法选中器件/线网等
 
+### 电路参数
+
+将电路参数设置为型如`pPar("var")`的方式，就能在调用的时候设置参数值。在设计行为级电路模型的时候很有用，但是实际电路一般不这么干（因为参数化版图pCell很难做）
+
+添加或者删除了参数之后，需要用CIW - tools - CDF将参数加到cell里面（或者生辰symbol也会自动添加。但是删除必须用CDF）。使用CDF时，layer要选择base，否则修改不会保存到cell里面。CDF还能设置默认参数值等信息
+
 # 前仿真
 
 ## 流程
@@ -97,9 +103,9 @@ Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调
 3. 选择 buffer 界面上面的 evaluate 图标，计算。（然后算式被推入 stack，计算结果到buffer）
 4. 可以回到 ADE L 仿真菜单界面，选择 Outputs - Setup，将表达式填入 Expression（复制粘贴或者点击 Get Expression 从计算器的缓冲取表达式），此后仿真时会计算这个值
 
-## Parametic Analysis
+## 参数仿真
 
-在ADE L 选择 Tools - Parametic Analysis，可以扫变量（一次性仿变量多个取值）。用法很符合直觉就不写了
+在ADE L 选择 Tools - Parametic Analysis，可以扫参数（一次性仿变量多个取值）。用法很符合直觉就不写了
 
 在参数分析中温度（temp）也作为一个变量。像温度这样只需要几个特殊值的，可以不写 From To 之类的，直接设置 Inclusion List 为 0 27 85
 
@@ -127,13 +133,17 @@ ADE-XL
 
 静态工作点：DC仿真，Results - Annotate - DC Operating Points，然后点击信号
 
+## 仿真收敛
+
+设置电路初值：ADE L - Simulation - Convergence Aids - Initial Condition
+
+遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - CONVERGENCE PARAMETERS - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
+
 ## 其他细节
 
 使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
 
 噪声频率 0.01~10G。说是由宝贵的经验定下来的
-
-设置电路初值：ADE - Simulation - Convergence Aids - Initial Condition
 
 快捷键：A、B设置Point Marker，M添加Point Marker，H、V添加Horizontal / Vertial Marker
 

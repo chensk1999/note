@@ -10,6 +10,25 @@ win + Tab: 虚拟桌面
 
 使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
 
+# bash
+
+```bash
+# 遍历当前目录所有文件
+for f in *; do
+  echo "File -> $f"
+done
+
+# 正则表达式替换
+# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
+a='Hello, world'
+f='example.png'
+echo "${a/o/O}"       # 匹配第一个，得到HellO, world
+echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
+echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
+```
+
+
+
 # mingw编译&make
 
 ## 简单源文件的编译&链接
