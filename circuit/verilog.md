@@ -658,44 +658,160 @@ module fast_fsm(
 endmodule
 ```
 
-# Verilog-AMS与Verilog-A
+# Verilog-AMS
 
-Verilog-AMS（Analog and Mixed Signal extension）是Verilog的混合信号扩展。其数字域语法和verilog完全一样，可以理解为给verilog加入了模拟信号和用于描述模拟行为的`analog`块
-
-Verilog-A是只有模拟电路的Verilog-AMS子集。示例：
+Verilog-AMS（Analog and Mixed Signal extension）是Verilog的混合信号扩展。语法上来说，可以理解为在Verilog的基础上加入了模拟信号、analog块（即模拟信号的always块）。另外，只有模拟部分的Verilog-AMS子集称作Verilog-A
 
 ```verilog
-// 定义模块。例子中是RLC三个器件的并联
+// Verilog-A模块示例：RLC器件的并联
 module shunt_rlc (t1, t2);
+    // 声明IO方向（input, output, inout）
+    // input信号的值可以在表达式中使用，但不可被设置；output反之；inout均可
+    inout t1, t2;
     // 声明信号
     electrical t1, t2;
     // 声明参数
     parameter real R = 1;
     parameter real L = 1;
     parameter real C = 1;
-    // 声明支路（可选）
-    // V(res) = V(t1, t2) = V(t1) - V(t2)
-    // I(res) = I(t1, t2) = 从t1流向t2的电流
-    branch (t1, t2) res;
+    
+    // 定义局部变量
+    integer res;
+    real Vmax;
 
-    // 定义模拟过程。大致相当于数字电路的always块
+    // 定义模拟过程。大致相当于数字电路的always块。一个模块只能有一个analog块
     analog begin
-        I(res) <+ V(res) / R;
-        I(res) <+ idt(V(res)) / L;      // idt算符，对时间积分(integral dt)
-        I(res) <+ ddt(V(res)) * C;      // ddt算符，对时间微分(derivative dt)
-        // <+是贡献(contribution)算符，t1到t2电流是RLC电流的叠加
-        // 信号只能用贡献算符赋值，不能用=赋值
+        I(t1, t2) <+ V(t1, t2) / R;
+        I(t1, t2) <+ idt(V(t1, t2)) / L;    // idt: 对时间积分(integral dt)
+        I(t1, t2) <+ ddt(V(t1, t2)) * C;    // ddt: 对时间微分(derivative dt)
+        // <+是贡献(contribution)算符，模拟信号只能用贡献算符赋值，不能用=赋值
+        // 多个电流贡献相当于器件并联；多个电压贡献相当于器件串联
     end
 endmodule
+
+// Verilog-AMS示例：8bit DAC
 ```
 
-参数
+## 电流与电压
 
 ```verilog
-// 声明格式
-parameter [real|integer] name=<expr> [rangeLimit];
+electrical t1, t2;
 
-parameter real a=1 from [0:inf)             // 取值范围[0, +∞)
-parameter real a=1 from (-5:5) exclude 0    // 取值范围(-5, 5)且不能取0
+// 单端
+I(t1);      // 从t1流向地的电流
+V(t1);      // 对地电压
+
+// 双端
+I(t1, t2)   // 从t1流向t2的电流
+V(t1, t2)   // V(t1) - V(t2)
+// 正值表示t1电压高、流出电流
+
+// 支路
+branch (t1, t2) res;
+I(res) <+ V(res) / R;   // V(res) = V(t1, t2), I(res) = I(t1, t2)
+
+// 端口
+I(<t1>);    // 从t1流入模块的电流
+```
+
+## 参数与变量
+
+参数与verilog的parameter相同，用于描述模块性质，运行时不能更改；变量类似一般编程语言，可以在运行时更改（但是好像不能设置初始值，必须用analog模块的initial初始化）
+
+```verilog
+parameter real a = 1 from (0:inf);  // 取值范围(0, +inf)
+parameter integer b = 15;
+parameter real c[3:0] = '{-5.0, -1.0, 1.0, 2.0};  // Array
+
+localparam real d = 1.0;
+
+real x = 1 from [-5:5] exclude 0;  // 取值范围[-5, 5]且不能取0
+integer y = 13 from (-75, 75) exclude [-5, 5] exclude 12;
+```
+
+## analog块
+
+下例是一个运放模型，当增益小于1e12时让输出 = 输入×增益，否则用虚短求输出
+
+```verilog
+parameter real gain = 1e6;
+parameter real offset = 0;
+
+real vi;
+
+analog begin
+    // 变量赋值
+    vi = V(VIP, VIN) + offset;
+    
+    // 控制流语法和Verilog基本一样，不再赘述
+    if (gain < 1e12) begin
+        // 支路贡献语句。同一个节点不能同时有电压和电流贡献
+        V(VOUT) <+ gain * vi;
+    end else begin
+        // 间接支路贡献。寻找满足条件的值（条件必须是信号 == 表达式）
+        // 例子中，仿真器会尝试求解令VIN=0的VOUT（此过程中不会驱动VIN）
+        V(VOUT): V(VIP, VIN) == 0;
+    end
+end
+```
+
+## 事件
+
+可以检测事件来模拟一些特殊行为，比如在仿真开始时初始化变量、在上升沿进行采样
+
+```verilog
+analog begin
+    @(initial_step) begin
+        // 在仿真的第一步执行，一般用于变量初始化
+        a = 0;
+    end
+    
+    @(final_step) begin
+        // 仿真最后一步执行，一般用来打印结果
+        $strobe("Bit error rate = %f", error/bits);
+    end
+    
+    direction = +1;    // +1表示上升沿、-1下降沿、0任意边沿
+    time_tol = 1;      // 两次过零时间间隔小于此不会触发
+    expr_tol = 1e-9;   // 如果过零之后小于这个值，不会触发
+    @(cross(V(CLK) - 0.9, direction, time_tol, expr_tol)) begin
+        // 过零时触发。后三个参数必须是常数，这里写成变量是为了方便理解，实际不能这么写
+        // time_tol和expr_tol的默认值挺靠谱的，除非噪声很大一般不用管
+        V(VOUT) <+ V(VIN);
+    end
+    
+    start = 2e-5;
+    T = 1e-6;            // 触发周期
+    time_tol = 1e09;     // 时间偏差不能超过这么多
+    @(timer(start, T, time_tol)) begin
+        // 从start开始，每周期触发一次
+        a = -a;
+    end
+end
+```
+
+## 其他
+
+```verilog
+$abstime  // 获取仿真时间
+
+// 噪声。仅在小信号噪声仿真有效
+PSD = 4 * 'P_K * $teperature * R
+white_noise(PSD);   // PSD单位是V^2/Hz
+flicker_noise(power, exp);
+
+// 随机数。之后有需要再看
+$random;
+
+// transition filter。用于（从数字信号）产生实际阶跃信号
+delay = 0;
+t_rise = 1e-9;
+t_fall = 1e-9;
+V(VOUT) <+ transition(vref, delay, t_rise, t_fall);
+
+// slew filter。用于（从阶跃模拟信号）产生实际阶跃信号
+max_pos_rate = 1e9;
+max_neg_rate = -1e9;
+V(VOUT) <+ slew(vref, max_pos_rate, max_neg_rate);
 ```
 
