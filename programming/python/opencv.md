@@ -122,3 +122,19 @@ cv2.destroyWindow(winname)
 cv2.destroyAllWindows()
 ```
 
+# 其他
+
+## 边缘检测
+
+```python
+# 转化为灰度图并高斯模糊去除噪声
+gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+gray = gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
+# 用Otsu方法求阈值
+thres, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+
+# Canny边缘检测
+edge = cv2.Canny(gray, thres/2, thres)
+```
+

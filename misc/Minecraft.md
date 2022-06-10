@@ -2,8 +2,10 @@
 
 ```
 /gamerule mobGriefing true
-/gamerule keepinventory true
+/gamerule keepInventory true
 ```
+
+前一条禁止生物与方块互动（苦力怕破坏方块、村民捡物品等）；后一条死亡不掉落
 
 # AoA (Advent of Ascension)
 
@@ -20,37 +22,37 @@
 
 | 名称                | 颜色 | 获得方法（主世界）                                           | 效果      |
 | ------------------- | ---- | ------------------------------------------------------------ | --------- |
-| Selyan（自然之神）  | 绿色 | 收获50作物                                                   | 速度1     |
-| Luxon（光明之神）   | 蓝色 | 使用50essence/捕捉pixon，杀死生物会减少                      | 隐形      |
-| Erebon（黑暗之神）  | 红色 | 杀死50生物                                                   | 力量1     |
-| Pluton（财富之神）  | 黄色 | 用foraging, logging, extraction技能获得物品，等级越高要获取越多 | 运气2     |
+| Selyan（自然之神）  | 绿   | 收获50作物                                                   | 速度1     |
+| Luxon（光明之神）   | 蓝   | 使用50essence/捕捉pixon，杀死生物会减少                      | 隐形      |
+| Erebon（黑暗之神）  | 红   | 杀死50生物                                                   | 力量1     |
+| Pluton（财富之神）  | 黄   | 用foraging, logging, extraction技能获得物品，等级越高要获取越多 | 运气2     |
 | Krasaun（均衡之神） |      | 每个槽都超过一半                                             | 生命提升2 |
 
 ## 技能
 
-Anima（生命）
+**Anima（生命）**
 升级：采摘植物、使用anima stone（从soul agent购买）
 效果：制造tablets，在新版本移除了这个效果因而没有用处
 
-Augury（占卜）
-升级：对着ascension shrine（被译作硫铜锑晶体，字面意思为飞升祭坛，怀疑神奇译名是因为它的原料rosite ingot被翻译为硫铜锑）右击essences（主要通过foraging技能获取，高级ligging技能也可以获取）
+**Augury（占卜）**
+升级：对着ascension shrine右击essences（主要通过foraging技能获取，高级ligging技能也可以获取）
 效果：增加creation（此处指creation resources，用于召唤minion）、soulpower（当前版本无用）、逐步开放intervention enchantment、和ancient cavern boss有关
 
-Butchery（屠杀）
-升级：使用blood accumulator（rosite ingot + leather）右击blood lust（伤害生物时有1/30机会产生）
+**Butchery（屠杀）**
+升级：使用blood accumulator（用rosite ingot和皮革合成）右击blood lust（伤害生物时有1/30机会产生）
 效果：增加暴击伤害、增加battle rage恢复速度
 
-Creation（创造）
-升级：对creation forge（创造熔炉，amethyst + blaze powder）使用minion slab（仆从石板，用empty slab加上各类材料合成，empty slab用essence + stone合成）
+**Creation（创造）**
+升级：对creation forge（用amethyst与blaze powder合成）使用minion slab（用empty slab加上各类材料合成，empty slab用essence和石头合成）
 效果：高级creation技能允许创造高阶仆从（但是creation reaources，即召唤时消耗的魔力，要靠augury技能提升）
 
-Expedition（远征）
-升级：sprinting，疾跑过程中每4s给一次经验
+**Expedition（远征）**
+升级：疾跑每4s给一次经验
 效果：减轻掉落伤害、疾跑中有概率获得buff
 
-Extraction（提取）
-升级：在extraction device（见注解）上面放一格岩浆，用石碗或钻石碗右击extraction device有1/3概率提取出一件物品，同时在device下方产生一块黑曜石并获得技能经验
-效果：等级提升后提取更好的物品、soulstone工具，gemcracker，ornamyte工具，occult工具，energistic工具，goofy工具，pickmax都需要extraction等级才能合成
+**Extraction（提取）**
+升级：在extraction device（合成方法见下文）上面放一格岩浆，用石碗或钻石碗右击extraction device有1/3概率提取出一件物品，同时在device下方产生一块黑曜石并获得技能经验
+效果：等级提升后提取更好的物品、解锁合成soulstone工具、gemcracker、ornamyte工具、occult工具，energistic工具、goofy工具、pickmax
 
 注：extraction device合成方法
 岩浆膏 + 牛奶桶 → white washing solution
@@ -59,68 +61,59 @@ white washing solution + 黑曜石 → whitewash table
 whitewash brick + white washing solution → blackwash brick
 blackwash brick + glass → extraction device
 
-灵魂翻译：
-岩浆膏+牛奶桶→白色洗液
-白色洗液+黑曜石→白浆桌
-背包里有石砖、白色洗液，右击白浆桌→白浆砖
-白浆砖+白色洗液→暗浆砖
-暗浆砖+玻璃→提取器
+whitewash brick、blackwash brick也在某些世界的建筑中有，原则上也可以直接收集
 
-白浆砖、暗浆砖也在某些世界的建筑中有，原则上也可以直接收集
-
-Foraging（搜寻）
+**Foraging（搜寻）**
 升级：挖各个世界的石头
 效果：挖石头时有概率获得物品、增加pluton的祭品点数、100级能装备foraging armor
 
-Hauling（拉绳）
+**Hauling（拉绳）**
 升级：钓鱼
 效果：有1/3几率吊上本技能的物品
 
-Hermetism
+**Hermetism**
 升级：无
 效果：无，原本设计是把物品换成钱币，在新版已移除
 
-Hunter（猎手）
+**Hunter（猎手）**
 升级：杀死hunter mobs
 效果：能够攻击更高级的hunter mobs
 
-Infusion（注魔）
-升级：用石碗/钻石碗右键pixon（在各个世界许多地方生成）可以获得技能经验以及infusion stone；对infusion table（羊毛+黑曜石+glistening infusion stone）使用infusion stone可以获得技能经验并小概率获得power stone
-效果：能解锁新的附魔（见附录）；允许捕捉更高级的pixon并使用它们的infusion stone
+**Infusion（注魔）**
+升级：用石碗/钻石碗对着pixon右键长按（pixon是在各个世界都有的中立生物）可以获得技能经验以及infusion stone；对infusion table（羊毛+黑曜石+glistening infusion stone）使用infusion stone可以获得技能经验并小概率获得power stone
+效果：能解锁新的附魔（见下文）；允许捕捉更高级的pixon并使用它们的infusion stone
 
-附：附魔方法
+注：附魔方法
 在infusion table前后左右距离三格高出一格的地方放上enhancer（runium chunk+各种材料），手持装备对着infusion table右击就会消耗power stone并附魔。附魔类型取决于enhancer和power stone类型，等级取决于infusion技能等级
 
-Innervation（充能）
+**Innervation（充能）**
 升级：捡取heart stone（杀死生物时有几率掉落）
 效果：拾起heart stones时能回血或者暂时获得闪避效果
 
 注：innovate有支配，控制，激发，提供动力/能量的意思，这个技能也被译为支配，但我觉得技能内容表达的意思是充能
 
-Logging（伐木）
+**Logging（伐木）**
 升级：砍树时有概率获得技能经验
 效果：砍树时有概率获得更多木材、其它材料
 
-Robbeey
+**Robbeey**
 升级：无
 效果：无，原本设计为从NPC偷东西，在新版已移除
 
-Runation（魔力）
+**Runation（魔力）**
 升级：制造rune
 效果：能制造更高级的rune
 
-附：关于卢恩
-是staff（法杖）的弹药
-找到一个rune shrine structure（不同维度有不同神殿，分别制作不同的rune），在正中间（原本生成了一块半砖的位置）放上一个rune shrine（合成方法见附录的附录
-对rune shrine使用unpowered rune（1个runium chunk合成16个）或者charged rune（用在deep lands找到的charged runium合成）就能得到对应rune
+注：关于rune
+rune是staff（法杖）的弹药。找到一个rune shrine structure（不同维度有不同神殿，分别制作不同的rune），在正中间（原本生成了一块半砖的位置）放上一个rune shrine，对rune shrine使用unpowered rune（用runium chunk合成）或者charged rune（用deep lands的charged runium合成）就能得到对应rune
 有几个rune必须用charged runium
 
-附录的附录：rune shrine合成方法
+注2：rune shrine合成方法
 从ruined teleporter（主世界y=10~20）取得ancient rock
-ancient rock + unpowered runes + eye of ender → carved rune of power
+ancient rock + unpowered runes + 末影之眼 → carved rune of power
 carved rune of power + runium chunk → rune shrine
 
-Vulcanism（复仇）
+**Vulcanism（复仇）**
 升级：当收到伤害怒气槽旁边出现vulcanism标志时，右键vulcane（从immortallis世界的dungeon keeper购买）能获得技能经验并对最后一个攻击自己的敌人造成伤害
 效果：增加复仇伤害，允许用更高级的augment（从token trader购买，token trader在immorallis生成）强化vulcane
 
@@ -134,13 +127,13 @@ Vulcanism（复仇）
 
 - sword：类似原版，速度1.6
 - maul：比sword更大的击退，速度0.8
-- greatblade：和剑相比攻击距离更长，伤害更高，速0.76
+- greatblade：和剑相比攻击距离更长，伤害更高，速度0.76
 - scythe：也被看做greatblade的变种，每次攻击消耗15 energy，不够就会受到伤害，速度1.4
 - bow：类似原版，弹药是holly arrow（平原、树林等生物群系刷tree spirit，杀死得到holly top seed，种植后收获holly top petal，加上limonite ingot、羽毛合成）
 - archergun：射速比弓快，射出holly arrow
 - throwing weapon：主要从assassin购买，都很弱
-- gun：弹药是limonite bullet (craft with limonite ingot)或metal slugs(limonite ingot + gunpowder)
-- shotgun：一次射出多发弹药，在近距离可以打出高伤害，消耗spreadshot (limonite bullet + liminite ingot + gunpowder)
+- gun：弹药是limonite bullet （用limonite ingot合成）或metal slugs（用limonite ingot和火药合成）
+- shotgun：一次射出多发弹药，在近距离可以打出高伤害，消耗spreadshot（limonite bullet + limonite ingot + 火药）
 - cannon
 
 ### 各个阶段值得获取的武器
@@ -454,5 +447,3 @@ hunter's rifle 枪，10，主世界稀有怪bomb carrier掉落(50%)
 
 {spellName:"barrier",uuidMost:5019302112127173582L,validSpell:1b,spellList:[{data:{params:{_target:4},key:"connector"},x:1,y:1},{data:{params:{_max:4,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:1,y:2},{data:{params:{_vector3:0,_vector2:2,_vector1:4},key:"operatorVectorSum"},x:1,y:3},{data:{params:{_target:2},key:"connector"},x:1,y:4},{data:{params:{_target:2},key:"connector"},x:1,y:5},{data:{params:{_target:2},key:"connector"},x:1,y:6},{data:{params:{_target:2},key:"connector"},x:1,y:7},{data:{params:{_target:4},key:"connector"},x:1,y:8},{data:{params:{_target:4},key:"connector"},x:2,y:1},{data:{key:"constantNumber",constantValue:"5"},x:2,y:2},{data:{params:{_target:4},key:"connector"},x:2,y:3},{data:{key:"constantNumber",constantValue:"5"},x:2,y:4},{data:{params:{_number2:1,_vector1:2},key:"operatorVectorMultiply"},x:2,y:5},{data:{params:{_target:2},key:"operatorEntityLook"},x:2,y:6},{data:{params:{_target:4},key:"connector"},x:2,y:7},{data:{params:{_target:4},key:"connector"},x:2,y:8},{data:{params:{_target:4},key:"connector"},x:3,y:1},{data:{params:{_max:3,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:3,y:2},{data:{params:{_target:2},key:"connector"},x:3,y:3},{data:{params:{_target:2},key:"connector"},x:3,y:4},{data:{params:{_vector3:0,_vector2:2,_vector1:3},key:"operatorVectorSum"},x:3,y:5},{data:{params:{_target:2},key:"operatorEntityPosition"},x:3,y:6},{data:{key:"selectorCaster"},x:3,y:7},{data:{params:{_target:4},key:"connector"},x:3,y:8},{data:{key:"constantNumber",constantValue:"9"},x:4,y:0},{data:{params:{_number2:1,_vector1:4},key:"operatorVectorMultiply"},x:4,y:1},{data:{params:{_max:4,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:4,y:2},{data:{params:{_vector3:0,_vector2:4,_vector1:2},key:"operatorVectorSubtract"},x:4,y:3},{data:{params:{_target:3},key:"connector"},x:4,y:4},{data:{params:{_target:4},key:"connector"},x:4,y:8},{data:{key:"constantNumber",constantValue:"1"},x:5,y:0},{data:{params:{_target:4},key:"operatorVectorNormalize"},x:5,y:1},{data:{key:"constantNumber",constantValue:"5"},x:5,y:2},{data:{params:{_target:4},key:"connector"},x:5,y:3},{data:{params:{_target:4},key:"connector"},x:5,y:8},{data:{params:{_x:0,_y:3,_z:0},key:"operatorVectorConstruct"},x:6,y:0},{data:{params:{_vector2:1,_vector1:4},key:"operatorVectorCrossProduct"},x:6,y:1},{data:{params:{_vector2:4,_vector1:1},key:"operatorVectorCrossProduct"},x:6,y:2},{data:{params:{_target:1},key:"operatorVectorNormalize"},x:6,y:3},{data:{params:{_target:1},key:"connector"},x:6,y:4},{data:{params:{_target:1},key:"connector"},x:6,y:5},{data:{params:{_target:1},key:"connector"},x:6,y:6},{data:{params:{_target:1},key:"connector"},x:6,y:7},{data:{params:{_target:1},key:"connector"},x:6,y:8},{data:{key:"selectorCaster"},x:7,y:0},{data:{params:{_target:1},key:"operatorEntityLook"},x:7,y:1},{data:{params:{_target:1},key:"connector"},x:7,y:2}],uuidLeast:-7711147611344218784L}
 ```
-
-# 

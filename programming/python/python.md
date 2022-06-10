@@ -529,10 +529,6 @@ class myint(int):
 i = myint(5, 'payload')
 ```
 
-
-
-
-
 ## 静态方法与类方法
 
 ```python
@@ -848,8 +844,6 @@ from module import func
 from module import func as f
 from module import *    # 不建议使用，可能导致命名空间污染
 ```
-
-
 
 ## 构建层级包
 
@@ -1861,9 +1855,8 @@ Raises:
 python -m venv <env_name>
 
 # 打开虚拟环境
-cd env_name
-Scripts\activate.bat            # Windows
-source env_name/bin/activate    # Unix or MacOS
+env_name\Scripts\activate.bat            # Windows
+env_name\source env_name/bin/activate    # Unix or MacOS
 ```
 
 打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作
