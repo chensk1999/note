@@ -668,7 +668,7 @@ module shunt_rlc (t1, t2);
     // 声明IO方向（input, output, inout）
     // input信号的值可以在表达式中使用，但不可被设置；output反之；inout均可
     inout t1, t2;
-    // 声明信号
+    // 声明信号类型（electrical, wire, reg等）
     electrical t1, t2;
     // 声明参数
     parameter real R = 1;

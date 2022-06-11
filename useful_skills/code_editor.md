@@ -14,15 +14,19 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 
 部分文件位置：
 
-设置：`%APPDATA%\Code\User\settings.json`（`%APPDATA% = C:\Users\current user\AppData\Roaming`）
+设置：`%APPDATA%\Code\User\settings.json`（`%APPDATA% = C:\Users\current_user\AppData\Roaming`）
 
-扩展：`%USERPROFILE%\.vscode\extensions`（`%USERPROFILE% = C:\Users\current user`）
+扩展：`%USERPROFILE%\.vscode\extensions`（`%USERPROFILE% = C:\Users\current_user`）
 
 ## language-specific settings
 
 ```json
 "[verilog]": {
     "files.autoGuessEncoding": true
+}
+
+"files.associations": {
+    "*.va": "verilog"
 }
 ```
 
@@ -77,6 +81,8 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 h5j         # 向下移动5行
 d3w         # 删除3个词
 d2d         # 删除2行
+yy          # 复制一行
+y^          # 复制这行剩余内容
 ```
 
 ## Visual

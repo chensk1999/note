@@ -70,15 +70,6 @@ end
 % break & continue。该是怎样就怎样
 ```
 
-## 函数句柄
-
-函数句柄（function handle）类似于C的函数指针
-
-```matlab
-f = @sin;
-g = @(x, n) x .^ n;    % 匿名函数句柄
-```
-
 # 编程
 
 ## 脚本
@@ -113,6 +104,10 @@ function result = cmp(a, b)
         result = b;
     end
 end
+
+% 函数句柄(function handle)，类似于其他语言的匿名函数、函数指针
+f = @sin;
+g = @(x, n) x .^ n;    % 匿名函数句柄
 ```
 
 ### 调用
@@ -166,16 +161,16 @@ end
 function result = parser_example(varargin)
     p = inputParser();
     is_scalar_num = @(x) isnumeric(x) && isscalar(x);
-    
+
     % 添加参数
     p.addRequired('a', is_scalar_num);     % 参数a，用is_scalar_num检查合法性
     p.addOptional('b', 0, is_scalar_num);  % 可选参数b，默认值0
     p.addParameter('mode', 'rb');          % 可选键值对参数，参数名是mode，默认值是'rb'
-    
+
     % 解析
     p.parse(varargin{:});
     p.Results    % 包含各参数的struct
-    
+
     % (not recommended) 将解析结果赋值给变量
     % matlab元编程好像有些奇怪结果，最好不要用eval
     fields = fieldnames(p.Results);
@@ -199,7 +194,7 @@ classdef MyClass
     properties
         value {mustBeNumeric}
     end
-    
+
     methods
         function r = roundOff(obj)
             r = round([obj.value], 2);
@@ -474,6 +469,8 @@ title(ax, 'title');
 xlabel(ax, 'xlabel');
 ylabel(ax, 'ylabel');
 set(ax, 'TickLabelInterpreter', 'latex');
+
+# grid
 grid(ax);
 ```
 

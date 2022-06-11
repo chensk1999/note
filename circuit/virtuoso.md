@@ -1,5 +1,13 @@
 # 总览
 
+启动virtuoso
+
+```bash
+ssh -X c01n01  # 连接计算节点。实验室服务器有c01n01 ~ c01n05一共五个节点
+. bash616
+virtuoso &
+```
+
 1. 创建Library：CIW - File - New - Library，输入要创建的库名，选择Attach to an existing techfile，选择要用的工艺库（如果不链接到工艺库，版图设计时无工艺层）
 2. 创建schemetic：打开 Library Manager ，从上方导航栏选择 File - New - Cellview，选择所属Library，填写 Cell 名字，选择要创建的 Type，然后确认创建
 3. 编辑原理图
@@ -61,11 +69,11 @@ Edit - Renumber Instances：重新编号
 
 Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调整可以选中的东西。如果设置错误，可能导致无法选中器件/线网等
 
-### 电路参数
+### 参数化电路
 
-将电路参数设置为型如`pPar("var")`的方式，就能在调用的时候设置参数值。在设计行为级电路模型的时候很有用，但是实际电路一般不这么干（因为参数化版图pCell很难做）
+将电路参数设置为型如`pPar("var")`的方式，就能在调用的时候设置参数值。在设计行为级电路模型的时候很有用，但是实际电路一般不这么干（因为参数化电路的设计难度远大于设计的必要性。需要参数化版图pCell）
 
-添加或者删除了参数之后，需要用CIW - tools - CDF将参数加到cell里面（或者生辰symbol也会自动添加。但是删除必须用CDF）。使用CDF时，layer要选择base，否则修改不会保存到cell里面。CDF还能设置默认参数值等信息
+添加或者删除了参数之后，需要用CIW - tools - CDF将参数加到cell里面（或者生成symbol也会自动添加。但是删除必须用CDF）。使用CDF时，layer要选择base，否则修改不会保存到cell里面。CDF还能设置默认参数值等信息
 
 # 前仿真
 
@@ -135,7 +143,7 @@ ADE-XL
 
 ## 仿真收敛
 
-设置电路初值：ADE L - Simulation - Convergence Aids - Initial Condition
+设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行一小段DC仿真来求解电路初值。Node Set设置DC仿真**迭代开始时**的节点电压，帮助初值求解的收敛；Initial Condition设置DC仿真**全程**的节点电压，用于设置电路初值。注意：如果初值设成一个正常无法达到的状态，可能导致后续tran仿真错误。[补充说明的来源](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
 
 遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - CONVERGENCE PARAMETERS - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
 
@@ -150,6 +158,10 @@ ADE-XL
 # 版图
 
 版图可以用 Layout Editor L 或者 XL，两者差别之一是 XL 可以用 Connectivity - Generate - Selected From Source 选项从原理图直接生成器件。首先点击 Selected From Source，切到 Schemetic Editor，选择若干元件，再切回来就能放置
+
+## 显示设置
+
+Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y Snap Spacing调整为对应工艺的值。对于180nm，两者为0.005
 
 ## Layout Editor L 快捷键
 
@@ -169,7 +181,7 @@ ADE-XL
 | ------- | ------------------------------------------------------------ |
 | A       | Quick **A**llign（点击选择一个东西，然后点击要对齐到的位置） |
 | S       | **S**tretch                                                  |
-| C       | **C**hop                                                     |
+| Shift+C | **C**hop                                                     |
 | Shift+M | **M**erge（合并两个形状）                                    |
 
 - 显示
@@ -183,25 +195,36 @@ ADE-XL
 
 - 其他
 
-| Key                | Usage                                                 |
-| ------------------ | ----------------------------------------------------- |
-| F2                 | Save                                                  |
-| F3                 | 设置工具属性（比如，P，F3，可以设置Path的宽度等属性） |
-| D, Ctrl+D          | **D**eselect / Deselect All                           |
-| Ctrl+Y             | 在重叠对象之间切换                                    |
-| Backspace          | 撤销上一次点击（可以在画Path过程中用）                |
-| N, Shift+N, Ctrl+N | 更改画线的默认方向（斜/水平竖直/自动转弯的水平竖直）  |
-| G                  | **G**ravity（自动吸附到边上）                         |
-| T                  | Layer **T**ap（切换到点击的层）                       |
-| V                  | Attach（比如将Label关联到Pad上）                      |
+| Key                | Usage                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| F2                 | 保存                                                         |
+| F3                 | 设置工具属性（比如，P，F3，可以设置Path的宽度等属性；C，F3，可以批量复制） |
+| D, Ctrl+D          | **D**eselect / Deselect All                                  |
+| Ctrl+Y             | 在重叠对象之间切换                                           |
+| Backspace          | 撤销上一次点击（可以在画Path过程中用）                       |
+| N, Shift+N, Ctrl+N | 更改画线的默认方向（斜/水平竖直/自动转弯的水平竖直）         |
+| G                  | **G**ravity（自动吸附到边上）                                |
+| T                  | Layer **T**ap（切换到点击的层）                              |
+| V                  | Attach（比如将Label关联到Pad上）                             |
+| Shift+X, Shift+B   | Descend, Ascend                                              |
 
-## DRC (Design Rule Check)
+## 验证
 
-待补充
+DRC和LVS需要加载calibre的skill脚本后才能进行。一般用`.cdsinit`文件自动加载
 
-## LVS (Layout versus Schemetic)
+### DRC (Design Rule Check)
 
-待补充
+Calibre - nmDRC，加载Rules File然后选择Run DRC
+
+### LVS (Layout versus Schemetic)
+
+Calibre - nmLVS
+
+LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
+
+## 其他
+
+Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
 # 后仿真
 
@@ -211,7 +234,13 @@ ADE-XL
 
 # 其他
 
-电源宽度：1mA - 1um
+## 版图细节
+
+电源轨宽度：1 mA (rms) = 1um（Electric migration，是金属层承载电流的上限）、IR drop（电源下降 = 峰值电流I × 走线电阻R）
+
+180工艺：过孔电阻 ≈ 10Ω/via，金属层电阻 ≈ 0.1Ω/sq，相邻金属层电容 ≈ 0.05fF/um2
+
+一般建议布线距离在DRC要求的1.3~1.4倍以上，否则对良品率稍有影响
 
 ## 输出图片
 
