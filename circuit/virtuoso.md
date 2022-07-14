@@ -1,12 +1,16 @@
 # 总览
 
-启动virtuoso
+Virtuoso是Cadence公司的EDA软件。本笔记记录用Virtuoso进行模拟设计的流程，以及一些使用技巧
+
+**启动virtuoso**
 
 ```bash
 ssh -X c01n01  # 连接计算节点。实验室服务器有c01n01 ~ c01n05一共五个节点
-. bash616
+. bash616      # 初始化环境变量的脚本
 virtuoso &
 ```
+
+**基本流程**
 
 1. 创建Library：CIW - File - New - Library，输入要创建的库名，选择Attach to an existing techfile，选择要用的工艺库（如果不链接到工艺库，版图设计时无工艺层）
 2. 创建schemetic：打开 Library Manager ，从上方导航栏选择 File - New - Cellview，选择所属Library，填写 Cell 名字，选择要创建的 Type，然后确认创建
@@ -14,6 +18,7 @@ virtuoso &
 4. 创建符号：从Schematic L导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
 5. 前仿真
 6. 创建 layout：打开 schemetic，选择 Launch - layout
+6. 后仿真
 
 # 原理图
 
@@ -143,7 +148,7 @@ ADE-XL
 
 ## 仿真收敛
 
-设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行一小段DC仿真来求解电路初值。Node Set设置DC仿真**迭代开始时**的节点电压，帮助初值求解的收敛；Initial Condition设置DC仿真**全程**的节点电压，用于设置电路初值。注意：如果初值设成一个正常无法达到的状态，可能导致后续tran仿真错误。[补充说明的来源](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
+设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行一小段DC仿真来求解电路初值。Node Set设置DC仿真**迭代开始时**的节点电压，帮助初值求解的收敛；Initial Condition设置DC仿真**全程**的节点电压，用于设置电路初值。注意：如果初值设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
 
 遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - CONVERGENCE PARAMETERS - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
 
@@ -236,7 +241,7 @@ Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对�
 
 ## 版图细节
 
-电源轨宽度：1 mA (rms) = 1um（Electric migration，是金属层承载电流的上限）、IR drop（电源下降 = 峰值电流I × 走线电阻R）
+电源轨宽度：1 mA (rms) = 1um（Electric migration，是金属层承载电流的上限）、IR drop（电源电压下降 = 峰值电流I × 走线电阻R）
 
 180工艺：过孔电阻 ≈ 10Ω/via，金属层电阻 ≈ 0.1Ω/sq，相邻金属层电容 ≈ 0.05fF/um2
 

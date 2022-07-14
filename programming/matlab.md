@@ -196,8 +196,22 @@ classdef MyClass
     end
 
     methods
-        function r = roundOff(obj)
-            r = round([obj.value], 2);
+        function obj = MyClass(val)    % 构造函数。应该支持无参数语法
+            if (nargin == 1)
+                obj.value = val;
+            else
+                obj.value = 0;
+            end
+        end
+
+        function obj = increment(obj)
+            obj.value = obj.value + 1;
+        end
+    end
+    
+    methods(Static)      % 静态方法
+        function p = area(r)
+            p = pi * r * r;
         end
     end
 end
@@ -207,6 +221,18 @@ a = MyClass
 a.value = 3.2
 a.roundOff()
 ```
+
+注意：Matlab默认的类是值类，其内容无法更改，对其赋值会创造了一个新的对象。比如例子里面的`increment`函数，它会返回一个新的对象，而原来的不变。内建的数组、元胞数组等都是如此
+
+如果想写“正常”的类，需要继承句柄类：
+
+```matlab
+classdef MyHandleClass < handle
+    % 略
+end
+```
+
+值类进行比较可以用`==`或者`isequal`。句柄类，`==`比较两者是否是同一个对象，`isequal`比较两者的值是否相等
 
 # 数据类型
 
@@ -299,7 +325,8 @@ s = struct('a', 1, 'b', 'value')
 s = struct()    % 定义没有字段的结构体
 
 % 访问结构体
-disp(s.a)
+s.a = 2
+s.('b')         % 用字符串访问
 ```
 
 ## 字符与字符串
@@ -331,8 +358,6 @@ for i = 1:length(files)
     file = files{i};
     data{i} = importdata(file, ',', 1);
 ```
-
-
 
 # 文件操作
 
@@ -437,6 +462,16 @@ LineSpec字符串可用于方便地设置线型、点型和颜色：
 
 例子：`--^k`表示虚线、朝上的三角标记、黑色
 
+绘图函数
+
+| 函数名 | 说明       | 备注                     |
+| ------ | ---------- | ------------------------ |
+| plot   | 绘制曲线   |                          |
+| stairs | 阶梯状曲线 | 适合绘制幅度会跳变的信号 |
+| stem   | 针状图     | 适合绘制离散序列         |
+
+
+
 ## 其他图形元素
 
 ```matlab
@@ -477,6 +512,43 @@ grid(ax);
 # Simulink
 
 Simulink是基于模型的设计工具，可以作为Matlab的附加功能安装
+
+# 数字滤波器
+
+需要Signal Processing Toolbox
+
+## 数字滤波器设计
+
+- 窗函数法：传统方法，滤波效果一般不如后面两种最优化方法
+- 等波纹：让滤波器频率响应逼近目标，并且让波纹（理想与实际之差）均匀分布在通带和阻带，优点是波纹均匀分布，最大误差比较小。常用Parks-McClellan算法，对应`firpm`函数
+- 最小二乘：让滤波器频率响应逼近目标，并让总平方误差最小。一般通带和阻带内部响应比等波纹的平坦，但边缘波动稍大。对应`firls`函数
+
+例1：用Parks-McClellan算法设计切比雪夫FIR滤波器，实现CIC滤波器的补偿滤波
+
+```matlab
+% 求目标频率响应
+N = 2;
+fb = 0.25;   % passband
+f = linspace(0, fb, 40);
+H = sinc(f*N) ./ sinc(f);  % CIC滤波器频率响应
+a = 1 ./ abs(H);           % 目标频率响应。补偿passband droop
+
+% 设计滤波器
+order = 4;
+[b err] = firpm(order, f, a);
+% f和a是目标频率以及该频率的增益。其长度必须为偶数，两两一组表示一个频带；不同频带之间为过渡带
+
+% 分析设计结果
+[h, w] = freqz(b, 1, 512);
+plot(f, a, w/pi, abs(h));
+legend('Ideal', 'firpm Design');
+
+% 进行滤波
+filter(b, 1, vin)
+% 第二个参数是滤波器函数的分母项a，对于FIR滤波器a=1
+```
+
+
 
 # 其他
 

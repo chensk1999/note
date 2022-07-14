@@ -12,11 +12,9 @@ Verilog是一种硬件描述语言（Hardware Description Language，HDL），�
 | ------------------------------------------------- | ------------------------------------------------------------ |
 | Switch Level，开关级                              | 控制各种mos器件实现功能                                      |
 | Gate Level，门级                                  | 用各种门实现                                                 |
-| Register Transfer Level，RTL，数据流级            | 描述寄存器数据流，一般用assign和各种wire实现，也有说凡是能综合的都可以叫做RTL级 |
-| Behavior Level / Algorithm Level，行为级 / 算法级 | 描述系统算法行为，主要用always块实现                         |
-| System Level，系统级                              | 描述模块性能的模型，没看懂怎么实现                           |
-
-Verilog是不断发展的语言，其中比较重要的有Verilog-1995和Verilog-2001这两个标准
+| Register Transfer Level，RTL，数据流级            | 描述寄存器数据流，是当前的”工业标准“，本笔记内容几乎全部是RTL描述 |
+| Behavior Level / Algorithm Level，行为级 / 算法级 | 描述系统算法行为。通常不规定寄存器在每个时钟沿的行为，由综合工具找出哪些运算在哪个时钟周期完成。大多数综合器不能综合。本笔记包括一些利用行为级描述进行仿真的方法 |
+| System Level，系统级                              | 描述模块性能的模型，一般无法综合                             |
 
 # 语法基础
 
@@ -51,30 +49,26 @@ localparam IDLE = 4'b0001;  // localparam不能用于参数传递，常用作状
 
 Verilog描述的是硬件，因此数据类型的定义和高级语言截然不同
 
-### Wire
+### Nets and  Variables
 
-Wire是连线的抽象，它不能储存值，取值取决于它的驱动电路（Driver）。Wire可以用assign语句来连线（Reg不行）实现组合逻辑电路
+Net是连线的抽象，比如逻辑门的输出。Net不能存储数据，它的值取决于其驱动器。最常用的Net类型是`wire`（实际上，几乎只会用到它）
 
 ```verilog
 wire i1, i2;
-wire out;
 wire [1:0] data;
 
-assign out = i1 & i2;
+// net赋值。综合出来通常是用组合逻辑驱动wire
 assign data = {i2, i1};
 
-// 假设给一个net加多个驱动源，当不同驱动源的电平不同时连线的电平为X
-assign out 1'b1;   // 如果i1 & i2 == 0，out = X
-
-// implicit assignment
-wire out_implicit = i1 & i2;
+// 声明的同时赋值
+wire out = i1 & i2;
 ```
 
-### Reg
+Variable是能存储数据的元件的抽象，比如寄存器、触发器。有时它也会被综合成组合逻辑（比如下文阻塞赋值的组合逻辑例子）。最常用的Variable类型是`reg`，名字来源于Register
 
-Reg是一种能储存数据的电路的抽象，比如锁存器、触发器。它的名字来源于Register
+Variable的赋值和Net不同：Net不能储存数据，其赋值（continuous assignment）描述了如何连接它的驱动器（通常是逻辑门）。Varialbe能储存数据，其赋值（procedural assignment）描述何时、如何更新里面的数据
 
-Reg有阻塞赋值与非阻塞赋值两种连接方式
+Variable有阻塞赋值与非阻塞赋值两种连接方式
 
 ```verilog
 a <= c;   // non blocking，不同非阻塞赋值并发执行，顺序无所谓
@@ -83,7 +77,7 @@ b = c;    // blocking，这一句执行完之前后面的不能执行（即：�
 
 通常的使用规则是
 
-* 时序电路中使用非阻塞赋值
+* 时序电路中使用非阻塞赋值。下面的例子中，时钟正跳变沿到来时b的D输入还是上一个周期的a，故输出始终有`b == ~a`
 
 ```verilog
 always @(posedge clk) begin
@@ -92,9 +86,7 @@ always @(posedge clk) begin
 end
 ```
 
-![](../images/verilog_non-blocking.png)
-
-可见时钟正跳变沿到来时b的D输入还是上一个周期的a，故输出始终有`b == ~a`
+<img src="../images/verilog_non-blocking.png" style="zoom:33%;" />
 
 * 组合逻辑电路中使用阻塞赋值
 
@@ -105,7 +97,7 @@ always @(*) begin
 end
 ```
 
-![](../images/verilog_blocking.png)
+<img src="../images/verilog_blocking.png" style="zoom:33%;" />
 
 如果违反以上两个原则，比如在时序逻辑电路中使用阻塞赋值`a = ~a; b = a;`，综合后就是a经过一个非门连到b的D端，当电路比较复杂的时候会产生一大坨难以理解的逻辑门 / 查找表。在组合逻辑使用非阻塞赋值或者在一个always块中混合使用两种赋值同理
 
@@ -123,7 +115,7 @@ addr[0] = 1;     // 访问msb
 addr[7:4] = 4'hF // part-select
 addr = 8'hff     // 整体访问
 y[7] = 1'b1;     // 访问Array，注意scalar array不能整体赋值而vector可以
-mem[0][0] = 8'haa;  // 将0行0列元素赋值0xAA
+mem[0][3] = 8'haa;  // 将0行3列元素赋值0xAA
 ```
 
 ### 补充
@@ -177,7 +169,7 @@ if (state == 2'b00) begin
     state <= 2'b01;
 end else if (state == 2'b01) begin
     out <= in1;
-end else
+end else            // 注意：必须有else，否则综合器可能会认为没有包含全部情况，综合出额外的寄存器
     out <= in2;
     state <= 2'b00;
 end
@@ -200,33 +192,37 @@ case (state)
         out <= in1;
         state <= 2'b00;
     end
-    default: begin
+    default: begin       // 类似于if，必须有default
         out <= in2;
         state <= 2'b00;
     end
 endcase
 
-// 注意：如果分支没有else / default，综合器可能会认为没有包含全部情况，从而
-// 综合出额外的寄存器
+// for循环，也叫做generate construct。它会被展开，生成多块相似的电路
+// generate和endgenerate可以省略，不过有它们的时候，如果出错了，综合器报的错一般更好懂
+// generate不能放在always块里面
+genvar i;     // genvar仅用于展开generate construct。生成网表之后它就”不存在“了
+generate
+    for(i = 0; i < 8; i = i + 1) begin
+        op[i] <= op[7-i];
+    end
+endgenerate
+```
 
+行为级模型的循环
+
+```verilog
 // while循环
 while (cnt < 10'h8ff) begin
     cnt <= cnt + 1'b1;
 end
 
-// for循环。和while循环不同，它常用于生成多块相同电路
-// 没太看懂它的循环变量到底是不是需要综合的东西。弄懂了再补这段笔记
+// for循环
 integer i;
-for(i = 0; i < 8; i = i + 1) begin
-    op[i] <= op[7-i];
+for (i=0; i<3; i=i+1) begin
+    ;
 end
 
-
-```
-
-不可综合的循环
-
-```verilog
 // forever循环
 forever begin
     #100 vin = ~vin;
@@ -238,9 +234,7 @@ repeat (100) begin
 end
 ```
 
-
-
-# 块语句
+## 块语句
 
 ```verilog
 begin: block1
@@ -257,7 +251,7 @@ while (1) begin: block2
 end
 ```
 
-## Always Block
+### Always Block
 
 当信号跳变时将会触发，block中的语句顺序进行，不同的block并行执行。跳变条件可以是边沿敏感（正跳变或者负跳变）或者电平敏感（电平变化），但不能有的信号是边沿敏感、有的信号是电平敏感
 
@@ -277,7 +271,7 @@ endmodule
 ```verilog
 module combo (input a, b, c, d, e,
               output reg z);
-    always @ (a or b or c or d or e) begin
+    always @ (*) begin
         // 或者写成always @ (*)，自动包含对组合逻辑所有输入的电平敏感
         // 注意：z是reg，但综合出来是一个组合逻辑输出，不是寄存器
         z = ((a & b) | (c ^ d) & ~e);
@@ -285,9 +279,7 @@ module combo (input a, b, c, d, e,
 endmodule
 ```
 
-![](../images/verilog_combo_with_always.png)
-
-上图是Quartus综合的结果，reg变量z综合为组合逻辑的输出，而不是寄存器或者触发器。使用Vivado综合，得到的是一个查找表。如果更改项目的硬件，综合结果大概还会有不同吧。同时也可以看出，reg不一定是锁存器/触发器输出。需要具体问题具体分析
+<img src="../images/verilog_combo_with_always.png" style="zoom:33%;" />
 
 仿真时可以用always块产生波形
 
@@ -295,20 +287,7 @@ endmodule
 always #10 clk = ~clk;
 ```
 
-## Generate Block
-
-应该算一种特殊的宏，综合的时候展开成合适的结构（并不常用）
-
-```verilog
-genvar i;   // 声明generate variable，综合后它并不存在
-generate
-    for (i=0; i < 8; i++) begin
-        // do something, e.g. instanciate an array of submodules
-    end
-endgenerate
-```
-
-## 并行块
+### 并行块
 
 不可综合，常用于仿真的时序控制。并行块所有语句同时执行，因此所有延时都以0开始
 
@@ -320,7 +299,7 @@ fork
 join
 ```
 
-## 初始化块
+### 初始化块
 
 有的硬件可以综合初始化块，有的硬件不能。而且一般也只能综合寄存器初始化的代码
 
@@ -330,9 +309,9 @@ initial begin
 end
 ```
 
-# 模块（Module）
+# 模块
 
-可综合的代码都要包含在module中。module描述了一个具有特定逻辑功能的电路模块，它包含若干输入和输出端口（Port）以及内部的逻辑电路。以下是一个同步清零的D触发器module：
+模块描述了一个具有特定逻辑功能的电路模块，它包含若干输入和输出端口（Port）以及内部的逻辑电路。一般来说，代码都要包含在模块（module）中。以下是一个同步清零的D触发器module：
 
 ```verilog
 // 旧风格verilog-95的模块声明
@@ -410,91 +389,6 @@ counter #(
     .en(en)
 );
 ```
-
-
-
-# 任务（Task）与函数（Function）
-
-任务和函数主要用于仿真。实现可综合的代码时，应该使用模块，不要使用任务与函数；在写不可综合的代码时，任务与函数比模块写起来方便一些
-
-```verilog
-module testbench ();
-    reg [7:0] Mux_Addr_Data = 0;
-    reg       Addr_Valid = 1'b0;
-    reg       Data_Valid = 1'b0;
-
-    // 定义task
-    task do_write;
-        // 向addr地址写入data
-        input [7:0] addr, data; 
-        begin
-            Addr_Valid = 1'b1;
-            Mux_Addr_Data = addr;
-            #10;
-            Addr_Valid = 1'b0;
-            Data_Valid = 1'b1;
-            Mux_Addr_Data = data;
-            #10;
-            Data_Valid = 1'b0;
-            #10;
-        end
-    endtask
-    
-    // 定义function
-    // 函数一般用于计算/组合逻辑，不能使用时序控制，也不能调用任务
-    // 至少一个输入，返回值是与函数名同名变量
-    // 函数不能递归调用，也不能在多处被同时调用
-    function calc_parity(input [7:0] data);
-        calc_parity = ^data;
-    endfunction
-
-    initial begin
-        #10;
-        do_write(8'h00, 8'hAB);     // 调用task
-        parity = calc_parity(8'hAB);// 调用function
-        do_write(8'h01, 8'hBC);
-        do_write(8'h02, 8'hCD);
-    end
-endmodule
-```
-
-
-
-# 仿真
-
-## testbench编写
-
-一般定义一个专门用来仿真的testbench顶层模块，产生几个虚拟的信号提供给被测试的模块，观察测试输出是否正确。有许多只能在仿真时进行的操作，以下列出常用的几个
-
-```verilog
-module testbench();
-    wire clk, foo, bar;             // 声明仿真时需要用到的变量
-    some_sub_module sub(foo, bar);  // 被仿真的模块
-    
-    always #10 clk = ~clk;
-
-    initial begin
-        clk <= 0;        // 仿真时变量都可以直接赋值，而且如果不赋初值就会变成X
-        foo <= 0;
-        bar <= 0;
-        #10 foo = 1;     // 显式延时，不可综合
-        #20 bar = 1;
-        #400 $finish;    // 结束仿真
-    end
-
-    always @(posedge clk) begin
-        $display("%d", foo);
-        $write("%d", bar);  // display输出完会自动换行，write不会
-    end
-endmodule
-```
-
-ModelSim使用
-
-1. File - New - Library，选择文件夹（之后仿真产生的文件都会放在这里。也可以给它起别名），确认之后这个文件夹会显示在Library面板
-2. Compile - Compile，选择所有需要仿真的源文件。编译成功之后Library面板下会多出它们编译出的module
-3. 双击top-level module，会打开Wave面板，Sim面板和Objects面板
-4. 在Objects面板选择需要查看的波形，添加到Wave面板，Simulate - Run
 
 # 状态机
 
@@ -613,8 +507,6 @@ always @(posedge clk) begin
 end
 ```
 
-
-
 其他技巧
 
 ```verilog
@@ -655,6 +547,84 @@ module fast_fsm(
     assign K = state[4:3];
     
     // 然后是状态机
+endmodule
+```
+
+# 行为级描述
+
+Verilog标准中定义了行为级描述，并且大部分仿真器也支持它们。但是大部分（目前的）综合器无法综合，因此主要用于仿真
+
+## 任务与函数
+
+任务（Task）和函数（Function）主要用于仿真。实现可综合的代码时，应该使用模块，不要使用任务与函数；在写不可综合的代码时，任务与函数比模块写起来方便一些。
+
+```verilog
+module testbench ();
+    reg clk, done;
+    parameter integer ticks = 1000;
+    
+    // 定义task
+    // task可以用来做各种事情，比如实现电路功能
+    task wait_ticks;   // 例：等待ticks个周期，然后翻转state
+        input clk;
+        input ticks;
+        output state;
+        begin
+            repeat (tics) @ (posedge clk);
+            state = ~state;
+        end
+    endtask
+    
+    // 定义function
+    // 函数用于计算，不能使用时序控制，也不能调用任务
+    // 至少一个输入，返回值是与函数名同名变量；函数不能递归调用，也不能在多处被同时调用
+    function calc_parity(input [7:0] data);
+        calc_parity = ^data;
+    endfunction
+
+    initial begin
+        clk = 1'b0;
+        done = 1'b0;
+        wait_ticks(clk, ticks, state);      // 调用task
+        wait_ticks(clk, ticks, state);
+        parity = calc_parity(8'hAB);        // 调用function
+        #100 $finish;
+    end
+    
+    always #100 clk = ~clk;
+endmodule
+```
+
+**系统任务与函数**
+
+
+
+## testbench编写
+
+一般定义一个专门用来仿真的testbench顶层模块，产生几个虚拟的信号提供给被测试的模块，观察测试输出是否正确。有许多只能在仿真时进行的操作，以下列出常用的几个
+
+```verilog
+`timescale 1ns / 1ps        // 时间单位（比如#1的延迟）1ns，时间精度1ps
+
+module testbench();
+    wire clk, foo, bar;             // 声明仿真时需要用到的变量
+    some_sub_module sub(foo, bar);  // 被仿真的模块
+    
+    always #10 clk = ~clk;
+
+    initial begin
+        clk <= 0;        // 如果不赋初值，通常会被当做X
+        foo <= 0;
+        bar <= 0;
+        #10 foo = 1;     // #10表示延时10个时间单位
+        #20 bar = 1;
+        #400 $finish;    // 结束仿真
+    end
+
+    always @(posedge clk) begin
+        $display("%d", foo);
+        $write("%d", bar);  // display输出完会自动换行，write不会
+    end
 endmodule
 ```
 
@@ -815,3 +785,10 @@ max_neg_rate = -1e9;
 V(VOUT) <+ slew(vref, max_pos_rate, max_neg_rate);
 ```
 
+# 其他
+
+**模块划分**
+
+1. 尽量不要在两个时序模块间加组合逻辑。综合器优化通常是对各个模块分别优化，优化不到中间的组合逻辑，哪怕只是一个与门，也可能影响时序
+2. 尽量把组合逻辑放在输入，输出端口直接连到寄存器。这样能简化时序约束，一般能优化得最好
+3. 可以考虑让模块不要大小或太大。太小的模块优化效果稍差，太大的模块优化耗时很久。综合耗时太久的话可以把大模块拆分成小模块
