@@ -60,7 +60,7 @@ plt.tight_layout()  # 自动调整排版
 plt.show()
 
 # 保存图片（不能先显示再保存，会出问题。但可以先保存再显示）
-fig.savefig('fig.png', dpi=600, transparent=True, format='png')
+fig.savefig('fig.png', dpi=192, transparent=True, format='png')
 
 # 关闭图片并释放内存
 fig.close()

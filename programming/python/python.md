@@ -90,7 +90,6 @@ f'pi = {pi:.2f}'
 | strip   | 去除两侧空白     |
 | split   | 按照指定序列分割 |
 | encode  | 编码             |
-| format  | 格式化字符串     |
 | replace | 文本替换         |
 
 ### 对字符串的函数
@@ -156,7 +155,7 @@ s = sorted(L, key=lambda x: x[1], reverse=True )
 ## 元组(tuple)
 
 同列表，不过使用圆括号()，且不能改变存储的值
-只有一个元素的tuple要写成(elecment1 , )以和普通的括号区分
+只有一个元素的tuple要写成`(elecment1 , )`以和普通的括号区分
 
 ## 字典(dict)
 
@@ -196,8 +195,6 @@ d = {}
 d.setdefault('a', []).append(1)
 ```
 
-
-
 ## 集合(set)
 
 无序的不重复元素序列
@@ -233,8 +230,6 @@ s3.clear()     # 清空集合
 | symmetric_difference | 不重复的元素 |
 | issubset             | 判断是否子集 |
 | issuperset           | 判断是否超集 |
-
-
 
 # 函数(function)
 
@@ -282,18 +277,14 @@ func(arg=1)  # 关键字调用
 
 python的调用，是**通过对象引用调用**，传递的始终是对象
 
-
-
 ## 注解(annotation)
 
 ```python
-def add(x:int, y:int=0) ->int:
+def add(x:int, y:int=0) -> int:
     return x + y
 ```
 
 注解不会被类型检查，对运行没有影响，仅作为文档的一部分。注解储存在`func.__annotations__`中，可以通过help查看
-
-
 
 ## 匿名函数(lambda)
 
@@ -309,8 +300,6 @@ def f2(x):
 ```
 
 lambda只能有一个表达式，不能有循环，分支等结构（可以用单行if，如`lambda x: x if x >= 0 else -x`）
-
-
 
 ## 闭包(closure)
 
@@ -339,8 +328,6 @@ func()   # 仍然为False
 clos()   # True
 ```
 
-
-
 另外给一个不是闭包的例子
 
 ```python
@@ -355,8 +342,6 @@ cmp()       # NameError
 ```
 
 cmp中引用的x和y不是自由对象，而是非局域变量，如果只需要x和y当前的值，当x和y改变了就会出错误
-
-
 
 可以用默认参数的方式改正，因为默认参数在函数定义时被计算，此后不再改变
 
@@ -472,8 +457,6 @@ def spam(x, y, z=42):
     print(x, y, z)
 ```
 
-
-
 # 类(class)
 
 ## 定义与使用
@@ -548,8 +531,6 @@ b = Book()
 
 类方法是仅与类属性有关、与实例属性无关的方法，通过装饰器`@classmethod`定义。调用时，类自动被作为第一个参数传入
 
-
-
 ## 通过字符串操纵对象
 
 | name      | usage            |
@@ -557,8 +538,6 @@ b = Book()
 | `hasattr` | 判断有没有某属性 |
 | `getattr` | 获得属性         |
 | `setattr` | 设置属性         |
-
-
 
 ## 魔术方法
 
@@ -613,13 +592,11 @@ __doc__      # 对象或函数的描述信息
 __file__     # 文件的名字，其包含路径信息。
 ```
 
-
-
 ## 描述器(Descriptor)
 
 描述器是一种实现了`__get__`，`__set__`，`__delete__`之中至少一个方法的对象，将某个类的某个属性绑定到一个描述器，则这个属性的获取、设置和删除行为将被描述器的这三个方法重载。仅定义了`__get__`方法的称作非数据描述器，否则称作数据描述器
 
-尝试访问对象属性（例如，`point.x`）时，会调用`point.__getattribute__(point, 'x')`，先查找`point.__dict__`，然后时`type(point).__dict__`，然后依次查找它的基类
+尝试访问对象属性（例如，`point.x`）时，会调用`point.__getattribute__(point, 'x')`，先查找`point.__dict__`，然后是`type(point).__dict__`，然后依次查找它的基类
 
 而使用了描述器之后，其优先级顺序改变，`type(point).__dict__['x'].__get__(point, type(point))`的优先级更高（更具体地说，非数据描述器大于属性字典，属性字典大于数据描述器）
 
@@ -632,6 +609,8 @@ descr.__delete__(self, obj) -> None
 ```
 
 ### 使用例
+
+注意：一般不会用下面例子里的方法来绑定描述器。绝大多数时候都会用下一节的property装饰器
 
 ```python
 # 整数类型检查的描述器
@@ -667,8 +646,6 @@ p.y = 1.2       # TypeError
 ```
 
 在这个例子中，`Ineger`类没有储存x，y的数据，而是用`setattr`和`getattr`操作`obj.x`和`obj.y`。看上去，好像给`obj.x`赋值之前它是一个`Integer`对象，赋值完了就变成`int`对象了，其实不是这样的：因为绑定是类级别的，而访问的重载也是类级别的，所以赋值是通过`Point.x`访问了`p.x`
-
-一般来说，几乎不会用例子里的方法来绑定描述器，而是使用装饰器来绑定。如果只有一两个属性需要描述器，比起自己写，直接用property装饰器要方便得多
 
 ### property装饰器
 
@@ -726,8 +703,6 @@ class Sub(Master):
         print('getting name')
         return super().name
 ```
-
-
 
 ## 元类(metaclass)
 
@@ -828,8 +803,6 @@ from collections.abc import Iterable, Iterator, Generator
 g = (i**2 for i in [1, 2])
 isinstance(g, Iterable)    # True
 ```
-
-
 
 # 模块与包
 
@@ -979,13 +952,7 @@ th2.run()       # 运行并且等待到运行结束。好像是在当前线程�
 threading.enumerate()   # 查看所有活动的Thread
 ```
 
-多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误
-Lock()函数
-创建一个_thread.lock object，当一个线程获得被锁上的(locked)锁，其他线程将被暂停，等待到这把锁解开为止
-方法
-acquire	上锁
-release	解锁
-locked	返回是否上锁
+多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误。这种情况要使用`threading.Lock`锁住变量，当一个线程锁住变量之后，其他线程将被暂停，等待到这把锁解开为止
 
 python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多核，想有效利用必须要多进程
 
@@ -1393,8 +1360,6 @@ c = chain(a, b)
 sum(c)
 ```
 
-
-
 ## json（读写JSON文件）
 
 ```python
@@ -1485,8 +1450,6 @@ q = p / Path('text.txt')
 with q.open() as f:
     f.readline()
 ```
-
-
 
 ## pickle（保存对象到文件）
 
@@ -1733,8 +1696,6 @@ area[1][1]  # B1 Cell
 sheet['A2'] = 2
 ```
 
-
-
 # 杂项
 
 ## 内建功能
@@ -1743,7 +1704,7 @@ sheet['A2'] = 2
 
 `+-*/%`加减乘除取余
 
-`**`乘方（甚至可以用用小数次方来开方）
+`**`乘方（甚至可以是小数次方）
 
 `//`整除
 

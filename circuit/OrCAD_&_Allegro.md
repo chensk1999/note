@@ -1,13 +1,13 @@
 #   Cadence组件简介
 
 - DB Doctor：错误诊断、修复数据错误
-- Design Entry CIS：板级原理图设计工具的启动器
-  - OrCAD Capture CIS：主要的原理图设计工具
+- **Design Entry CIS**：板级原理图设计工具的启动器
+  - **OrCAD Capture CIS**：主要的原理图设计工具
 - Design Entry HDL：芯片开发原理图设计工具的启动器
 - Pad Designer：编辑焊盘
-- PCB Editor：PCB设计工具的启动器
+- **PCB Editor**：PCB设计工具的启动器
   - Allegro Constraint Manager：约束管理器
-  - Allegro PCB Editor：主要的PCB设计工具
+  - **Allegro PCB Editor**：主要的PCB设计工具
 - PCB Libraries：元件封装库编辑器
 - PCB Router：自动布线工具
 - PCB PI：电源完整性仿真
@@ -34,11 +34,11 @@
 ```bash
 Design Resources
 ├─project.dsn
-│ ├─SCHEMATIC     # 原理图文件夹。其中包含了若干页的原理图
+│ ├─SCHEMATIC1    # 原理图文件夹
+│ │ └─PAGE1       # 原理图的一页
 │ └─Design Cache  # 原理图中用到的器件
 ├─project.olb
 │ ├─part1         # 元件（一般不会在同一个工程中包含原理图和元件库）
-│ ├─part2
 │ ├─...
 │ └─Library Cache
 └─Library
@@ -54,10 +54,13 @@ Referenced Projects
 3. 放置元件：Place - Part
 4. 连线：Place - Wire。不要把不同元件引脚相接代替连线，比较容易出bug
 5. 不同页之间的连接：Place - Off-Page Connector。不同原理图页中名称相同的Connector在电气上互联
-6. 元件编号：Tools - Annotate。如果用了multipart器件，记得设置physical packaging
+6. 元件编号：Tools - Annotate
+   1. 选中`.dsn`文件，Tools - Annotate，Action选择Reset part references to "?"，清除原有编号
+   2. Action选择Unconditional reference update，重新编号。如果用了multipart器件，记得设置physical packaging
+
 7. 添加封装信息
-   1. 在属性窗口编辑PCB Footprint属性。详见后面属性窗口部分（主要对于阻容等无源器件）
-   2. 编辑元件库，然后在Design Cache更新元件。更新时选中Replace schematic part properties（比较少用）
+   - 方法1：在属性窗口编辑PCB Footprint属性。详见后面属性窗口部分（主要对于阻容等无源器件）
+   - 方法2：编辑元件库，然后在Design Cache更新元件。更新时选中Replace schematic part properties（比较少用）
 8. DRC：Tools - Design Rules Check
 9. 生成网表：Tools - Create Netlist，选择PCB Editor，Netlist Files填Allegro
 10. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard，或Tools - Bill of Materials
@@ -108,7 +111,7 @@ Referenced Projects
 ## 元件库
 
 1. 创建元件库：File - New - Library
-2. 添加元件：Design - New Part，或者选中.olb文件夹，右键 - New Part。Multipart选项可以将一个芯片分成若干个部分
+2. 添加元件：Design - New Part，或者选中`.olb`文件夹，右键 - New Part。Multipart选项可以将一个芯片分成若干个部分
    1. Parts per Pkg：分成多少个部分
    2. Package Type：Homogeneous表示各部分相同，比如一个芯片的两个通道，编辑其中一个part时好像是按某种规则同步修改其他part；Hetrogeneous表示各部分不同，比如一个FPGA的多个IO Bank
    3. 编号方式。建议用alphabet
@@ -121,6 +124,10 @@ Referenced Projects
 8. 其他属性：Options - Part Properties, Package Properties，或者在Part View或者Package View双击打开。如果是Multipart，给每部分的Part Properties添加一个属性用于区分不同芯片，比如叫package（注意group是PCB Editor的保留字，不可以用）
 
 默认各种东西（线条，文字，etc）只能放到格点，可以在Options - Preferences - Grid Display - Pointer snap to grid设置
+
+## 其他
+
+元件自动编号后再手动编号，导致编号显示下划线：右键器件 - User Assigned Reference - Unset
 
 # PCB
 
@@ -139,59 +146,85 @@ Referenced Projects
 - World View：缩略图。中键+拖动或者Shift+左键拖动能够移动显示区域
 - Command：命令行&命令信息
 
-Class和Subclass：Allegro有若干类（比如：Pin、Board Geometry），每个类拥有若干子类（如，大部分电气连线都有子类Top、Board Geometry类有子类Silkscreen Top），每个对象都属于某个子类。比如说，走线的类是etch，子类是它所在的层；元件包含了焊盘、丝印等部分，各自属于不同的类和子类。Display - Visibility可以调整不同类的显示
+**Class和Subclass**：Allegro有若干类（比如：Pin、Board Geometry），每个类拥有若干子类（如，大部分电气连线都有子类Top、Board Geometry类有子类Silkscreen Top），每个对象都属于某个子类。比如说，走线的类是etch，子类是它所在的层；元件包含了焊盘、丝印等部分，各自属于不同的类和子类。Display - Visibility可以调整不同类的显示
 
-## 流程
+**Allegro操作逻辑**：Allegro的的工具是上下文相关的，需要选中相应对象 / 激活相应指令才能使用。绝大多数操作流程为：激活命令，执行操作，然后结束命令（通常是右键 - Done）。命令结束之后回到Idle状态，无法进行操作
 
-（教程Part16有更完整的流程）
-
-1. 创建电路板：File - New，Drawing Type选择Board。（或者用Board Wizard，但后者创建方法不太一样）
-2. 调整绘图区尺寸：Setup - Design Parameters - Design，调整图纸大小
-   1. Size：单位是mil时Accuracy设1~2足够了。Size选项选Other（另外几个是预设大小，不一定合适）
-   2. Extents：图纸左下角坐标&图纸宽度、高度。左下角最好是负数坐标，因为一般把原点作为电路板左下角，而电路板边框紧贴图纸边缘不好看。图纸要比电路板大一些，因为1) 布局时可以把器件放到一边，2) 留出空间放drill legend。一般比板子宽100mm / 4000mil足够
-3. 添加电路板板框：Add - Line，Class/Subclass设为Board Geometry, Outline。最好用x, ix, iy指令直接输入坐标。画好后最好倒角防止电路板割手：Manufacture - Drafting - Chamfer或Fillet（Chamfer倒45度角，Fillet倒圆弧形），然后选择角的两条边
-4. 设置布局区：Setup - Areas - Package Keepin。布局布线与板边缘要留一定距离，因此布局布线布线区比板框要小
-5. 设置布线区：Setup - Areas - Route Keepin同上绘制。或者或者Edit - Z-Copy，Copy to Calss/Sublcass设置为Route Keepin, ALL，然后点击Package Keepin的Shape（记得在Find面板选中Shape）
-6. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Mechanical Symbols
-7. 设置板层：Setup - Cross Section。设置好平面层之后可以直接填充
-   1. Type：布线层Conductor、介质层Dielectric、平面层（电源平面，地平面等）Plane
-   2. Negative：是否负片。好像是平面层负片，信号层正片
-
-类似OrCAD，Allegro的的工具也是上下文相关的，需要选中相应对象 / 激活相应指令才能使用。另外，在Allegro进行绝大多数操作，需要先激活命令，执行操作，然后结束命令（通常是右键 - Done）。命令结束之后回到Idle状态，无法进行操作
-
-## 布局
-
-1. 导入网表：File - Import - Logic
-2. 摆放元件：Place - Manually。右键 - Mirror或者Options - Mirror，就会把元件沿纵轴翻转180°放到底层
-
-## 布线
-
-1. Route - Connect。多选焊盘再点击可以一次布多根线
-2. 添加过孔：双击 / 右键 - Add Via
-3. 走线设置Bubble：Hug不动已经布好的线，当新的线被挡住时紧靠已有的线；Shove推挤原有的线，为新的线腾出空间。如果选shove via，过孔也可以被推挤（Full优先推挤过孔，Manual优先推挤线而保持过孔不动）
-
-元件自动扇出：Route - Fanout By Pick，右键 - Setup设置扇出参数，然后选中要扇出的元件
-
-## 元件封装
+## 绘制焊盘和封装
 
 教程20~26讲。目前只学了最基础的
+
+**绘制焊盘**
 
 1. 编辑焊盘。运行Pad Designer
    1. Parameter：略。主要是通孔的设置，不经常用
    2. Layers：首先选择Layer，然后编辑下面的选项。尺寸可以参考[贴片元件封装IPC7351标准](https://www.ipc.org/TOC/IPC-7351.pdf)
    3. 保存为`.pad`文件
-2. 运行Allegro PCB Editor，File - New，Drawing Type选Package Symbol
-3. 放置焊盘：Layout - Pins
-4. 绘制元件框：Add - Line，Class和Subclass设置为Package Geometry - Assembly Top
-5. 绘制place bound、丝印等
 
-## PCB和原理图联动
+**绘制封装**
+
+1. 运行Allegro PCB Editor，File - New，Drawing Type选Package Symbol
+2. 放置焊盘：Layout - Pins，在Option窗口中，Padstack设置要用的焊盘
+3. 元件框：Add - Line，Class和Subclass设置为Package Geometry - Assembly Top
+4. 丝印层：Package Geometry - Silkscreen Top
+5. 安装区：Package Geometry - Place Bound Top
+6. 参考编号：Layout - Labels - RefDes，Class和Subclass设置为Ref Des - Silkscreen Top，输入编号（通常输入REF，画版图时自动被替换为元件编号）
+7. 保存，得到`.dra`文件和`.psm`文件
+
+完成之后，将焊盘和封装添加到库里：Setup - User Preferences，Categories - Paths - Library，将`.dra`、`.psm`、`.pad`文件放到同一个文件夹，并将此文件夹添加到padpath和psmpath
+
+## 布局布线前准备
+
+1. 创建电路板：File - New，Drawing Type选择Board（或者用Board Wizard，但后者创建方法不太一样；又或者在原理图创建网表时勾选Create or Update PCB Editor Board）
+2. 调整绘图区尺寸：Setup - Design Parameters - Design，调整图纸大小
+   1. Size：单位一般选mil，Accuracy设1~2。Size选项选Other（另外几个是预设大小，不一定合适）
+   2. Extents：图纸左下角坐标&图纸宽度、高度。左下角最好是负数坐标，因为一般把原点作为电路板左下角，而电路板边框紧贴图纸边缘不好看。图纸要比电路板大一些，因为1) 布局时可以把器件放到一边，2) 留出空间放drill legend。一般比板子宽100mm / 4000mil足够
+3. 设置板层：Setup - Cross Section。设置好平面层之后可以直接填充
+   1. Type：布线层Conductor、介质层Dielectric、平面层（电源平面，地平面等）Plane
+   2. Negative：是否负片。通常平面层负片，信号层正片
+4. 设置格点：Setup - Grids
+   - Non-Etch：非电气层的栅格点，比如Board Geometry，安装孔
+   - All Etch：电气层栅格点，放置器件和走线都在栅格点上
+   - 各层：该层的栅格
+5. 选择过孔：Setup - Constraints - Physical，在弹出菜单表格中找到VIA，双击，选择Via加入到Via list中
+5. 定义电源地：Logic - Identify DC Nets，给电源、地设置电压值。做了这一步之后电源地的鼠线变成一个方框符号，布局布线时不会太乱
+
+## 布局
+
+1. 导入网表：File - Import - Logic。Import logic type选择Design entry CIS，Import directory选择原理图生成网表的位置，默认是`原理图位置/allegro`文件夹
+2. 摆放元件：Place - Manually。右键 - Mirror或者Options - Mirror，就会把元件沿纵轴翻转180°放到底层
+
+## 布线
+
+1. Route - Connect
+2. 添加过孔：双击，或右键 - Add Via
+1. 一次布多根线：Route - Connect - 右键 - Temp Group，选择多个管脚，右键 - Done
+3. Options - Bubble：调整新的线和已有的线如何互动。Hug不动已经布好的线，当新的线被挡住时紧靠已有的线；Shove推挤原有的线，为新的线腾出空间。如果选shove via，过孔也可以被推挤（Full优先推挤过孔，Manual优先推挤线而保持过孔不动）
+
+## 绘制板框、铺铜
+
+1. 绘制`Board Geometry / Outline`以及`Route Keepin / All`。两者距离30~40mil
+2. Shape - Rectangular，`Etch / 要铺铜的层`，Type选Dynamic Copper，Assign net name选要铺的网络名，然后画形状（可以直接画比Route Keepin更大的方框，Allegro会自动把它限制到和Route Keepin同样大）
+3. 电源平面分割：Add - Line，画Anti Etch，宽度20~30mil；Edit - Split Plane - Create，然后为分割后每部分选择网络，分割成功后删除Anti Etch
+3. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Mechanical Symbols
+
+## 其他
+
+**PCB和原理图联动**
 
 1. 同时打开原理图工程和PCB工程
 2. OrCAD - Options - Preferences - Miscellaneous - 勾选Enable Intertool Communication
+2. 如果联动失败，重新导出网表：Tools - Create Netlist，选中Create or Update PCB Editor Board
 3. 在Allegro激活place manual指令，然后在原理图选中元件，再回到Allegro就能直接放置
 
-## 常用指令
+**布局布线基础知识**
+
+1. 数字器件要远离模拟器件；模数混合器件的数字部分也要朝着数字器件
+2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
+3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
+4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
+
+**常用指令**
 
 ```bash
 # 鼠标点击&移动
@@ -200,16 +233,30 @@ ix 3
 iy -4
 ```
 
-## 布局布线基础知识
+**对齐器件**
 
-1. 数字器件要远离模拟器件；模数混合器件的数字部分也要朝着数字器件
-2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
-3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
-4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
+1. 进入布局模式：Setup - Application Mode - Placement Edit，或者右键 - Application Mode - Placement Edit
+2. 选中所有要对齐的器件
+3. 对着对齐基准的器件，右键 - Align Components。然后还可以在Options中选择对齐设置
+4. 回到普通模式：Setup - Application Mode - General Edit
 
-## 其他
+**调整文字字号**
+
+1. 设置预设字号：Setup - Design Parameter - Text - Setup text size，每个编号对应一个字号（通常不用自己设置）
+2. 修改字号：Edit - Change，在Options中选中Text block，以及字号的编号
+3. 选择要改变的丝印，右键 - Done
+
+**隐藏某一层**
+
+1. Manufacture - Artwork，应该会显示TOP，BOTTOM等各层。随便选一个，右键 - Add，如想显示顶层，需要的类为`REF DES / Silkscreen_Top`、`Pin / Top`、`Package Geometry / Silkscreen Top`、`Board Geometry / Outline`、`Board Geometry / Silkscreen Top`
+2. Visibility窗口 - Views - 选择刚才新建的层
+3. 显示全部层：Display - Color/Visibility - Global Visibility，或者新建一个显示全部层的View
+
+**杂项**
 
 走线拐角显示断开：Setup - Design Parameters - Display - Enhanced display modes - Connect line endcaps
+
+调整形状：Shape - Select Shape or Void/Cavity
 
 # 教程目录
 

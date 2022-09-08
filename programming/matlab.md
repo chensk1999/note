@@ -359,6 +359,13 @@ for i = 1:length(files)
     data{i} = importdata(file, ',', 1);
 ```
 
+文本字符和字符串的区别
+
+```matlab
+'abc' + 'def'    % 数组求和，[197, 199, 201]
+"abc" + "def"    % 字符串拼接，"abcdef"
+```
+
 # 文件操作
 
 ```matlab
@@ -404,7 +411,7 @@ plot(x, y2);
 fig = figure();
 tabgroup = uitabgroup(fig);
 tab1 = uitab(tabgroup, 'title', 'TAB 1');
-ax = axes(tab, 'nextplot', 'add');
+ax = axes(tab1, 'nextplot', 'add');
 % 如果只画一张图，应跳过uitab，直接axes(fig)
 % 以上每个初始化都可以在参数加任意组属性名&值指定属性。属性名不区分大小写
 % 例子中只有tab的标题和ax的NextPlot被指定
@@ -478,9 +485,10 @@ LineSpec字符串可用于方便地设置线型、点型和颜色：
 % 绘图区初始化和曲线绘制部分如上一节
 
 % 设置曲线标签
-line1.DisplayName = 'line 1';
+line1 = plot(x, y, 'DisplayName', 'line 1');  % 设置标签
+line1.DisplayName = 'line 1';   % 同上
 legend(line2, 'line 2');        % 设置并且显示。但是会把其他的legend隐藏掉
-lgd = legend(ax);               % properties(lgd)可查看标签可设置的属性
+lgd = legend(ax);               % 显示标签。properties(lgd)可查看标签可设置的属性
 legend(ax, 'location', 'north');% 等同于lgd.Location = 'north'。其他位置还有'NorthEast'等
 legend(ax, 'boxoff');           % 等同于lgd.Box = 'off'
 legend(ax, 'show');             % show, hide, toggle显示/隐藏；'off'删除
@@ -507,6 +515,33 @@ set(ax, 'TickLabelInterpreter', 'latex');
 
 # grid
 grid(ax);
+```
+
+# GUI
+
+```matlab
+fig = figure();
+g = uigridlayout(fig);
+
+% 绘图区域
+ax1 = uiaxes(g, 'nextplot', 'add');
+ax.Layout.Row = 1;
+ax.Layout.Column = [1, 2];
+
+% 滑块
+sld = uislider(g, 'Limits', [1, 5]);
+sld.Layout.Row = 2, sld.Layout.Column - 1;
+sld.ValueChangedFcn = @(obj, e) callback(obj, e, ax);
+% sld.ValueChangingFcn = ...
+% changing在拖动滑块过程中也会调用（此时sld.Value仍未改变，必须用event.Value）
+% changed只有滑块移动结束，松开鼠标之后才会调用
+
+% 滑块移动的回调函数
+function callback(obj, event, ax)
+    cla(ax);
+    t = linspace(0, pi, 100);
+    plot(ax, t, sin(event.Value * t));
+end
 ```
 
 # Simulink
@@ -538,17 +573,26 @@ order = 4;
 [b err] = firpm(order, f, a);
 % f和a是目标频率以及该频率的增益。其长度必须为偶数，两两一组表示一个频带；不同频带之间为过渡带
 
-% 分析设计结果
-[h, w] = freqz(b, 1, 512);
-plot(f, a, w/pi, abs(h));
-legend('Ideal', 'firpm Design');
-
 % 进行滤波
-filter(b, 1, vin)
-% 第二个参数是滤波器函数的分母项a，对于FIR滤波器a=1
+a = 1;      % 滤波器函数的分母项。对于FIR滤波器a=1
+filter(b, a, vin)
 ```
 
+## 数字滤波器分析
 
+```matlab
+[b, a] = butter(3, 0.2, 'low');    % 巴特沃斯低通滤波器
+
+% 使用系统模型（Control System Toolbox）
+ts = 1;
+sys = tf(b, a, ts);
+stepplot(sys);        % 单位冲激响应
+
+% 使用Signal Processing Toolbox
+[h, w] = freqz(b, a, 512);
+plot(w/pi, abs(h));
+legend('幅频响应');
+```
 
 # 其他
 

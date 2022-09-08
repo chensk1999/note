@@ -124,7 +124,9 @@ endif
 "C:\Program Files\7-Zip\7z.exe" x "shift-jis.zip" -mcp=932
 ```
 
-# Github SSH Authentication (Windows)
+# Github
+
+## SSH Authentication (Windows)
 
 若未特别说明，以下操作在git bash内完成
 
@@ -134,7 +136,6 @@ endif
 4. `ssh-add <私钥文件>`
 5. 添加到账户：[settings](https://github.com/settings/profile) - SSH and GPG keys - New SSH key - title是给自己看的，key是公钥文件的内容（以文本格式打开然后复制粘贴）
 6. 测试能否连接：`ssh -T git@github.com`，成功会输出 You've successfully authenticated。
-
 
 如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值好像使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
 
