@@ -607,7 +607,7 @@ endmodule
 `timescale 1ns / 1ps        // 时间单位（比如#1的延迟）1ns，时间精度1ps
 
 module testbench();
-    wire clk, foo, bar;             // 声明仿真时需要用到的变量
+    reg clk, foo, bar;              // 声明仿真时需要用到的变量
     some_sub_module sub(foo, bar);  // 被仿真的模块
     
     always #10 clk = ~clk;

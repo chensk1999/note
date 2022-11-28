@@ -389,7 +389,7 @@ L   R
 
 * **先序遍历**（Preorder Traversal）
 
-<img src="./images/DS_BinaryTree_PreorderTraversal.png" style="zoom:75%;" />
+![DS_BinaryTree_PreorderTraversal](../images/DS_BinaryTree_PreorderTraversal.png)
 
 ```c++
 void pre_trav(BinTree tree)

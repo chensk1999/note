@@ -61,10 +61,25 @@ virtuoso &
 | 鼠标左键+拖动 |                  | 区域选择                                                     |
 | 鼠标右键+拖动 |                  | 放大选中区域                                                 |
 
-
 ## 其他细节
 
-将器件名（Instance Name）改成如`I0<5:0>`的形式就能放多个器件。同理，信号名也可以用如`VOUT<5:0>`的形式。假设要将这6个器件连成环，可以将输出写为`VOUT<5:0>`，输入写为`VOUT<0>,VOUT<5:1>`。其他接法也类似，用逗号隔开。不能有空格
+**总线**
+
+Vector：`DATA<0:7>`表示8位向量，`I0<0:5>`表示6个器件。向量索引：`DATA<low:up:increment> = DATA<0:7:2>`，`DATA<0,2,4,6>`（两种索引含义相同。注意逗号后没有空格）
+
+Bundle：组合多根线，比如`A,B,C`
+
+用重复运算符`<*n>`扩展标量：`<*2>A,B = A,A,B`，`A,<*2>(B,C) = A,B,C,B,C`，括号可以嵌套，比如`<*2>(A,<*2>(B,C))`
+
+用重复运算符`<*n>`扩展向量：`A<0*2> = A<0,0>`，`A<0:2*2> = A<0,0,1,1,2,2>`，`A<(0:2)*2> = A<0,1,2,0,1,2>`
+
+**参数化电路**
+
+将电路参数设置为型如`pPar("var")`的方式，就能在调用的时候设置参数值。在设计行为级电路模型的时候很有用，但是实际电路一般不这么干（因为参数化电路的设计难度远大于设计的必要性。需要参数化版图pCell）
+
+添加或者删除了参数之后，需要用CIW - tools - CDF将参数加到cell里面（或者生成symbol也会自动添加。但是删除必须用CDF）。使用CDF时，layer要选择base，否则修改不会保存到cell里面。CDF还能设置默认参数值等信息
+
+**杂项**
 
 创建文字注解：Create - Note - Text（或者Shift+N）
 
@@ -73,12 +88,6 @@ virtuoso &
 Edit - Renumber Instances：重新编号
 
 Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调整可以选中的东西。如果设置错误，可能导致无法选中器件/线网等
-
-### 参数化电路
-
-将电路参数设置为型如`pPar("var")`的方式，就能在调用的时候设置参数值。在设计行为级电路模型的时候很有用，但是实际电路一般不这么干（因为参数化电路的设计难度远大于设计的必要性。需要参数化版图pCell）
-
-添加或者删除了参数之后，需要用CIW - tools - CDF将参数加到cell里面（或者生成symbol也会自动添加。但是删除必须用CDF）。使用CDF时，layer要选择base，否则修改不会保存到cell里面。CDF还能设置默认参数值等信息
 
 # 前仿真
 
@@ -186,7 +195,7 @@ Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y
 | ------- | ------------------------------------------------------------ |
 | A       | Quick **A**llign（点击选择一个东西，然后点击要对齐到的位置） |
 | S       | **S**tretch                                                  |
-| Shift+C | **C**hop                                                     |
+| Shift+C | **C**hop（点击选择对象，然后选择要切掉的部分）               |
 | Shift+M | **M**erge（合并两个形状）                                    |
 
 - 显示
@@ -231,11 +240,20 @@ LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS B
 
 Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
+导出gds2格式版图：File - Export - stream
+
+导出网表：
+
+1. 找到 a) LVS - Rules -LVS Run Directory，b) LVS - Inputs - Netlist - Spice Files，将这些文件清除
+2. 进行一次LVS，上述路径中的文件即为网表
+
 # 后仿真
 
 1. Layout Editor - Calibre - Run PEX，将结果保存到 Calibre View
 2. ADE - Setup - Environment，在 Switch View List 开头加上 calibre
 3. 运行仿真
+
+抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
 
 # 其他
 
