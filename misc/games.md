@@ -12,7 +12,21 @@ laboratory
 prison
 backup
 
-农业：in soil, 24 crops sustain 1 person; in hydroponics, 8 crops/person。经济作物是棉花比蘑菇赚钱
+## 农牧业
+
+**粮食**
+
+in soil, 24 crops sustain 1 person; in hydroponics, 8 crops/person
+
+- 土豆：产量较低。但是在贫瘠的土地上产量比其他的高
+- 水稻：收获期短，产量中等，工作量大
+- 玉米：收获期长，产量高
+
+**经济作物**
+
+收益：贩毒\>棉花≈蘑菇
+
+**畜牧业**
 
 1 boomalope = 2.5 chenmuel generator
 
@@ -38,6 +52,17 @@ O#O
 O#O
 #=墙，O=炮塔
 ```
+
+# 星露谷
+
+**比较赚钱的作物**
+
+- 春季：草莓、大黄
+- 夏季：杨桃、啤酒花、甜瓜、蓝莓
+- 夏秋：向日葵产油，小麦制作食物&酿酒
+- 秋季：南瓜、葡萄、蔓越莓
+
+基础价格大于200放小桶收益最高，否则做罐头
 
 # Advanced IK
 

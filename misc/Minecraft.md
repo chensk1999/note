@@ -447,3 +447,38 @@ hunter's rifle 枪，10，主世界稀有怪bomb carrier掉落(50%)
 
 {spellName:"barrier",uuidMost:5019302112127173582L,validSpell:1b,spellList:[{data:{params:{_target:4},key:"connector"},x:1,y:1},{data:{params:{_max:4,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:1,y:2},{data:{params:{_vector3:0,_vector2:2,_vector1:4},key:"operatorVectorSum"},x:1,y:3},{data:{params:{_target:2},key:"connector"},x:1,y:4},{data:{params:{_target:2},key:"connector"},x:1,y:5},{data:{params:{_target:2},key:"connector"},x:1,y:6},{data:{params:{_target:2},key:"connector"},x:1,y:7},{data:{params:{_target:4},key:"connector"},x:1,y:8},{data:{params:{_target:4},key:"connector"},x:2,y:1},{data:{key:"constantNumber",constantValue:"5"},x:2,y:2},{data:{params:{_target:4},key:"connector"},x:2,y:3},{data:{key:"constantNumber",constantValue:"5"},x:2,y:4},{data:{params:{_number2:1,_vector1:2},key:"operatorVectorMultiply"},x:2,y:5},{data:{params:{_target:2},key:"operatorEntityLook"},x:2,y:6},{data:{params:{_target:4},key:"connector"},x:2,y:7},{data:{params:{_target:4},key:"connector"},x:2,y:8},{data:{params:{_target:4},key:"connector"},x:3,y:1},{data:{params:{_max:3,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:3,y:2},{data:{params:{_target:2},key:"connector"},x:3,y:3},{data:{params:{_target:2},key:"connector"},x:3,y:4},{data:{params:{_vector3:0,_vector2:2,_vector1:3},key:"operatorVectorSum"},x:3,y:5},{data:{params:{_target:2},key:"operatorEntityPosition"},x:3,y:6},{data:{key:"selectorCaster"},x:3,y:7},{data:{params:{_target:4},key:"connector"},x:3,y:8},{data:{key:"constantNumber",constantValue:"9"},x:4,y:0},{data:{params:{_number2:1,_vector1:4},key:"operatorVectorMultiply"},x:4,y:1},{data:{params:{_max:4,_time:0,_target:1,_position:2},key:"trickConjureBlockSequence"},x:4,y:2},{data:{params:{_vector3:0,_vector2:4,_vector1:2},key:"operatorVectorSubtract"},x:4,y:3},{data:{params:{_target:3},key:"connector"},x:4,y:4},{data:{params:{_target:4},key:"connector"},x:4,y:8},{data:{key:"constantNumber",constantValue:"1"},x:5,y:0},{data:{params:{_target:4},key:"operatorVectorNormalize"},x:5,y:1},{data:{key:"constantNumber",constantValue:"5"},x:5,y:2},{data:{params:{_target:4},key:"connector"},x:5,y:3},{data:{params:{_target:4},key:"connector"},x:5,y:8},{data:{params:{_x:0,_y:3,_z:0},key:"operatorVectorConstruct"},x:6,y:0},{data:{params:{_vector2:1,_vector1:4},key:"operatorVectorCrossProduct"},x:6,y:1},{data:{params:{_vector2:4,_vector1:1},key:"operatorVectorCrossProduct"},x:6,y:2},{data:{params:{_target:1},key:"operatorVectorNormalize"},x:6,y:3},{data:{params:{_target:1},key:"connector"},x:6,y:4},{data:{params:{_target:1},key:"connector"},x:6,y:5},{data:{params:{_target:1},key:"connector"},x:6,y:6},{data:{params:{_target:1},key:"connector"},x:6,y:7},{data:{params:{_target:1},key:"connector"},x:6,y:8},{data:{key:"selectorCaster"},x:7,y:0},{data:{params:{_target:1},key:"operatorEntityLook"},x:7,y:1},{data:{params:{_target:1},key:"connector"},x:7,y:2}],uuidLeast:-7711147611344218784L}
 ```
+
+# WorldEdit
+
+[参考](https://mineplugin.org/WorldEdit/%E5%91%BD%E4%BB%A4)
+
+## 选择区域
+
+用法杖选择：左键选择第一个点，右键选择第二个点。这两个点围成的长方体被选中
+
+查看选区：`//size`
+
+## 选区操作
+
+```bash
+//set glass      # 将选区用玻璃填满
+//set air        # 删除选区内方块
+//replace stone white_wool   # 将石头替换为羊毛
+//replace grass              # 将非空气方块替换为草方块
+
+# 复制粘贴
+```
+
+## 生成
+
+```bash
+//cyl quartz_block 20      # 以玩家为圆心，半径20的圆
+//cyl quartz_block 20 -h   # 空心的圆
+```
+
+## 其他
+
+```bash
+//drain          # 抽水。必须站在水里
+```
+
