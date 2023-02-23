@@ -101,7 +101,7 @@ innovus
 
 **布局布线与优化**
 
-1. ECO - Optimize design
+本部分可以使用模板完成。首先将`auto_cmd.tcl`中的basename改成顶层模块名，然后运行`source auto_cmd.tcl`
 
 **保存结果**
 
@@ -113,6 +113,3 @@ innovus
 2. Virtuoso - File - Import - Stream，加载导入设置模板，选择之前保存的`.gds2`文件。导入成功后应该能看见layout视图
 3. Virtuoso - File - Import - Verilog，同上。完成之后应该能得到schematic，symbol，functional视图
 4. 修改视图标签（加`VDD!`和`VSS!`，将总线的方括号改成尖括号）
-
-
-

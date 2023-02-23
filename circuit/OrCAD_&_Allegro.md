@@ -98,7 +98,7 @@ Referenced Projects
 
 1. 双击元件
 2. 选中单个或多个元件，右键 - Properties，或Edit - Properties，或Ctrl + E
-3. 选中工程文件或者原理图页面，右键 - Object Properties，或Edit - Object Properties
+3. 选中工程文件或者原理图页面，右键 - Edit Object Properties，或Edit - Object Properties
 
 点击表格上方的Pivot按钮，或者选中整个表格 - 右键 - Pivot可以更改表格排列。单个元件竖排容易看，多个元件横排容易看
 
@@ -134,6 +134,8 @@ Referenced Projects
 
 # PCB
 
+## 软件基础操作
+
 打开PCB设计软件：
 
 1. 打开PCB Editor
@@ -155,14 +157,24 @@ Referenced Projects
 
 ## 绘制焊盘和封装
 
-教程20~26讲。目前只学了最基础的
-
 **绘制焊盘**
 
-1. 编辑焊盘。运行Pad Designer
-   1. Parameter：略。主要是通孔的设置，不经常用
-   2. Layers：首先选择Layer，然后编辑下面的选项。尺寸可以参考[贴片元件封装IPC7351标准](https://www.ipc.org/TOC/IPC-7351.pdf)
-   3. 保存为`.pad`文件
+使用Pad Designer绘制焊盘
+
+1. Parameter：若是表贴焊盘，一般不用改；需要钻孔的，Hole Type：钻孔形状；Plating：管脚焊盘选Plated，安装孔选Non-Plated；Drill diameter填钻孔尺寸，通常比管脚尺寸大10mil
+2. Layers
+   1. 若是表贴焊盘，勾选Single Layer Mode
+   2. 编辑需要各层焊盘
+   3. 尺寸可以参考[贴片元件IPC7351标准](https://www.ipc.org/TOC/IPC-7351.pdf)
+3. 保存为`.pad`文件
+
+- 层
+  - Solder mask：绿油开窗，用于焊接 / 散热，通常比Begin Layer层的Pad大4~6mil
+  - Paste Mask：机焊时上锡的区域，通常和Begin Layer层的Pad一样大
+- Pad
+  - Regular Pad：起电气连接作用。按照管脚尺寸定
+  - Thermal Relief：热风焊盘 / 花焊盘，减少焊盘连接到平面的连接，减弱焊接时热传导。通常比Regular Pad大20mil
+  - Anti Pad：隔离焊盘与平面。通常比Regular Pad大20mil
 
 **绘制封装**
 
@@ -173,8 +185,6 @@ Referenced Projects
 5. 安装区：Package Geometry - Place Bound Top
 6. 参考编号：Layout - Labels - RefDes，Class和Subclass设置为Ref Des - Silkscreen Top，输入编号（通常输入REF，画版图时自动被替换为元件编号）
 7. 保存，得到`.dra`文件和`.psm`文件
-
-完成之后，将焊盘和封装添加到库里：Setup - User Preferences，Categories - Paths - Library，将`.dra`、`.psm`、`.pad`文件放到同一个文件夹，并将此文件夹添加到padpath和psmpath
 
 ## 布局布线前准备
 
@@ -189,8 +199,9 @@ Referenced Projects
    - Non-Etch：非电气层的栅格点，比如Board Geometry，安装孔
    - All Etch：电气层栅格点，放置器件和走线都在栅格点上
    - 各层：该层的栅格
-5. 选择过孔：Setup - Constraints - Physical，在弹出菜单表格中找到VIA，双击，选择Via加入到Via list中
-5. 定义电源地：Logic - Identify DC Nets，给电源、地设置电压值。做了这一步之后电源地的鼠线变成一个方框符号，布局布线时不会太乱
+5. 选择过孔：Setup - Constraints - Physical，在弹出菜单表格中找到VIA，双击，选择Via加入到Via list中。通常用`VIA8_BGA`
+6. 添加封装库：Setup - User Preferences，Categories - Paths - Library，将`.dra`、`.psm`、`.pad`文件放到同一个文件夹，并将此文件夹添加到devpath、padpath和psmpath
+7. 定义电源地：Logic - Identify DC Nets，给电源、地设置电压值。做了这一步之后电源地的鼠线变成一个方框符号，布局布线时不会太乱
 
 ## 布局
 
@@ -263,7 +274,7 @@ iy -4
 
 # 教程目录
 
-教程：于争博士cadence视频教程
+教程：于争博士cadence视频教程，[地址1](https://www.bilibili.com/video/BV1ft411s74Q)，[地址2](https://www.bilibili.com/video/BV1ix411q7QW)
 
 没看的部分：20~26封装库、37~46约束规则设置、47显示设置、p51~60
 
@@ -284,12 +295,12 @@ iy -4
 - 第10讲 元件的替换与更新
 - 第11讲 对原理图中对象的基本操作
 - 第12讲
-  1、修改元件的VALUE及索引编号方法
-  2、属性值位置调整
-  3、放置文本
-  4、文本的移动、旋转、拷贝、粘贴、删除
-  5、编辑文字的大小、字体、颜色
-  6、放置图形
+    1. 修改元件的VALUE及索引编号方法
+    2. 属性值位置调整
+    3. 放置文本
+    4. 文本的移动、旋转、拷贝、粘贴、删除
+    5. 编辑文字的大小、字体、颜色
+    6. 放置图形
 - 第13讲 如何添加封装信息
 - 第14讲 生成网表
 - 第15讲 生成元件清单、打印原理图
@@ -331,9 +342,9 @@ iy -4
 - 第39讲：线宽线距约束规则设置示例；
 - 第40讲：区域约束规则设置示例；
 - 第41讲
-  1、设置器件模型，加载模型库，赋予器件模型
-  2、Constraint manager objects显示设置
-  3、创建总线
+    1. 设置器件模型，加载模型库，赋予器件模型
+    2. Constraint manager objects显示设置
+    3. 创建总线
 - 第42讲 设置拓扑约束（方法1）
 - 第43讲 置拓扑约束（方法2）
 - 第44讲 线长约束设置
@@ -348,26 +359,26 @@ iy -4
 - 第50讲 走线
 - 第51讲 群组布线
 - 第52讲 布线时信息显示
-  1、布线时显示延迟以及相对延迟信息
-  2、动态显示走线长度
+    1. 布线时显示延迟以及相对延迟信息
+    2. 动态显示走线长度
 - 第53讲 差分布线方法
-  1、伴随走线
-  2、单根走线模式
-  3、添加过孔
-  4、自动分离与靠拢
+    1. 伴随走线
+    2. 单根走线模式
+    3. 添加过孔
+    4. 自动分离与靠拢
 - 第54讲 两种高速布线形式
-  1、含T形连接点的网络走线方法
-  2、蛇形走线方法
-  3、修线
+    1. 含T形连接点的网络走线方法
+    2. 蛇形走线方法
+    3. 修线
 - 第55讲 铺铜操作
-  1、内电层铺铜
-  2、外层铺铜
-  3、编辑shape的边界
-  4、指定网络
-  5、手工void
-  6、删除孤岛
-  7、铺静态铜皮
-  8、铜皮的合并
+    1. 内电层铺铜
+    2. 外层铺铜
+    3. 编辑shape的边界
+    4. 指定网络
+    5. 手工void
+    6. 删除孤岛
+    7. 铺静态铜皮
+    8. 铜皮的合并
 - 第56讲 电源层分割
 - 第57讲 后处理：重新编号，back annotate，查看报告，数据库检查等杂散操作。
 - 第58讲 丝印处理
