@@ -220,7 +220,7 @@ Referenced Projects
 1. 绘制`Board Geometry / Outline`以及`Route Keepin / All`。两者距离30~40mil
 2. Shape - Rectangular，`Etch / 要铺铜的层`，Type选Dynamic Copper，Assign net name选要铺的网络名，然后画形状（可以直接画比Route Keepin更大的方框，Allegro会自动把它限制到和Route Keepin同样大）
 3. 电源平面分割：Add - Line，画Anti Etch，宽度20~30mil；Edit - Split Plane - Create，然后为分割后每部分选择网络，分割成功后删除Anti Etch
-3. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Mechanical Symbols
+3. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Package Symbols的Hole150
 
 ## 其他
 
@@ -260,7 +260,11 @@ iy -4
 2. 修改字号：Edit - Change，在Options中选中Text block，以及字号的编号
 3. 选择要改变的丝印，右键 - Done
 
-**隐藏某一层**
+**调整显示的层**
+
+方法1：Display - Color/Visibility，可以调整显示哪些层的哪些东西，以及其颜色
+
+方法2：
 
 1. Manufacture - Artwork，应该会显示TOP，BOTTOM等各层。随便选一个，右键 - Add，如想显示顶层，需要的类为`REF DES / Silkscreen_Top`、`Pin / Top`、`Package Geometry / Silkscreen Top`、`Board Geometry / Outline`、`Board Geometry / Silkscreen Top`
 2. Visibility窗口 - Views - 选择刚才新建的层
