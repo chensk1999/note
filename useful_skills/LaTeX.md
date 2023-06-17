@@ -65,20 +65,6 @@ y^\prime        % 求导
 \pm, \mp                        % 正负负正
 ```
 
-# 特殊字母
-
-```latex
-\eta, \mu               % 小写希腊字母
-\Eta, \Mu               % 大写希腊字母
-\varepsilon, \varpi     % 异体希腊字母
-\mathbb                 % 黑板粗体
-\mathbf                 % 正粗体
-\mathrm                 % 罗马体
-\mathfrak               % 哥特体
-\mathcal                % 手写体
-\aleph, \beth, \gimel, \daleth  % 希伯来字母
-```
-
 # 括号与空格
 
 ```latex
@@ -91,11 +77,11 @@ y^\prime        % 求导
 \lfloor, \rfloor    % 向下取整
 /, \backslash       % 斜线、反斜线
 
-\quad   % quad空格
-\       % 大空格。反斜线+空格
-\;      % 中等空格
-\,      % 小空格
-\!      % 紧贴
+% 空格。大小分别是
+\qquad \quad \enspace   % 2em，1em，0.5em；1em = M的宽度
+\           % 反斜杠+空格。等于空格的宽度
+\; \,       % 3/18em, 5/18em
+\!          % -3/18em
 
 \\      %换行
 ```
@@ -125,6 +111,25 @@ y^\prime        % 求导
 
 # 其他
 
+## 特殊字母、字体
+
+```latex
+\eta, \mu               % 小写希腊字母
+\Eta, \Mu               % 大写希腊字母
+\varepsilon, \varpi     % 异体希腊字母
+\aleph, \beth, \gimel, \daleth  % 希伯来字母
+
+\mathbb                 % 黑板粗体
+\mathbf                 % 正粗体
+\mathrm                 % 罗马体
+\mathfrak               % 哥特体
+\mathcal                % 手写体
+\texttt{普通文本}
+\textsf{等宽字体sans serif}
+```
+
+
+
 ```latex
 \because, \therefore    % 因为所以
 \angle                  % 角∠
@@ -132,6 +137,8 @@ y^\prime        % 求导
 \pmod{m}, a \bmod b     % 同余
 \binom{n}{m}            % 组合数
 ```
+
+## 矩阵、对齐
 
 ```latex
 % 矩阵 (lcr here means left, center or right for each column)
@@ -162,7 +169,6 @@ d&=e+f+g
 &d=e+f+g
 \end{aligned}
 \right.
-
 
 % 分段函数
 f(x)=

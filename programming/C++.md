@@ -38,7 +38,7 @@ char32_t  32bit  例：U"c32"
 
 ### 浮点数
 
-```
+```c++
 float
 double
 long double
@@ -99,11 +99,11 @@ union one_for_all{
 
 one_for_all pail;
 pail.int_val = 15;
-cout << pail.int_val;     //15
+cout << pail.int_val;     // 15
 pail.double_val = 10.5;
-cout << pail.double_val;  //此时输出int_val的值不确定
+cout << pail.double_val;  // 此时输出int_val的值不确定
 
-//匿名共用体
+// 匿名共用体
 struct widget{
     char brand[20];
     int type;
@@ -112,8 +112,8 @@ struct widget{
         char id_char[20];
     };
 };
-//嵌套在widget中间的共用体匿名，id_num与id_char成为widget的成员
-//它们占用相同的地址，每刻只有其中一个作为成员
+// 嵌套在widget中间的共用体匿名，id_num与id_char成为widget的成员
+// 它们占用相同的地址，每刻只有其中一个作为成员
 ```
 
 ### 枚举(enumeration)
@@ -121,29 +121,29 @@ struct widget{
 ```c++
 enum weekdays {Mon, Tue, Wed, Thu, Fri, Sat, Sum};
 enum {zero, null=0, one, uno=1};
-//Mon, null等值成为符号常量，称枚举量(enumerator)
-//不设置值，枚举量的取值为0，1，……；设置的值必须是整数或者枚举量
-//枚举量可以隐式地转化为int
-//可以定义枚举类的变量，它的值只能是枚举量
+// Mon, null等值成为符号常量，称枚举量(enumerator)
+// 不设置值，枚举量的取值为0，1，……；设置的值必须是整数或者枚举量
+// 枚举量可以隐式地转化为int
+// 可以定义枚举类的变量，它的值只能是枚举量
 ```
 
 ### 指针(pointer)
 
 ```c++
-//声明与初始化
-int* p, i;    //p为指针，i为整数
-p = &i;       //取地址运算符&
-*p = 5;       //间接寻址运算符*
+// 声明与初始化
+int* p, i;    // p为指针，i为整数
+p = &i;       // 取地址运算符&
+*p = 5;       // 间接寻址运算符*
 
-//指针与内存管理
-int* p = new int;  //常规定义的变量在栈中，而使用new定义的内存在堆中
+// 指针与内存管理
+int* p = new int;  // 常规定义的变量在栈中，而使用new定义的内存在堆中
 delete p;
-    //释放p指向的内存，不删除p，尝试释放一块不是new来的内存后果不确定
-    //释放空指针是安全的，释放栈空间中的地址会引发错误
-int* p_arr = new int[10];  //使用new生成动态数组(dynamic array)
-delete [] p;               //new和delete时的方括号必须匹配
+    // 释放p指向的内存，不删除p，尝试释放一块不是new来的内存后果不确定
+    // 释放空指针是安全的，释放栈空间中的地址会引发错误
+int* p_arr = new int[10];  // 使用new生成动态数组(dynamic array)
+delete [] p;               // new和delete时的方括号必须匹配
 
-//指针算数(pointer arithmetic)
+// 指针算数(pointer arithmetic)
 int* p = new int[10];
 p_arr[3] = 3;
 cout << *(p_arr+3);  // 3
@@ -157,16 +157,16 @@ cout << *(p_arr+3);  // 3
 
 ```c++
 int a;
-int& b = a;   //int&是指向int的引用，这样定义的b成为a的别名
-//引用变量必须在声明的同时初始化，且关联之后不能更改
+int& b = a;   // int&是指向int的引用，这样定义的b成为a的别名
+// 引用变量必须在声明的同时初始化，且关联之后不能更改
 
-//引用传参
+// 引用传参
 void increment(int &i)
 {
     i++;
 }
 
-//使用const的引用传参
+// 使用const的引用传参
 void f(const double & a)
 {
     std::cout << a;
@@ -184,18 +184,18 @@ void f(const double & a)
 ## 基本知识
 
 ```c++
-//函数原型(prototype)，作用是声明函数，并允许编译器进行静态类型检查(static type checking)
+// 函数原型(prototype)，作用是声明函数，并允许编译器进行静态类型检查(static type checking)
 int func(int, double);
 
 int main(){
-    //调用函数
-    //调用时给的输入称作实参(argument)，它被赋值给函数内部的形参(parameter)
-    //parameter是函数私有的局部变量，函数结束时被释放
+    // 调用函数
+    // 调用时给的输入称作实参(argument)，它被赋值给函数内部的形参(parameter)
+    // parameter是函数私有的局部变量，函数结束时被释放
     func(0, 1.5);
 }
 
 int func(int a, double b){
-    //do something
+    // do something
     return 0;
 }
 ```
@@ -209,35 +209,35 @@ int func(int a, double b){
 可以使用模板定义一个泛型的函数，调用时可以用任意类型的参数。在编译时，编译器根据实参类型产生合适的不同版本的函数，称为隐式实例化(implicit instantiation)
 
 ```c++
-//声明
+// 声明
 template <typename T1, typename T2>
 void Func(T1, T2, int);
 
-//显式实例化(explicit instantiation)
+// 显式实例化(explicit instantiation)
 template <> void Func(int, int *, int);
 
-//也可以在调用的时候显式实例化，如
+// 也可以在调用的时候显式实例化，如
 Func<double>(1.3, pt, 1);
 
-//定义
-template <typename T1, template T2>  //or class T, T could be any valid name
+// 定义
+template <typename T1, template T2>  // or class T, T could be any valid name
 void Func(T1 a, T2 b, int n)
 {
-    //do something
+    // do something
 }
 
-//模板的重载
+// 模板的重载
 template <typename T>
 void Func(T a[], T b[], int len)
 {
-    //do something
+    // do something
 }
 
-//具体化(specialization)
-//以结构体job为例的显式具体化例子
+// 具体化(specialization)
+// 以结构体job为例的显式具体化例子
 template <> void Func<job>(job &j1, job &j2)
 {
-    //do something
+    // do something
 }
 ```
 
@@ -252,7 +252,7 @@ c++11新增的特性
 template <class T1, class T2>
 auto Func(T1 x, T2 y) -> decltype(x+y)
 {
-    decltype(x+y) sum;  //decltype(x+y)即x+y的类型
+    decltype(x+y) sum;  // decltype(x+y)即x+y的类型
     sum = x + y;
     return sum;
 }
@@ -283,6 +283,7 @@ void print(T t, Rest... rest)
     std::cout << t;
     print_types(...rest);
 }
+```
 
 ## 内联函数(inline function)
 
@@ -353,7 +354,7 @@ using namespace name;
 a;                  //用using指令访问名称空间内全部标识符
 
 /*
-使用using声明往往比using指令更加安全，因为使用using声明时，编译器会自动检查有没有冲突的名称，
+使用using声明往往比using namespace更加安全，因为使用using声明时，编译器会自动检查有没有冲突的名称，
 而使用using指令时编译器不会（往往也难以）检查
 */
 ```
@@ -365,7 +366,7 @@ a;                  //用using指令访问名称空间内全部标识符
 1. 把全局变量都装进名称空间
 2. 把函数库装进名称空间
 3. 不要用全局的using指令/声明，尤其不要把using放进头文件
-4. using声明优于using指令
+4. using声明优于using namespace指令
 
 ## 单独编译
 
@@ -375,7 +376,7 @@ C++允许将源代码分散在多个文件中，分别编译后连接起来，�
 
 ```c++
 // 第一种防止重复include的方法
-#pragma once //最开头加上这个宏，就不会被重复include。不在C++标准中，但是现代编译器广泛支持
+#pragma once // 最开头加上这个宏，就不会被重复include。不在C++标准中，但是现代编译器广泛支持
 
 // 第二种方法：利用一个自选的宏
 #ifndef PROJNAME_FOLDERNAME_FILENAME_H_
@@ -612,7 +613,7 @@ int main()
 
 ## List
 
-双向链表
+双向链表。据说性能在大多数时候不如vector
 
 ```c++
 #include <iostream>
@@ -620,34 +621,45 @@ int main()
 
 int main()
 {
+    using std::list;
     // 定义列表
     list<int> L1;
-
     // 迭代列表
     list<int>::iterator it;
     for (it=L1.begin() ; it!=L1.end() : it++) {
         cout << *it << std::endl;
     }
-    
     // 首位元素
     L1.front();
     L1.back();
-    
     // 元素个数
     L1.empty();
     L1.size();
     L1.max_size();
-    
     // 插入与删除
     L1.insert(0, 0);
     L1.erase(0);	
     L1.clear();
-    
     // push & pop
     L1.push_back(5);
     L1.pop_back();
     L1.push_front(1);
     L1.pop_front();
+}
+```
+
+## Vector
+
+```c++
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec;
+    // 迭代
+    for (auto i=vec.begin(); i!=vec.end(); i++){
+        std::cout << *i << std::endl;
+    }
 }
 ```
 
@@ -684,19 +696,36 @@ class Redirector
 
 int main()
 {
-    using std::ios;
+    // 读文件
+    std::ifstream ifs;
+    ifs.open("filename.txt", std::ios::in);
+    if (!ifs.is_open()) {
+        // 文件打开失败
+        std::cerr << "Cannot open file" << std::endl;
+    } else {
+        char s[100];
+        ifs >> s;           // 也可以用ifs.read(s, len)，读写二进制数据时必须用read
+        ifs.eof();          // 判断文件是否结束
+        ifs.close();
+    }
 
-    std::ofstream log("oops.log", ios::out | ios::trunc);
-    log << "Write to file" << std::endl;
-    log.close()
-
-    std::ifstream ifp("filename.txt", ios::in);
-    char s[100];
-    ifp >> s;
-    ifp.eof();          //判断文件是否结束
-    ifp.close();
+    // 写文件
+    std::ofstream ofs("text.txt", std::ios::out);
+    ofs << "Write to file" << std::endl;
+    ofs.close()
 }
 ```
+
+`ifstream`内部保存了读指针`get position`，`ofstream`内部则有写指针`put position`，修改此指针可改变读写的位置
+
+```c++
+std::ifstream ifs("text.txt", std::ios::in);
+std::streampos get_pos = ifs.tellg();        // 获取当前指针位置
+ifs.seekg(10);                 // 移动指针
+ifs.seekg(0, std::ios::end);   // 把指针移动到文件末尾。类似还有ios::beg指向文件头、ios::cur指向当前位置
+```
+
+
 
 # 杂项
 

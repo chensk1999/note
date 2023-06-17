@@ -45,3 +45,7 @@ IBUFDS instance_name (
 
 1. 打开`<Vivado install path>\data\xicom\cable_drivers\nt64`文件夹
 2. 运行`install_drivers_wrapper.bat`
+
+# 使用Debug Core
+
+1. Project Manager - Synthesis - Open Synthesized Design - Set Up Debug

@@ -27,7 +27,7 @@ git中有一个特殊指针HEAD，它指向当前活动的commit。当进行提�
 
 ```bash
 git config [--global] user.name "Chen Shaokun"
-git config [--global] user.email "chen@mail.com"
+git config [--global] user.email "chensk@mail.ustd.edu.cn"
 
 # 取消代理
 # 能解决代理导致的“failed to connect to github.com port 443”错误
@@ -215,7 +215,7 @@ git push --delete <tagname>  # 移除远程仓库的标签
 
 ```bash
 # 查看分支
-git branch [-v]
+git branch -v
 
 # 切换分支
 git checkout <branch>
@@ -244,6 +244,10 @@ git rebase master dev
 # 转变为
 # A - B - C - master
 #                \ D' - E' - dev
+
+# 用rebase合并commit
+# 执行之后会弹出编辑窗口，选择如何合并。注意：如果要合并已经推送的提交，再次推送需要git push -f
+git rebase -i HEAD~3
 ```
 
 # 守护进程
@@ -251,14 +255,22 @@ git rebase master dev
 git daemon是git内置的极简服务器
 
 ```bash
-# git daemon默认不允许push，需要设置允许push。不过，daemon没有权限控制，允许push有安全隐患
-git config daemon.receivepack true
-
 # 启动服务
 git daemon --base-path="D:\git" --export-all
 
 # 从git daemon复制
 git clone git://192.168.0.1/repo
+
+# git daemon默认不允许push（因为daemon没有权限控制，push有安全隐患）
+# 以下两种方法可以允许push:
+# 1. 设置单个仓库的push许可
+git config daemon.receivepack true
+# 2. 启动daemon时全局允许push (此方法好像有些问题)
+git daemon --enable=receive-pack
+
+# push的时候可能出现unable to set SO_KEEPALIVE on socket错误
+# 需要在从机上执行以下指令
+git config --global sendpack.sideband false
 ```
 
 # gitignore

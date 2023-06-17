@@ -1,8 +1,6 @@
 
 
-参考教程：https://www.chipverify.com/verilog/verilog-tutorial
-
-在线练习&仿真：https://hdlbits.01xz.net/wiki/Problem_sets
+[参考教程1](https://www.chipverify.com/verilog/verilog-tutorial)，[参考教程2](https://vlab.ustc.edu.cn/guide/doc_verilog.html)，[在线练习&仿真](https://hdlbits.01xz.net/wiki/Problem_sets)
 
 # Verilog简介
 
@@ -372,7 +370,7 @@ module counter #(
     input clk, rst_n, en,
     output reg[N-1:0] out
 );
-    
+
     always @(posedge clk) begin
         if (!rst_n) out <= 0;
         else if (en) out <= out + 1'b1;
@@ -466,7 +464,7 @@ always @(*) begin
         STATE_1:    next_state = STATE_IDLE;
         default:    next_state = STATE_IDLE;
     endcase
-    
+
     // 输出。注意这种写法的输出是组合电路，有毛刺
     // 把这个case放到第三个always块里面，看上去也像是三段式，但效果并不一样
     case (state)
@@ -491,7 +489,7 @@ always @(*) begin
         default:    next_state = STATE_IDLE;
     endcase
 end
-    
+
 always @(posedge clk) begin
     // 状态转换
     state <= next_state;
@@ -545,7 +543,7 @@ module fast_fsm(
 );
     reg [4:0] state;
     assign K = state[4:3];
-    
+
     // 然后是状态机
 endmodule
 ```
@@ -562,7 +560,7 @@ Verilog标准中定义了行为级描述，并且大部分仿真器也支持它�
 module testbench ();
     reg clk, done;
     parameter integer ticks = 1000;
-    
+
     // 定义task
     // task可以用来做各种事情，比如实现电路功能
     task wait_ticks;   // 例：等待ticks个周期，然后翻转state
@@ -574,7 +572,7 @@ module testbench ();
             state = ~state;
         end
     endtask
-    
+
     // 定义function
     // 函数用于计算，不能使用时序控制，也不能调用任务
     // 至少一个输入，返回值是与函数名同名变量；函数不能递归调用，也不能在多处被同时调用
@@ -590,7 +588,7 @@ module testbench ();
         parity = calc_parity(8'hAB);        // 调用function
         #100 $finish;
     end
-    
+
     always #100 clk = ~clk;
 endmodule
 ```
@@ -609,7 +607,7 @@ endmodule
 module testbench();
     reg clk, foo, bar;              // 声明仿真时需要用到的变量
     some_sub_module sub(foo, bar);  // 被仿真的模块
-    
+
     always #10 clk = ~clk;
 
     initial begin
@@ -644,7 +642,7 @@ module shunt_rlc (t1, t2);
     parameter real R = 1;
     parameter real L = 1;
     parameter real C = 1;
-    
+
     // 定义局部变量
     integer res;
     real Vmax;
@@ -712,7 +710,7 @@ real vi;
 analog begin
     // 变量赋值
     vi = V(VIP, VIN) + offset;
-    
+
     // 控制流语法和Verilog基本一样，不再赘述
     if (gain < 1e12) begin
         // 支路贡献语句。同一个节点不能同时有电压和电流贡献
@@ -735,12 +733,12 @@ analog begin
         // 在仿真的第一步执行，一般用于变量初始化
         a = 0;
     end
-    
+
     @(final_step) begin
         // 仿真最后一步执行，一般用来打印结果
         $strobe("Bit error rate = %f", error/bits);
     end
-    
+
     direction = +1;    // +1表示上升沿、-1下降沿、0任意边沿
     time_tol = 1;      // 两次过零时间间隔小于此不会触发
     expr_tol = 1e-9;   // 如果过零之后小于这个值，不会触发
@@ -749,7 +747,7 @@ analog begin
         // time_tol和expr_tol的默认值挺靠谱的，除非噪声很大一般不用管
         V(VOUT) <+ V(VIN);
     end
-    
+
     start = 2e-5;
     T = 1e-6;            // 触发周期
     time_tol = 1e09;     // 时间偏差不能超过这么多

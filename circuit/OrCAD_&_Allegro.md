@@ -54,7 +54,7 @@ Referenced Projects
 3. 编辑原理图
 8. DRC：Tools - Design Rules Check
 9. 生成网表：Tools - Create Netlist，选择PCB Editor，Netlist Files填Allegro
-10. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard，或Tools - Bill of Materials
+10. 生成元件清单：选中`.dsn`文件，Report - CIS Bill of Materials - Standard，或Tools - Bill of Materials（前者单独列出每个元件，后者将相同元件一起列出）。第二种方式可能需要在Line Item Definition中添加PCB Footprint等内容
 
 注意：各种工具都是**上下文相关**的，如果没有选中合适的对象，工具将不可选中或者不显示。比如，必须激活原理图编辑菜单才能放置元件
 
@@ -134,27 +134,6 @@ Referenced Projects
 
 # PCB
 
-## 软件基础操作
-
-打开PCB设计软件：
-
-1. 打开PCB Editor
-2. 选择Allegro PCB Design XL
-
-窗口（Toolbar在View - Cutomize Toolbar设置，另外几个在View - Windows设置）：
-
-- 主窗口
-- Toolbar
-- Options：激活指令之后有对应设置
-- Find：控制你能选中哪些对象
-- Visibility：控制显示哪些对象
-- World View：缩略图。中键+拖动或者Shift+左键拖动能够移动显示区域
-- Command：命令行&命令信息
-
-**Class和Subclass**：Allegro有若干类（比如：Pin、Board Geometry），每个类拥有若干子类（如，大部分电气连线都有子类Top、Board Geometry类有子类Silkscreen Top），每个对象都属于某个子类。比如说，走线的类是etch，子类是它所在的层；元件包含了焊盘、丝印等部分，各自属于不同的类和子类。Display - Visibility可以调整不同类的显示
-
-**Allegro操作逻辑**：Allegro的的工具是上下文相关的，需要选中相应对象 / 激活相应指令才能使用。绝大多数操作流程为：激活命令，执行操作，然后结束命令（通常是右键 - Done）。命令结束之后回到Idle状态，无法进行操作
-
 ## 绘制焊盘和封装
 
 **绘制焊盘**
@@ -169,7 +148,7 @@ Referenced Projects
 3. 保存为`.pad`文件
 
 - 层
-  - Solder mask：绿油开窗，用于焊接 / 散热，通常比Begin Layer层的Pad大4~6mil
+  - Solder mask：绿油开窗，用于焊接 / 散热，通常比Begin Layer层的Pad大4~6mil / 0.1~0.15mm
   - Paste Mask：机焊时上锡的区域，通常和Begin Layer层的Pad一样大
 - Pad
   - Regular Pad：起电气连接作用。按照管脚尺寸定
@@ -188,13 +167,24 @@ Referenced Projects
 
 ## 布局布线前准备
 
+打开PCB设计软件：
+
+1. 打开PCB Editor
+2. 选择Allegro PCB Design XL
+
+**Class和Subclass**：Allegro有若干类（比如：Pin、Board Geometry），每个类拥有若干子类（如，大部分电气连线都有子类Top、Board Geometry类有子类Silkscreen Top），每个对象都属于某个子类。比如说，走线的类是etch，子类是它所在的层；元件包含了焊盘、丝印等部分，各自属于不同的类和子类。Display - Visibility可以调整不同类的显示
+
+**Allegro操作逻辑**：Allegro的的工具是上下文相关的，需要选中相应对象 / 激活相应指令才能使用。绝大多数操作流程为：激活命令，执行操作，然后结束命令（通常是右键 - Done）。命令结束之后回到Idle状态，无法进行操作
+
+**流程**
+
 1. 创建电路板：File - New，Drawing Type选择Board（或者用Board Wizard，但后者创建方法不太一样；又或者在原理图创建网表时勾选Create or Update PCB Editor Board）
 2. 调整绘图区尺寸：Setup - Design Parameters - Design，调整图纸大小
-   1. Size：单位一般选mil，Accuracy设1~2。Size选项选Other（另外几个是预设大小，不一定合适）
-   2. Extents：图纸左下角坐标&图纸宽度、高度。左下角最好是负数坐标，因为一般把原点作为电路板左下角，而电路板边框紧贴图纸边缘不好看。图纸要比电路板大一些，因为1) 布局时可以把器件放到一边，2) 留出空间放drill legend。一般比板子宽100mm / 4000mil足够
+   - Size：单位一般选mil，Accuracy设1~2。Size选项选Other（另外几个是预设大小，不一定合适）
+   - Extents：图纸左下角坐标&图纸宽度、高度。左下角最好是负数坐标，因为一般把原点作为电路板左下角，而电路板边框紧贴图纸边缘不好看。图纸要比电路板大，一般比板子宽100mm / 4000mil足够
 3. 设置板层：Setup - Cross Section。设置好平面层之后可以直接填充
-   1. Type：布线层Conductor、介质层Dielectric、平面层（电源平面，地平面等）Plane
-   2. Negative：是否负片。通常平面层负片，信号层正片
+   - Type：布线层Conductor、介质层Dielectric、平面层（电源平面，地平面等）Plane
+   - Negative：平面层负片，信号层正片
 4. 设置格点：Setup - Grids
    - Non-Etch：非电气层的栅格点，比如Board Geometry，安装孔
    - All Etch：电气层栅格点，放置器件和走线都在栅格点上
@@ -203,24 +193,148 @@ Referenced Projects
 6. 添加封装库：Setup - User Preferences，Categories - Paths - Library，将`.dra`、`.psm`、`.pad`文件放到同一个文件夹，并将此文件夹添加到devpath、padpath和psmpath
 7. 定义电源地：Logic - Identify DC Nets，给电源、地设置电压值。做了这一步之后电源地的鼠线变成一个方框符号，布局布线时不会太乱
 
-## 布局
+## 布局布线
+
+**布局布线基础知识**
+
+1. 数字器件要远离模拟器件；模数混合器件的数字部分也要朝着数字器件
+2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
+3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
+4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
+
+**布局**
 
 1. 导入网表：File - Import - Logic。Import logic type选择Design entry CIS，Import directory选择原理图生成网表的位置，默认是`原理图位置/allegro`文件夹
 2. 摆放元件：Place - Manually。右键 - Mirror或者Options - Mirror，就会把元件沿纵轴翻转180°放到底层
 
-## 布线
+**布线**
 
 1. Route - Connect
 2. 添加过孔：双击，或右键 - Add Via
-1. 一次布多根线：Route - Connect - 右键 - Temp Group，选择多个管脚，右键 - Done
-3. Options - Bubble：调整新的线和已有的线如何互动。Hug不动已经布好的线，当新的线被挡住时紧靠已有的线；Shove推挤原有的线，为新的线腾出空间。如果选shove via，过孔也可以被推挤（Full优先推挤过孔，Manual优先推挤线而保持过孔不动）
+3. 一次布多根线：Route - Connect - 右键 - Temp Group，选择多个管脚，右键 - Done
+4. Options - Bubble：调整新的线和已有的线如何互动。Hug不动已经布好的线，当新的线被挡住时紧靠已有的线；Shove推挤原有的线，为新的线腾出空间。如果选shove via，过孔也可以被推挤（Full优先推挤过孔，Manual优先推挤线而保持过孔不动）
 
-## 绘制板框、铺铜
+**约束**
+
+1. Setup - Constraints - Electrical（后续不加说明都在此页面进行）
+2. 创建约束规则：Electrical Constraint Set - Routing  - 需要设置的规则，在表格Name列上右键 - Create。约束内容或许可以参考[这篇博客](http://blog.chinaunix.net/uid-21198646-id-3212383.html)
+3. 应用约束：Net - Routing - Wiring，将需要约束的网络的Referenced Electrical C Set设为规则名
+4. 设置布线时显示是否满足约束：Setup - User Preferences - Categories - Route - Connect，开启allegro_dynam_timing
+
+**铺铜**
 
 1. 绘制`Board Geometry / Outline`以及`Route Keepin / All`。两者距离30~40mil
-2. Shape - Rectangular，`Etch / 要铺铜的层`，Type选Dynamic Copper，Assign net name选要铺的网络名，然后画形状（可以直接画比Route Keepin更大的方框，Allegro会自动把它限制到和Route Keepin同样大）
+2. Shape - Rectangular，`Etch / 要铺铜的层`，Type选Dynamic Copper，Assign net name选要铺的网络名，然后画形状
 3. 电源平面分割：Add - Line，画Anti Etch，宽度20~30mil；Edit - Split Plane - Create，然后为分割后每部分选择网络，分割成功后删除Anti Etch
-3. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Package Symbols的Hole150
+4. 放置安装孔（装铜柱的孔）：Place - Manully，Advanced Settings选中Library，Placement List选Package Symbols的Hole150
+
+## 后处理
+
+**完成后的检查**
+
+- DIsplay - Status，快速查看状态。这里必须全部通过（不通过的可以从下一步的报告找原因，比如有Unrouted nets，去查看Unconnected Pins Report）
+- Tools - Reports，更详细的报告。通常需要看Unconnected Pins，Shape No Net，Shape Islands，Design Rules Check
+- Tools - Database Chek，勾选全部选项，点Check，完成后选择Viewlog
+
+**丝印处理**
+
+丝印一般用的Class / Subclass为
+
+- `REF DES/SILKSCREEN_TOP`：元件编号等
+- `PACKAGE GEOMETRY/SILKSCREEN_TOP`：元件框
+- `BOARD GEOMETRY/SILKSCREEN_TOP`：其他丝印
+
+丝印文字字号设置：
+
+1. 设置预设字号：Setup - Design Parameter - Text - Setup text size，每个编号对应一个字号
+2. 修改字号：Edit - Change，在Options中选中Text block，以及字号的编号
+3. 选择要改变的丝印，右键 - Done
+
+参考字号大小：用2号可以看得很清楚，1号也可以
+
+| Width | Height | Line Space | Photo Width | Char Space |
+| ----- | ------ | ---------- | ----------- | ---------- |
+| 16    | 25     | 31         | 2           | 6          |
+| 23    | 31     | 39         | 2           | 8          |
+| 38    | 50     | 63         | 2           | 13         |
+| 47    | 63     | 79         | 2           | 16         |
+| 56    | 75     | 96         | 2           | 19         |
+
+## 制作光绘
+
+**生成钻孔文件**
+
+- Manufacture - NC - NC Drill，Scale Factor填1，然后Drill
+  - 若用了盲孔或埋孔，Drilling选择By layer
+  - 其他设置（如单位、有效数字）在NC Parameters
+  - 特殊钻孔（如方形孔）需要Manufacture - NC - NC Route
+- Manufacture - NC - Drill Legend，选OK，生成钻孔表，放在板外合适位置
+
+**生成光绘文件**
+
+- Manufacture - Artwork，设定film。Film options部分，
+  - Undefined line width填5或6
+  - Shape bounding box似乎随便填都行
+  - Plot mode平面层选Negative，其他选Positive
+  - 勾选Vector based pad behavior，其他不选
+- 选中要导出的film，勾选Check database before artwork，然后Create Artwork，最后点OK（**注意：这里如果不点OK就关闭界面，有几个文件不会被生成**）
+
+快电子学实验室的film名及其class / subclass：
+
+```
+adtop
+REF DES/SILKSCREEN_TOP
+PIN/ TOP
+PACKAGE GEOMETRY/ SILKSCREEN_ TOP
+BOARD GEOMETRY/OUTLINE
+BOARD GEOMETRY/ SILKSCREEN_ TOP
+
+art0x (走线层，Top层为art01，Bottom层为art0N)
+VIA CLASS/TOP
+PIN/TOP
+ETCH/TOP
+BOARD GEOMETRY/OUTLINE
+
+plane0x (平面层)
+ANTI ETCH/ALL
+ANTI ETCH/GND1
+VIA CLASS/GND1
+PIN/GND1
+ETCH/GND1
+BOARD GEOMETRY/OUTLINE
+
+drill (NCLEGEND-1-N需要生成钻孔文件后才有。N为层数)
+MANUFACTURING/NCLEGEND-1-N
+MANUFACTURING/NCDRILL_LEGEND
+MANUFACTURING/NCDRILL_FIGURE
+BOARD GEOMETRY/OUTLINE
+BOARD GEOMETRY/DIMENSION
+
+silktop
+REF DES/SILKSCREEN_TOP
+PACKAGE GEOMETRY/SILKSCREEN_ TOP
+BOARD GEOMETRY/OUTLINE
+BOARD GEOMETRY/SILKSCREEN_ TOP
+
+soldtop
+VIA CLASS/SOLDERMASK_TOP
+PIN/SOLDERMASK_TOP
+PACKAGE GEOMETRY/SOLDERMASK_TOP
+BOARD GEOMETRY/OUTLINE
+BOARD GEOMETRY/ SOLDERMASK_TOP
+
+pastetop
+PIN/PASTEMASK_TOP
+PACKAGE GEOMETRY/DISPLAY_ TOP
+BOARD GEOMETRY/OUTLINE
+```
+
+**检查投板所需的文件**
+
+- 光绘：应该一共有N + 9个`.art`文件（每层1个 + ad2个 + silk2个 + sold2个 + paste2个 + drill）
+- 钻孔文件：`<板名>-1-N.drl`文件
+- `art_param.txt`和`nc_param.txt`
+- 厂家要求的制板说明
 
 ## 其他
 
@@ -231,34 +345,12 @@ Referenced Projects
 2. 如果联动失败，重新导出网表：Tools - Create Netlist，选中Create or Update PCB Editor Board
 3. 在Allegro激活place manual指令，然后在原理图选中元件，再回到Allegro就能直接放置
 
-**布局布线基础知识**
-
-1. 数字器件要远离模拟器件；模数混合器件的数字部分也要朝着数字器件
-2. 滤波电容到引脚的走线和接地的线都要尽量短（更具体地，滤波回路与电源平面围成面积尽量小），使寄生电感最小
-3. 多个电容滤波时，从大到小按顺序摆放，小电容最靠近引脚（平面去耦时电容有一定去耦半径，而小电容的去耦半径最小）
-4. 首先保证小电容靠近引脚，然后让匹配电阻也尽量靠近引脚
-
-**常用指令**
-
-```bash
-# 鼠标点击&移动
-x 0 0
-ix 3
-iy -4
-```
-
 **对齐器件**
 
 1. 进入布局模式：Setup - Application Mode - Placement Edit，或者右键 - Application Mode - Placement Edit
 2. 选中所有要对齐的器件
 3. 对着对齐基准的器件，右键 - Align Components。然后还可以在Options中选择对齐设置
 4. 回到普通模式：Setup - Application Mode - General Edit
-
-**调整文字字号**
-
-1. 设置预设字号：Setup - Design Parameter - Text - Setup text size，每个编号对应一个字号（通常不用自己设置）
-2. 修改字号：Edit - Change，在Options中选中Text block，以及字号的编号
-3. 选择要改变的丝印，右键 - Done
 
 **调整显示的层**
 
@@ -274,7 +366,11 @@ iy -4
 
 走线拐角显示断开：Setup - Design Parameters - Display - Enhanced display modes - Connect line endcaps
 
+花焊盘不显示：Setup - Design Parameters - Display - Enhanced display modes，选中Thermal pads
+
 调整形状：Shape - Select Shape or Void/Cavity
+
+更新Symbol：Place - Update Symbols
 
 # 教程目录
 

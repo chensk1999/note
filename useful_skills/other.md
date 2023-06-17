@@ -139,6 +139,12 @@ endif
 
 如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值好像使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
 
+## Timed out
+
+出现`Failed to connect to github.com port 443 after 20000 ms: Timed out`错误大概率是因为代理设置
+
+首先关闭系统代理；然后执行`git config --global --unset http.proxy`和`git config --global --unset https.proxy`
+
 # 知网下载pdf文档
 
 1. 复制下载链接

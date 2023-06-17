@@ -141,6 +141,7 @@ L1.pop()
 | pop     | 删除指定位置元素并返回 |
 | sort    | 排序                   |
 | reverse | 反序                   |
+| index   | 寻找元素的index        |
 
 ### 对列表的函数
 
@@ -1206,7 +1207,7 @@ with open('whatever.csv', 'r') as fp:
         print(line)  # 字典，用第一行内容作为键
 
 # 写csv文件
-with open('whatever.csv', 'w') as fp:
+with open('whatever.csv', 'w', newline='') as fp:
     writer = csv.writer(fp)
     writer.writerow([1, 2, 3])
     rows = [(i, i+1, i**2) for i in range(0, 10)]

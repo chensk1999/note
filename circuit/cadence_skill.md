@@ -424,9 +424,13 @@ printf("%.2f" 96.3534)
 ; fprintf：输出到指定端口，常用于写入到文件
 fprintf(port "x = %n" 42)
 
-; sprintf：输出到变量
+; sprintf：数字转字符串
 sprintf(s "%L" (1 2 3))         ; s = "(1 2 3)"
 s = sprintf(nil "%L" (1 2 3))   ; same as above
+
+; 字符串转数字
+atof("2.5e-3")
+atoi("13.0")
 ```
 
 格式化字符串的关键字和 C 差不多，特别地可以用`%L, %P, %B`格式化列表、点、方框；`%s`除了格式化字符串之外，还可以格式化 Symbol；用`%n`格式化整形数或者浮点数
@@ -498,7 +502,8 @@ openResults("~/simulation/testcell/spectre/schemetic/psf")
 
 ; 选择仿真类型
 results()           ; 查看可选结果类别，比如tran，ac等
-selectResult('tran) ; 也可以是selectResults
+outputs()           ; 查看所有器件和net名
+selectResult('tran)
 
 ; 处理数据，绘制波形、打印数据
 VIN = v("/VIN")
@@ -524,10 +529,9 @@ VIN = v("/I0/VIN")      ; 假设有两个被扫参数，那么VIN类似于三维
 IOUT = i("/I0/IOUT")
 
 ; 查看被扫参数。如果参数缺省就会返回当前选中结果的参数
-var = sweepNames(VIN)               ; 返回被扫参数列表
-val = sweepValues(VIN)              ; 第一个参数取值列表
-sweepVarValues(VIN  nth(var 2))     ; 第n个参数取值列表
-v0 = value(val car(var) car(val))   ; 大概可以把waveform当成数组，value当成[]。但是value能够插值
+var = sweepNames()        ; 返回被扫参数列表
+sweepVarValues("vb")      ; 参数"vb"的取值列表
+v0 = value(val "vb" 400m) ; 当vb取值为400m的波形
 ```
 
 ## Plot & Print Data

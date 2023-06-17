@@ -147,9 +147,12 @@ Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调
 
 信号保存选项：Outputs - Save All，在此可以设置保存哪些仿真结果
 
-显示MOS管参数：选择DC仿真，选中Save DC Operating Point，仿真结束之后Results - Print - DC Operating Point可以打印静态参数
+显示MOS管静态工作点：选择DC仿真，选中Save DC Operating Point，仿真结束之后，
 
-静态工作点：DC仿真，Results - Annotate - DC Operating Points，然后点击信号
+1. Results - Print - DC Operating Point
+2. Results - Annotate - DC Operating Points，然后点击信号
+3. 选中器件，右键 - Annotations - DC Operating Points
+4. 在ADE L的Outputs中设置形如`OP("/MN0" "gm")`的变量
 
 使用Calculator编辑表达式：
 
@@ -258,21 +261,21 @@ Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y
 | V                  | Attach（比如将Label关联到Pad上）                             |
 | Shift+X, Shift+B   | Descend, Ascend                                              |
 
-## 验证
+## 验证与后仿真
 
-DRC和LVS使用的是Mentor Graphics（已被西门子收购）的Calibre软件进行。它并不是Cadence的一部分，需要用skill脚本加载，通常写仅`.cdsinit`文件自动加载
+验证与寄生参数提取使用Mentor Graphics的Calibre软件进行。它并不是Cadence的一部分，需要用skill脚本加载，通常写进`.cdsinit`文件自动加载
 
-### DRC (Design Rule Check)
+加载成功后在Layout Editor菜单出现Calibre子菜单
 
-Calibre - nmDRC，加载Rules File然后选择Run DRC
+- DRC (Design Rule Check)
+- LVS (Layout versus Schemetic)
+  - 网表：Rules - LVS Run Directory文件夹下的Inputs - Netlist - Spice Files文件
+  - 忽略器件：LVS Options - Gates
+  - 黑箱子：LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
+- PEX (Parasitic Extraction)
+- RVE (Result Viewing Environment）：完成PEX之后选择Start RVE，可以看各个Net的寄生电容、Pin与Pin之间的寄生电阻
 
-### LVS (Layout versus Schemetic)
-
-Calibre - nmLVS
-
-LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
-
-## 参数提取与后仿真
+## 后仿真
 
 1. Layout Editor - Calibre - Run PEX，将结果保存到 Calibre View
 2. ADE - Setup - Environment，在 Switch View List 开头加上 calibre
@@ -285,11 +288,6 @@ LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS B
 Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
 导出gds2格式版图：File - Export - stream
-
-导出网表：
-
-1. 找到 a) LVS - Rules -LVS Run Directory，b) LVS - Inputs - Netlist - Spice Files，将这些文件清除
-2. 进行一次LVS，上述路径中的文件即为网表
 
 # 其他
 

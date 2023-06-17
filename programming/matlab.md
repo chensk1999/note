@@ -30,22 +30,22 @@ quit            % 退出
 % if分支
 a = 21;
 if a == 10
-    fprintf('a = 10\n');
+    disp('a = 10\n');
 elseif a == 20
-    fprintf('a = 20\n');
+    disp('a = 20\n');
 else
-    fprintf('a = %d\n', a);
+    disp('a = %d\n', a);
 end
 
 % switch分支
 key = 'A';
 switch key
     case 'A'
-        fprintf('A is pressed\n');
+        disp('A is pressed\n');
     case 'B'
-        fprintf('B is pressed\n');
+        disp('B is pressed\n');
     otherwise
-        fprintf('invalid key\n');
+        disp('invalid key\n');
 end
 
 % while循环
@@ -188,6 +188,8 @@ parser_example(1， 2, 'mode', 'wb');
 
 ## 类
 
+[类组件](https://ww2.mathworks.cn/help/matlab/matlab_oop/class-components.html)
+
 ```matlab
 % 定义
 classdef MyClass
@@ -196,35 +198,30 @@ classdef MyClass
     end
 
     methods
-        function obj = MyClass(val)    % 构造函数。应该支持无参数语法
-            if (nargin == 1)
-                obj.value = val;
-            else
-                obj.value = 0;
+        function obj = MyClass(val)
+            % 构造函数。应该支持无参数语法（即不输入参数也能运行），以便创建默认对象
+            if ~exist('val', 'var')
+                val = 0;
             end
+            obj.value = val;
         end
 
         function obj = increment(obj)
             obj.value = obj.value + 1;
         end
     end
-    
-    methods(Static)      % 静态方法
-        function p = area(r)
-            p = pi * r * r;
-        end
-    end
 end
 
 % 使用
 a = MyClass
+b = MyClass(2)
 a.value = 3.2
-a.roundOff()
+a.increment()
 ```
 
 注意：Matlab默认的类是值类，其内容无法更改，对其赋值会创造了一个新的对象。比如例子里面的`increment`函数，它会返回一个新的对象，而原来的不变。内建的数组、元胞数组等都是如此
 
-如果想写“正常”的类，需要继承句柄类：
+如果想写“正常”的类，需要继承[句柄类](https://ww2.mathworks.cn/help/matlab/matlab_oop/comparing-handle-and-value-classes_zh_CN.html)：
 
 ```matlab
 classdef MyHandleClass < handle
@@ -233,6 +230,36 @@ end
 ```
 
 值类进行比较可以用`==`或者`isequal`。句柄类，`==`比较两者是否是同一个对象，`isequal`比较两者的值是否相等
+
+**特性**
+
+[类特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/class-attributes.html)、[方法特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/method-attributes.html)和[属性特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/property-attributes.html)定义一些特殊行为（比如继承，静态）。例如：
+
+```matlab
+classdef (Abstract = true) Example
+    properties (Access = protected, Constant = true)
+        a = 1;
+    end
+    methods (Static = true)
+        % 略
+    end
+end
+```
+
+
+
+## 工作区
+
+脚本、命令行中的变量储存在基础工作区中，函数则有自己的函数工作区。跨工作区传递数据最好用参数传递，但也有[其他办法](https://ww2.mathworks.cn/help/matlab/matlab_prog/share-data-between-workspaces.html)，比如
+
+```matlab
+function increment()
+    data = evalin('base', 'data');          % 获取基础工作区数据
+    assignin('base', 'data', data + 1);     % 向基础工作区赋值
+end
+```
+
+这个办法可用做于gui回调函数，但它的风险和`eval`是等同的
 
 # 数据类型
 
@@ -327,11 +354,26 @@ s = struct()    % 定义没有字段的结构体
 % 访问结构体
 s.a = 2
 s.('b')         % 用字符串访问
+
+isfield(s, 'a');    % 判断field是否存在
+```
+
+## 表
+
+```matlab
+tb = table();
+tb.a = [1; 2; 3];              % 添加一列
+tb.b = ["abc"; "def"; "ghi"];  % 再添加一列（必须和现有的列高度相同）
+
+if ismember("a", tb.Properties.VariableNames)
+    % 判断列是否存在
+    tb.a(1) = 0;
+end
 ```
 
 ## 字符与字符串
 
-用单引号括起来的文本字符（char），用双引号括起来的文本是字符串（string）。因为一般不会用matlab做字符处理，不分清楚也没有大碍
+用单引号括起来的文本字符（char），用双引号括起来的文本是字符串（string）。注意两者不同，比如`'abc' ~- "abc"`，需要用`strcmp`函数。字符串用起来更方便
 
 ```matlab
 % 格式化字符串/格式化输出
@@ -343,6 +385,9 @@ strrep('hello', 'hell', '')     % 将'hello'中的全部'hell'替换为''
 strsplit('hello, world', ' ')   % 分割字符串
 split('hello, world', ' ')      % 分割字符串。可以用在字符串数组上
 strtrim('  hello, world  ')     % 去除开头结尾空白
+
+% 正则表达式
+regexp("ababaab", "a+b", "match");
 
 % 其他一些函数。先在这里列出来，要用再看再补笔记吧
 % extractBefore, extractAfter, extractBetween
@@ -494,10 +539,13 @@ legend(ax, 'boxoff');           % 等同于lgd.Box = 'off'
 legend(ax, 'show');             % show, hide, toggle显示/隐藏；'off'删除
 
 % 设置坐标轴范围
-[xmin, xmax] = bounds(ax.Children.XData, 'all');
+xlim(ax, [0, inf]);             % 坐标下限为0，上限自动选择
+ylim(ax, 'tight');              % 坐标范围紧贴数据范围
+ylim(ax, 'padded');             % 坐标范围贴合数据，并留出一点边距
+xlim(ax, 'manual');             % 设置为手动模式，继续绘图时坐标范围不会自动改变
+% 手动设置
 [ymin, ymax] = bounds(ax.Children.YData, 'all');
 yspan = ymax - ymin;
-ax.XLim = [xmin xmax];
 ax.YLim = [ymin - 0.1*yspan, ymax + 0.1*yspan];
 
 % 坐标轴刻度
@@ -603,5 +651,9 @@ floor(x)     % 向下取整
 ceil(x)      % 向上取整
 round(x)     % 四舍五入取整
 fix(x)       % 向0取整
+
+% 保存命令行输出
+diary("matlab.log");
+diary off
 ```
 

@@ -289,6 +289,49 @@ text_pos, point_at = (2, 7), (4, 4)
 ax.annotate('example text with line', point_at, text_pos, arrowprops={'arrowstyle':'->'})
 ```
 
+# Event handling
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 产生数据
+x = np.sort(np.random.rand(15))
+y = np.sort(np.random.rand(15))
+names = np.array(list("ABCDEFGHIJKLMNO"))
+
+# 绘图
+fig, ax = plt.subplots()
+line, = plt.plot(x, y, marker='o')
+annot = ax.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
+                    bbox=dict(boxstyle="round", fc="w"),
+                    arrowprops=dict(arrowstyle="->"))
+annot.set_visible(False)
+
+# 定义回调函数
+def hover(event):
+    vis = annot.get_visible()
+    if event.inaxes == ax:
+        cont, ind = line.contains(event)
+        if cont:
+            x, y = line.get_data()
+            annot.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
+            text = "{}, {}".format(" ".join(list(map(str,ind["ind"]))),
+                   " ".join([names[n] for n in ind["ind"]]))
+            annot.set_text(text)
+            annot.get_bbox_patch().set_alpha(0.4)
+            annot.set_visible(True)
+            fig.canvas.draw_idle()
+        else:
+            if vis:
+                annot.set_visible(False)
+                fig.canvas.draw_idle()
+
+#绑定回调函数
+fig.canvas.mpl_connect('motion_notify_event', hover)
+plt.show()
+```
+
 # 其他
 
 ## 动态图
