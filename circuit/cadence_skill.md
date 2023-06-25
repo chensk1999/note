@@ -469,7 +469,7 @@ desVar("b" 1)
 ; a = 2, b = 1
 ```
 
-## Run Simulator
+## 运行仿真
 
 这一部分同样被很好地自动生成了，一般没有动的必要
 
@@ -490,11 +490,11 @@ for(v1 0 20
 )
 ```
 
-## Access Data
+## 访问数据
 
-仿真结束之后，数据被存在`~/simulation/<testSchemName>/spectre/schematic/psf`文件夹内。可以用 CIW - Tools - ADE L - Results Browser - File - Open Result 选择打开（但是不建议，因为这里面包括了所有 net 的仿真数据，在GUI里面很难找想要的东西）
+用ADE L仿真结束之后，数据被存在`~/simulation/<testSchemName>/spectre/schematic/psf`文件夹内。可以用 CIW - Tools - ADE L - Results Browser - File - Open Result 选择打开（但是不建议，因为这里面包括了所有 net 的仿真数据，在GUI里面很难找想要的东西）。下一次仿真时，仿真结果会自动被删除。在此之前随时都可以打开
 
-下一次仿真时，仿真结果会自动被删除。在此之前随时都可以打开
+用ADE XL仿真时，在Output Setup添加Ocean脚本，会自动打开仿真结果
 
 ```lisp
 ; 打开仿真结果
@@ -560,3 +560,15 @@ ocnSetAttrib(?XScale 'log)
 ocnPrint(VOUT ?output "out.csv" ?precision 6 ?from 0 ?to 1 ?step 0.01 ?numberNotation 'scientific)
 ```
 
+## ADE XL的ocean script
+
+```lisp
+vin = VT("/VIN")
+vout = VT("/VOUT")
+
+axlAddOutputs('("VIN")) ; 用脚本添加Output
+axlOutputResult(vin "VIN")
+axlOutputResult(vout)   ; Script本身的Output，不需Output名
+```
+
+脚本派生的Output为数组时好像没法正常Plot（但是标量就能正常显示），目前解决方法是在ocean脚本里自己Plot。在GUI选择Plot任何一个脚本输出，都会把整个脚本跑一遍（不过Plot标量时不会。估计标量被存储起来，数组旧不会）

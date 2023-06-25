@@ -257,5 +257,43 @@ close($fp);
 ## 目录操作
 
 ```perl
+# 获取目录下的文件
+@files = glob(./*.pdf);
+# 创建与删除目录
+$dir = "/tmp/perl"
+mkdir($dir) or die("Couldn't create $dir, $!");
+rmdir($dir) or die("Couldn't remove $dir, $!");
+# 切换目录
+chdir("/home") or die("Couldn't switch to /home, _!");
+```
+
+# 正则表达式
+
+```perl
+# 匹配表达式。返回匹配成功与否
+$text = "foo foo";
+$pattern = m/foo/;
+if ($text =~ $pattern) {
+    print("Matched\n");
+}
+
+# 数组上下文，并且有分组，返回匹配到的内容
+$time = "Jan 1, 13:10:02";
+($hour, $minute) = ($time =~ m/(\d+):(\d+):\d+/);
+
+# 正则的特殊变量
+"The food is in the salad bar" =~ m/foo/;
+print("Before:  $`\n");
+print("Matched: $&\n");
+print("After:   $'\n");
+
+# 替换(Substitution): s/PATTERN/REPLACEMENT/
+$string = "The cat sat on the mat";
+$string =~ s/cat/dog/;  # 将cat替换为dog
+
+# 转化(Translation): tr/SEARCHLIST/REPLACEMENTLIST/
+$string = 'The cat sat on the mat';
+$string =~ tr/a/o/;     # 将字母a转化为字母o
+$string =~ tr/a-z/A-Z/; # 将小写字母转化为大写字母
 ```
 

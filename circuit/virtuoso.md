@@ -10,7 +10,22 @@ ssh -X c01n01  # 连接计算节点。实验室服务器有c01n01 ~ c01n05一共
 virtuoso &
 ```
 
-**基本流程**
+**设计流程**
+
+```mermaid
+graph LR
+    A(原理图设计)
+    B(前仿真)
+    C(版图设计)
+    D(DRC与LVS验证)
+    E(后仿真)
+    
+    A --> B --> C --> D --> E
+```
+
+其中，每一步如果不通过 / 不满足指标就要回到之前步骤修改
+
+**操作流程**
 
 1. 创建Library：CIW - File - New - Library，输入要创建的库名，选择Attach to an existing techfile，选择要用的工艺库（如果不链接到工艺库，版图设计时无工艺层）
 2. 创建schemetic：打开 Library Manager ，从上方导航栏选择 File - New - Cellview，选择所属Library，填写 Cell 名字，选择要创建的 Type，然后确认创建
@@ -18,7 +33,7 @@ virtuoso &
 4. 创建符号：从Schematic L导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
 5. 前仿真
 6. 创建 layout：打开 schemetic，选择 Launch - layout
-6. 后仿真
+6. 验证与后仿真
 
 # 原理图
 
@@ -95,119 +110,6 @@ Edit - Renumber Instances：重新编号
 
 Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调整可以选中的东西。如果设置错误，可能导致无法选中器件/线网等
 
-# 仿真
-
-仿真主要工具是ADE L和ADE XL（ADE：Analog Design Environment）。ADE L和XL是软件界面，底层的仿真器都是可用多种仿真器（模拟电路用spectre，数模混仿用AMS）
-
-## 流程
-
-**testbench**
-
-1. 准备好想要仿真的元件的 Symbol
-2. 创建一个原理图用作测试台（testbench），可以命名为`<待仿真元件名>_test` 之类的
-3. 放置待仿真元件，并加上驱动、负载。驱动和负载要尽量与电路实际工作时相同，可以使用实际器件，也可以使用理想器件，还可以自己写Verilog-A。常用理想器件：analogLib的gnd、vdc、vpulse、vcvs；ahdlLib
-
-也可以在端口提供激励，这样就不需要testbench。这种方法简单，但是只能用标准激励，而且不能带负载，仿出来和实际工作状态不同，尽量不要用。使用方法：ADE L - Setup - Stimuli，给各个端口提供驱动
-
-**ADE L**
-
-1. Schematic导航栏 - Launch - ADE L打开仿真菜单。之后操作皆在此菜单进行
-2. 选择Analyses - Choose（或者右侧有AC，DC等文字的图标），编辑需要仿真的内容。详见仿真种类一节
-3. 编辑要输出的仿真结果
-4. Simulation - Netlist and Run（或者点击右侧绿色图标）
-5. Session - Save State（或者Toolbar的保存图标），推荐保存为Cellview
-
-**ADE XL**
-
-1. Schematic导航栏 - Launch - ADE XL
-2. Tests - Click to add test，然后会打开一个和ADE L长得很像的界面，编辑方式和ADE L相同，也可以Load State
-3. Run SImulation
-
-## 仿真种类
-
-**一般**
-
-- tran：瞬态（transient）仿真，仿真电路行为。必须写 stop time！有 conservative、moderate、liberal三种模式，conservative精度最高，moderate次之，liberal精度最低。一般模拟电路用conservative或者moderate，数字电路用liberal
-- dc：直流静态工作点仿真。建议勾选 Save DC Operating Point。Sweep Variable可以仿静态工作点随变量的变化
-- ac：交流仿真
-
-**周期**
-
-- pss：周期稳态（Periodic Steady-State）仿真，仿真周期性电路的工作点
-- pac：周期交流（Periodic AC）仿真
-- pnoise：周期噪声（Periodic Noise）仿真
-
-## 变量与仿真结果
-
-**查看信号**
-
-绘制Outputs：Results - Plot Outputs - 仿真类型
-
-仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后**不要关掉Direct Plot Form窗口**，鼠标选择要绘制的信号（有的变量不会保存，这种情况Direct Plot报错。加入Outputs中就会保存，或者设置保存选项：右键Analysis - Edit - Options - Output - Save，选择All）
-
-信号保存选项：Outputs - Save All，在此可以设置保存哪些仿真结果
-
-显示MOS管静态工作点：选择DC仿真，选中Save DC Operating Point，仿真结束之后，
-
-1. Results - Print - DC Operating Point
-2. Results - Annotate - DC Operating Points，然后点击信号
-3. 选中器件，右键 - Annotations - DC Operating Points
-4. 在ADE L的Outputs中设置形如`OP("/MN0" "gm")`的变量
-
-使用Calculator编辑表达式：
-
-1. 在 ADE L 或者 Visualization & Analysis XL 选择 Tools - Calculator
-2. 在 Calculator 的 Function Panel 编辑要计算的值（需要信号作为变量时，可以点击Schematic Selection Toolbar - 切换到原理图点击对应信号。Sechematic Selection Toolbar是有vt、vf、vdc等很多选项的菜单，鼠标悬停可看各种类的含义。如果没有View - Schematic Selection Toolbar显示），然后OK，这个量被加入到 buffer
-3. 选择 buffer 界面上面的 evaluate 图标，计算。（然后算式被推入 stack，计算结果到buffer）
-4. 可以回到 ADE L 仿真菜单界面，选择 Outputs - Setup，将表达式填入 Expression（复制粘贴或者点击 Get Expression 从计算器的缓冲取表达式），此后仿真时会计算这个值
-
-## 设计变量
-
-**设计变量**（Design Variable）
-
-原理图中可以将电路参数写为设计变量（Design Variable），如，将将控制电压设置为vctr，或MOS管宽度设置为 W。可以在仿真界面调整变量，较方便地找到最佳取值。调整方法为：
-
-- ADE L：在Design Variables面板右键 - Edit，或者选择Variables - Edit
-- ADE XL：可在Data View面板的Global Variables或Tests下面的Design Variables编辑（只有取消Global Variable勾选时Design Variable才有效）
-
-**参数仿真**
-
-一次性对变量多个不同的值进行仿真
-
-- ADE L
-
-Tools - Parametic Analysis。也可以将温度（temp）作为变量，通常设置Inclusion List为0，27，85
-
-Run mode - Parametic Set 只仿变量组（比如，v1 的 Value List 为 1 2 3，v2 的 Value List 为 2 4 6，则仿(v1, v2) = (1, 2), (2, 4), (3, 6)三组；如果用 Sweep 模式就会仿 9 组）。但是，Parametic Set 模式的结果用 calculator 算不了
-
-准确的说，用一般的瞬态仿真或 Sweep模式仿出来的结果在 Calculator 中是`v("\net" ?result "tran-tran")`，用 Parametic Set 模式仿的结果是`v("\net" ?result "sweep1_tran-sweep")`，因此需要分别编写算式，即使算的东西是完全相同的
-
-- ADE XL
-
-右键变量，Edit Variable。在弹出的Parameterize界面靠右上的Add Specification选择
-
-## 工艺角仿真
-
-ADE-L - Setup - Model Libraries - 选择想要仿真的工艺角，然后运行仿真
-
-## 蒙特卡罗仿真
-
-ADE-XL
-
-
-
-## 其他细节
-
-设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行一小段DC仿真来求解电路初值。Node Set设置DC仿真**迭代开始时**的节点电压，帮助初值求解的收敛；Initial Condition设置DC仿真**全程**的节点电压，用于设置电路初值。注意：如果初值设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
-
-遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - Convergence Parameters - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
-
-使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
-
-噪声频率 0.01~10G。说是由宝贵的经验定下来的
-
-快捷键：A、B设置Point Marker，M添加Point Marker，H、V添加Horizontal / Vertial Marker
-
 # 版图
 
 版图可以用 Layout Editor L 或者 XL，两者差别之一是 XL 可以用 Connectivity - Generate - Selected From Source 选项从原理图直接生成器件。首先点击 Selected From Source，切到 Schemetic Editor，选择若干元件，再切回来就能放置
@@ -261,43 +163,145 @@ Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y
 | V                  | Attach（比如将Label关联到Pad上）                             |
 | Shift+X, Shift+B   | Descend, Ascend                                              |
 
-## 验证与后仿真
-
-验证与寄生参数提取使用Mentor Graphics的Calibre软件进行。它并不是Cadence的一部分，需要用skill脚本加载，通常写进`.cdsinit`文件自动加载
-
-加载成功后在Layout Editor菜单出现Calibre子菜单
-
-- DRC (Design Rule Check)
-- LVS (Layout versus Schemetic)
-  - 网表：Rules - LVS Run Directory文件夹下的Inputs - Netlist - Spice Files文件
-  - 忽略器件：LVS Options - Gates
-  - 黑箱子：LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
-- PEX (Parasitic Extraction)
-- RVE (Result Viewing Environment）：完成PEX之后选择Start RVE，可以看各个Net的寄生电容、Pin与Pin之间的寄生电阻
-
-## 后仿真
-
-1. Layout Editor - Calibre - Run PEX，将结果保存到 Calibre View
-2. ADE - Setup - Environment，在 Switch View List 开头加上 calibre
-3. 运行仿真
-
-抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
-
 ## 其他
 
 Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
-导出gds2格式版图：File - Export - stream
-
-# 其他
-
-## 版图细节
+导出gds2格式版图：File - Export - stream；导入版图：File - Import - Stream，选择Stream File和Library、Technology Library即可。注意导入时可能建立很多个cellview，最好导入到新的库（在Library填库名即可，不需手动建库）
 
 电源轨宽度：1 mA (rms) = 1um（Electric migration，是金属层承载电流的上限）、IR drop（电源电压下降 = 峰值电流I × 走线电阻R）
 
 180工艺：过孔电阻 ≈ 10Ω/via，金属层电阻 ≈ 0.1Ω/sq，相邻金属层电容 ≈ 0.05fF/um2
 
 一般建议布线距离在DRC要求的1.3~1.4倍以上，否则对良品率稍有影响
+
+# 验证
+
+验证与寄生参数提取使用Mentor Graphics的Calibre软件进行。它并不是Cadence的一部分，需要用skill脚本加载，通常写进`.cdsinit`文件自动加载。加载成功后在Layout Editor菜单出现Calibre子菜单
+
+## DRC
+
+- DRC (Design Rule Check)
+
+## LVS
+
+- LVS (Layout versus Schemetic)
+  - 网表：Rules - LVS Run Directory文件夹下的Inputs - Netlist - Spice Files文件
+  - 忽略器件：LVS Options - Gates
+  - 黑箱子：LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
+
+## PEX
+
+- PEX (Parasitic Extraction)：提取寄生参数用于后仿真
+  - 抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
+
+- RVE (Result Viewing Environment）：完成PEX之后选择Start RVE，可以看各个Net的寄生电容、Pin与Pin之间的寄生电阻
+
+# 仿真
+
+仿真主要工具是ADE L和ADE XL（ADE：Analog Design Environment）。ADE L和XL是软件界面，底层的仿真器都是Spectre（也可以手动加载别的仿真器，比如数模混仿用AMS）
+
+## 流程
+
+**testbench**
+
+1. 准备好想要仿真的元件的 Symbol
+2. 创建一个原理图用作测试台（testbench），可以命名为`<待仿真元件名>_test` 之类的
+3. 放置待仿真元件，并加上驱动、负载。驱动和负载要尽量与电路实际工作时相同，可以使用实际器件，也可以使用理想器件，还可以自己写Verilog-A。常用理想器件有analogLib的gnd、vdc、vpulse、vcvs；ahdlLib
+
+也可以在端口提供激励，这样就不需要testbench。这种方法简单，但是只能用标准激励，而且不能带负载，仿出来和实际工作状态不同，尽量不要用。使用方法：ADE L - Setup - Stimuli，给各个端口提供驱动
+
+**ADE L**
+
+1. Schematic导航栏 - Launch - ADE L，打开仿真菜单。之后操作皆在此菜单进行
+2. Analyses - Choose（或者右侧有AC，DC等文字的图标），编辑需要仿真的内容。详见仿真种类一节
+3. Outputs - To Be Plotted - Select On Schematic，然后回到原理图点选要输出的信号；或者直接在Outputs面板编辑
+4. Simulation - Netlist and Run（或者点击右侧绿色图标）
+5. Session - Save State（或者Toolbar的保存图标），推荐保存为Cellview
+
+**ADE XL**
+
+XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基础用法
+
+1. Schematic导航栏 - Launch - ADE XL
+2. Tests - Click to add test，打开Test Editor，其界面与编辑方式均和ADE L相同，也可以Load State加载ADE L的状态
+3. Run SImulation
+
+## 仿真种类
+
+**一般**
+
+- tran：瞬态（transient）仿真，仿真电路行为。必须写 stop time！有 conservative、moderate、liberal三种模式，conservative精度最高，moderate次之，liberal精度最低。一般模拟电路用conservative或者moderate，数字电路用liberal
+- dc：直流静态工作点仿真。建议勾选 Save DC Operating Point。Sweep Variable可以仿静态工作点随变量的变化
+- ac：交流仿真
+
+**周期**
+
+- pss：周期稳态（Periodic Steady-State）仿真，仿真周期性电路的工作点
+- pac：周期交流（Periodic AC）仿真
+- pnoise：周期噪声（Periodic Noise）仿真
+
+## 变量与仿真结果
+
+**信号与表达式**
+
+- 信号（Signal）指电路某节点的电压电流，通常在Output Setup添加Signal后直接在原理图点选
+- 表达式（Expression）如其名，是SKILL语言的表达式，比如`peakToPeak(VT("/VOUT"))`表达式计算了VOUT信号的峰峰值。可以借助Tools - Calculator编辑
+
+仿真结束之后还想添加其他信号：Results - Direct Plot - Main Form，设置好之后不关掉Direct Plot Form窗口，鼠标选择要绘制的信号（有的信号没有被保存，导致Direct Plot报错。需要将其加入Outputs中，并勾选Save）
+
+**显示MOS管静态工作点**：选择DC仿真，选中Save DC Operating Point，仿真结束之后，
+
+1. Results - Print - DC Operating Point
+2. Results - Annotate - DC Operating Points，然后点击信号
+3. 选中器件，右键 - Annotations - DC Operating Points
+4. 计算形如`OP("/MN0" "gm")`的表达式
+
+## 特殊仿真方法
+
+### 参数仿真
+
+原理图中可以将电路参数写为设计变量（Design Variable），如，将控制电压设置为vctr，或将MOS管宽度设置为 W。特别地，temp是表示温度的变量，仿温度影响时通常取温度为0，27，85
+
+使用设计变量，不修改原理图就可以仿真参数对性能的影响，可以较方便地找到最佳取值。设置参数与扫参数的方法为：
+
+**ADE L**
+
+- 设置参数：在Design Variables面板右键 - Edit，或者选择Variables - Edit
+- 扫参数：Tools - Parametric Analysis
+
+**ADE XL**
+
+- 设置参数：Data View面板的Global Variables或Tests - Design Variables，右键变量，Edit Variable（只有取消Global Variable勾选时Design Variable才有效）
+- 扫参数：给参数设置多个值然后仿真
+
+### 工艺角仿真
+
+**ADE L**：Setup - Model Libraries - 选择想要仿真的工艺角，然后运行仿真
+
+**ADE XL**：Corners
+
+### 蒙特卡罗仿真
+
+只能用ADE XL跑。Run - Monte Carlo Sampling
+
+### 后仿真
+
+
+
+## 其他细节
+
+设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行DC仿真求解电路初值。Node Set设置DC仿真迭代初值，**帮助仿真收敛**；Initial Condition设置DC仿真全程的节点电压，用于**设置电路初值**。如果Initial Condition设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
+
+遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - Convergence Parameters - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
+
+使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
+
+噪声频率 0.01~10G。说是由宝贵的经验定下来的
+
+快捷键：A、B设置Point Marker，M添加Point Marker，H、V添加Horizontal / Vertial Marker
+
+# 其他
 
 ## 输出图片
 
