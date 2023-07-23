@@ -39,9 +39,31 @@ Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10�
 
 幸运的是，这些Unix Shell的指令基本一致，语法也只是分为两派，两个家族内部的语法高度相似
 
+## 语法
+
+### 指令
+
+```bash
+# 简单指令
+# 管道（Pipeline）
+# 指令序列
+```
+
+### 控制流
+
+```bash
+
+```
+
 # cmd.exe
 
 cmd.exe也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
+
+```powershell
+ping /?
+nslookup     # 查询域名的地址（DNS记录）
+ipconfig
+```
 
 # PowerShell
 
@@ -49,7 +71,7 @@ Powershell主要用于Windows 7及其后续版本，也可以运行于Linux和Ma
 
 ## 基础知识
 
-PowerShell不区分大小写，指令命名一般格式是verb-noun，同时很多指令都有别名，有的是为了向前兼容，有的是为了缩短指令名字
+PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名一般格式是`verb-noun`。大部分系统cmdlet都有别名，比如，`echo "Hello"`中的echo是`Write-Output`指令的别名
 
 使用参数时可以简化，能唯一识别即可，如，-common参数可以只输入-com（假设没有其他形参含有com），到这一步之后也可以用tab自动补全
 
@@ -66,10 +88,6 @@ PowerShell不区分大小写，指令命名一般格式是verb-noun，同时很�
 Get-Process | Out-File filename.txt
 Get-Process | Export-Csv filename.csv
 Get-Process | Export-Clixml filename.xml
-
-ping /?
-nslookup     # 查询域名的地址（DNS记录）
-ipconfig
 ```
 
 ## 语法
@@ -105,10 +123,20 @@ Get-ChildItem | Select-Object FullName, Length  # 选择获取的列
 加减乘除之类的都正常。注意，除法是浮点除法
 
 ```powershell
-1 -gt 0     # 大于
-1 -band 3   # 位运算
+1 -gt 0     # 大于。注意，>是重定向运算符
+1 -band 3   # 位运算。类似有-bor, -bxor等
 1 -shl 1    # 左移。右移是-shr
 ```
+
+**重定向运算符**
+
+```powershell
+Write-Output "Hello" > script.log   # 写入文件
+Write-Output "World" >> script.log  # 追加到文件
+Write-Warning "warn" *> script.log  # 将所有流（比如，Error和Warning）重定向到文件
+```
+
+用`Out-File` cmdlet有更多参数
 
 ### 控制流
 

@@ -17,9 +17,9 @@ graph LR
     A(原理图设计)
     B(前仿真)
     C(版图设计)
-    D(DRC与LVS验证)
+    D(验证)
     E(后仿真)
-    
+
     A --> B --> C --> D --> E
 ```
 
@@ -44,7 +44,7 @@ graph LR
 3. 创建符号：从导航栏选择 Create - Cellview - From Cellview，填写 To View Name 为 symbol，确认
 4. 编辑符号：符号中只有pin（红色小方块以及端口名）是有电气属性的，绿色的线只是外观。`@partName`会显示为cell名称（比如BUF），`@instanceName`显示为元件名（比如U0）
 
-## Schemetic Editor L 快捷键
+## Schemetic Editor快捷键
 
 **增**
 
@@ -82,7 +82,7 @@ graph LR
 - 左键+拖动：区域选择
 - 右键+拖动：放大到选中区域
 
-## 其他细节
+## 其他
 
 **总线**
 
@@ -112,13 +112,11 @@ Options - Select Filter 或 Ctrl + F 或 工具栏几个有鼠标的图标：调
 
 # 版图
 
-版图可以用 Layout Editor L 或者 XL，两者差别之一是 XL 可以用 Connectivity - Generate - Selected From Source 选项从原理图直接生成器件。首先点击 Selected From Source，切到 Schemetic Editor，选择若干元件，再切回来就能放置
-
 ## 显示设置
 
 Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y Snap Spacing调整为对应工艺的值。对于180nm，两者为0.005
 
-## Layout Editor L 快捷键
+## Layout Editor快捷键
 
 - 放置器件、连线
 
@@ -165,6 +163,8 @@ Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y
 
 ## 其他
 
+从原理图生成器件：Connectivity - Generate - Selected From Source，切到原理图选择元件。注意Layout Editor L没有此功能，需要用XL
+
 Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
 导出gds2格式版图：File - Export - stream；导入版图：File - Import - Stream，选择Stream File和Library、Technology Library即可。注意导入时可能建立很多个cellview，最好导入到新的库（在Library填库名即可，不需手动建库）
@@ -181,21 +181,26 @@ Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对�
 
 ## DRC
 
-- DRC (Design Rule Check)
+DRC（Design Rule Check)检查布局布线是否违反设计规则（常见违例有走线太近、天线效应等）
 
 ## LVS
 
-- LVS (Layout versus Schemetic)
-  - 网表：Rules - LVS Run Directory文件夹下的Inputs - Netlist - Spice Files文件
-  - 忽略器件：LVS Options - Gates
-  - 黑箱子：LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
+LVS (Layout versus Schemetic)检查原理图和版图是否一致
+- 网表：Rules - LVS Run Directory文件夹下的Inputs - Netlist - Spice Files文件
+- 忽略器件：LVS Options - Gates
+- 黑箱子：LVS Options - Include - 勾选Include Rule Statements，在输入框加入`LVS BOX <cell name>`：把cell当成黑箱子
 
 ## PEX
 
-- PEX (Parasitic Extraction)：提取寄生参数用于后仿真
-  - 抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
+PEX (Parasitic Extraction)：提取寄生参数用于后仿真
+- 抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
+- 黑箱子：Inputs - Blocks，只勾选要抽取的Cell，然后Outputs - Extraction Type选ADMS
 
-- RVE (Result Viewing Environment）：完成PEX之后选择Start RVE，可以看各个Net的寄生电容、Pin与Pin之间的寄生电阻
+## RVE
+
+RVE（Result Viewing Environment）是查看寄生参数的工具
+
+- 完成PEX之后选择Start RVE，可以看各个Net的寄生电容、Pin与Pin之间的寄生电阻。注意打开的是最近一次PEX抽出来的参数
 
 # 仿真
 
@@ -257,6 +262,18 @@ XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基�
 3. 选中器件，右键 - Annotations - DC Operating Points
 4. 计算形如`OP("/MN0" "gm")`的表达式
 
+**信号保存设置**
+
+- Outputs - Save All
+- Analyses - Choose - Options - Output（会覆盖前一项的设置。建议不要动）
+
+前仿真可以用默认设置，后仿真建议设置selected，否则仿真结果动辄几十几百GB。注意，信号保存选项和电流保存选项是分开的。默认不保存电流。保存选项有
+
+- selected：只保存Outputs中的信号
+- lvl：保存`nestlvl`深度的信号，比如`nestlvl = 0`就只保存顶层的信号
+- all：保存全部信号
+- lvlpub、allpub：类似lvl和all，不过只保存”public“信号，一些内部节点（比如Verilog-A内部节点和某些晶体管内部的节点）会被忽略
+
 ## 特殊仿真方法
 
 ### 参数仿真
@@ -287,13 +304,15 @@ XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基�
 
 ### 后仿真
 
-
+首先跑PEX，提取clibre view；Setup - Environment，在Switch View List开头加上calibre
 
 ## 其他细节
 
-设置电路初值：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行DC仿真求解电路初值。Node Set设置DC仿真迭代初值，**帮助仿真收敛**；Initial Condition设置DC仿真全程的节点电压，用于**设置电路初值**。如果Initial Condition设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
+**设置电路初值**：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行DC仿真求解电路初值。Node Set设置DC仿真迭代初值，**帮助仿真收敛**；Initial Condition设置DC仿真全程的节点电压，用于**设置电路初值**。如果Initial Condition设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
 
-遇到“Zero diagonal found in Jacobian”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - Convergence Parameters - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
+遇到“**Zero diagonal found in Jacobian**”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - Convergence Parameters - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
+
+**并行仿真**：Setup - High-Performance Simulation，选择APS以及Use ++aps，就能使用多核仿真；另外，ADE XL - Options - Job Setup设置数量大于1，Options - Run Options选择Parallel，可以同时进行多个仿真
 
 使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
 

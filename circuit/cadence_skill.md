@@ -157,7 +157,7 @@ member(2 l1)    ; 是否包含元素（返回nil / 以2为首元素的列表）
 
 ```lisp
 ; 用冒号定义坐标
-coord = 300:400     ;(300 400)
+coord = 300:400     ; (300 400)
 
 ; 提取坐标
 x = xCoord(coord)
@@ -180,11 +180,10 @@ ury = cadadr(bBox)
 ```lisp
 ; if-then-else （注意：if和括号中间不能有空格）
 ; 控制流其实都是函数，而函数调用当然不允许函数名和括号中间有空格
-if( shape == "rect"
-  then
+if( shape == "rect" then
     println("Shape is rectangle")
     rectCnt++
-  else
+else
     println("Shape is not rectangle")
   )
 ; 从Lisp的角度看if函数：如果第一个参数为真，计算第二个参数的值并返回；否则，计算第三个参数的值并返回
@@ -534,6 +533,16 @@ sweepVarValues("vb")      ; 参数"vb"的取值列表
 v0 = value(val "vb" 400m) ; 当vb取值为400m的波形
 ```
 
+**底层数据结构**
+
+用前文方法读取到的数据是`srrWave`对象，用起来很方便，但是有时候仍需要直接访问底层的`srrVec`对象：
+
+```lisp
+xvec = drGetWaveformXVec(VT("/VOUT"))   ; 获取X轴向量（通常是时间）
+xlen = drVectorLength(xvec)             ; 向量长度
+x_last = drGetElem(xvec xlen-1)         ; 访问向量元素
+```
+
 ## Plot & Print Data
 
 OCEAN的绘图没有面向对象的形式，只能用面向过程的绘图
@@ -551,7 +560,7 @@ currentWindow()             ; 获取/设置当前绘图窗口
 sub1 = addSubwindow()       ; 创建并切换到新的子窗口
 
 ; 绘图
-plot(VIN IOUT ?expr '("VIN" "IOUT"))
+plot(VIN IOUT ?expr '("VIN" "IOUT") ?strip 1)
 
 ; log scale
 ocnSetAttrib(?XScale 'log)
@@ -569,6 +578,8 @@ vout = VT("/VOUT")
 axlAddOutputs('("VIN")) ; 用脚本添加Output
 axlOutputResult(vin "VIN")
 axlOutputResult(vout)   ; Script本身的Output，不需Output名
+
+calcVal("outputName" "test_name")   ; 获取其他test的Output
 ```
 
-脚本派生的Output为数组时好像没法正常Plot（但是标量就能正常显示），目前解决方法是在ocean脚本里自己Plot。在GUI选择Plot任何一个脚本输出，都会把整个脚本跑一遍（不过Plot标量时不会。估计标量被存储起来，数组旧不会）
+在GUI选择Plot任何一个脚本输出，都会把整个脚本跑一遍（不过Plot标量时不会。估计标量被存储起来，数组就不会）

@@ -336,6 +336,12 @@ BOARD GEOMETRY/OUTLINE
 - `art_param.txt`和`nc_param.txt`
 - 厂家要求的制板说明
 
+**检查焊接所需的文件**
+
+- 制板说明之外的投板文件
+- 物料清单（从原理图流程一节导出元件清单获取）
+- 器件坐标（File - Export - Placement）
+
 ## 其他
 
 **PCB和原理图联动**

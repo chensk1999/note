@@ -192,13 +192,13 @@ parser_example(1， 2, 'mode', 'wb');
 
 ```matlab
 % 定义
-classdef MyClass
+classdef MyNum
     properties
         value {mustBeNumeric}
     end
 
     methods
-        function obj = MyClass(val)
+        function obj = MyNum(val)
             % 构造函数。应该支持无参数语法（即不输入参数也能运行），以便创建默认对象
             if ~exist('val', 'var')
                 val = 0;
@@ -213,13 +213,13 @@ classdef MyClass
 end
 
 % 使用
-a = MyClass
-b = MyClass(2)
+a = MyNum
+b = MyNum(2)
 a.value = 3.2
 a.increment()
 ```
 
-注意：Matlab默认的类是值类，其内容无法更改，对其赋值会创造了一个新的对象。比如例子里面的`increment`函数，它会返回一个新的对象，而原来的不变。内建的数组、元胞数组等都是如此
+注意：Matlab默认的类是值类，其内容无法更改，对其赋值会创造一个新的对象。比如例子里面的`increment`函数，它会返回一个新的对象，而原来的不变。内建的数组、元胞数组等都是如此
 
 如果想写“正常”的类，需要继承[句柄类](https://ww2.mathworks.cn/help/matlab/matlab_oop/comparing-handle-and-value-classes_zh_CN.html)：
 
@@ -231,7 +231,7 @@ end
 
 值类进行比较可以用`==`或者`isequal`。句柄类，`==`比较两者是否是同一个对象，`isequal`比较两者的值是否相等
 
-**特性**
+### 特性
 
 [类特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/class-attributes.html)、[方法特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/method-attributes.html)和[属性特性](https://ww2.mathworks.cn/help/matlab/matlab_oop/property-attributes.html)定义一些特殊行为（比如继承，静态）。例如：
 
@@ -242,6 +242,21 @@ classdef (Abstract = true) Example
     end
     methods (Static = true)
         % 略
+    end
+end
+```
+
+### 继承
+
+```matlab
+classdef MyPosNum < MyNum   % 继承MyNum类
+    methods
+        function obj = MyPosNum(value)
+            if nargin == 0
+                value = 1;
+            end
+            obj@MyNum(value);   % 调用父类构造函数
+        end
     end
 end
 ```
@@ -356,6 +371,16 @@ s.a = 2
 s.('b')         % 用字符串访问
 
 isfield(s, 'a');    % 判断field是否存在
+```
+
+结构体数组
+
+```matlab
+s = struct('a', 1, 'b', 'value');
+s_arr = [s, s, s];
+
+% 批量访问
+[s_arr.a] = deal(1, 2, 3);
 ```
 
 ## 表
