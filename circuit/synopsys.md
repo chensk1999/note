@@ -14,7 +14,7 @@ VCS是Verilog仿真器；Verdi是数字电路debug平台，可以用来查看VCS
 4. 在testench顶层加入以下代码：
 
 ```verilog
-`ifdef USE_FSDB	
+`ifdef USE_FSDB
     initial begin
         $fsdbDumpfile("inter.fsdb");
         $fsdbDumpvars;
@@ -34,7 +34,7 @@ VCS是Verilog仿真器；Verdi是数字电路debug平台，可以用来查看VCS
 4. 在testbench顶层加入以下代码。将U0更改为顶层模块实例名
 
 ```verilog
-`ifdef USE_FSDB	
+`ifdef USE_FSDB
     initial begin
         $fsdbDumpfile("inter.fsdb");
         $fsdbDumpvars;
@@ -51,7 +51,7 @@ end
 
 ### 布局布线后仿真
 
-和综合后仿真一致，只不过在`verify_post_apr`目录下进行
+和综合后仿真一致，只不过在`verify_post_apr`目录下进行，而且反标的SDF文件改为apr时使用的
 
 # Design Compiler
 
@@ -68,7 +68,44 @@ DC是verilog的RTL综合器
 
 主要包括三项：周期、input delay、output delay，单位为纳秒。其中，两个delay指时钟有效沿到数据稳定的时间
 
-比如，时钟周期为10 ns，input delay为2 ns，output delay为3 ns。则0~1 ns，输入可能不稳定，1~10 ns输入保证稳定；10~12 ns，输出可能不稳定，12~20 ns，输出保证稳定
+比如，时钟周期为10 ns，input delay为2 ns，output delay为3 ns。则0~2 ns，输入可能不稳定，2~10 ns输入保证稳定；10~13 ns，输出可能不稳定，13~20 ns，输出保证稳定
+
+**完成后的检查**
+
+检查各个rpt文件；可以用`check_design`命令查看问题
+
+```verilog
+module clk_div(
+    input clk,
+    input rst_n,
+    output reg clk_out
+);
+    // 略
+endmodule
+
+module top(
+    input clk,
+    input rst_n
+);
+    wire clk_div2;
+    clk_div div2(.clk(clk), .rst_n(rst_n), .clk_out(clk_div2));
+endmodule
+```
+
+
+
+```tcl
+create_generated_clock \
+    -name clk_div2 \
+    -divide_by 2 \
+    -source [get_pins div2/clk] \
+    -master clk \
+    [get_pins div2/clk_out]
+# source是时钟源的pin，master是主时钟
+# master和source之间可能经过buffer，虽然是同一个信号，但有延时
+```
+
+
 
 # Innovus
 
@@ -78,7 +115,7 @@ Innovus是Cadence公司的自动布局布线工具，用它进行电路布局布
 
 **准备工作**
 
-1. 将综合生成的netlist文件、`.sdc`文件复制到`apr/INPUTS`，并且修改时序约束
+1. 将综合生成的netlist文件、`.sdc`文件复制到`apr/INPUTS`，并且按需求修改`.sdc`文件中的时序约束
 2. 将`apr/INPUTS/inn_cof.globals`中的`basename`改为顶层模块名
 3. 检查多模多角文件`apr/INPUTS/MMMC_lib.tcl`中的`.sdc`文件名
 4. 启动innovus：
@@ -94,14 +131,15 @@ innovus
 
 1. 平面规划：Floorplan - Specify Floorplan，需要设置Core Size（放器件区域的面积）和Die SIze（总面积）。一般让Core Utilization在0.6左右，Core to IO Boundary决定电源和地轨的宽度，按需设置
 2. 电源环：Power - Power Planning - Add Ring，Nets填VDD、VSS，Ring Configuration设宽度，两者宽度之和略小于上一步设置的Core to IO Boundary
-3. 电源条：Power - Power Planning - Add Stripes
-4. 连接全局网络：Power - Connect Global Nets，将器件的电源地、Tie High、Tie Low分别连接到全局VDD、VSS
-5. IO规划：按照模板填写`apr/INPUTS/RdToken.io`文件，然后File - Load - IO File（据师兄说，用gui修改容易出问题，因此直接用文本形式设置）
-6. 保存Floorplan：File - Save - Floorplan，保存的`.fp`文件包含了以上几步的所有东西
+3. 电源线（横向）：Route - Special Route，Nets填VDD、VSS，其他默认
+4. 电源条（纵向）：Power - Power Planning - Add Stripes（不一定需要）
+5. 连接全局网络：Power - Connect Global Nets，将器件的电源地、Tie High、Tie Low分别连接到全局VDD、VSS
+6. IO规划：按照模板填写`apr/INPUTS/RdToken.io`文件，然后File - Load - IO File（据师兄说，用gui修改容易出问题，因此直接用文本形式设置）
+7. 保存Floorplan：File - Save - Floorplan，保存的`.fp`文件包含了以上几步的所有东西
 
 **布局布线与优化**
 
-本部分可以使用模板完成。首先将`auto_cmd.tcl`中的basename改成顶层模块名，然后运行`source auto_cmd.tcl`
+本部分可以使用模板完成。首先将`cmd2.tcl`中的basename改成顶层模块名，然后运行`source INPUTS/cmd2.tcl`
 
 **保存结果**
 

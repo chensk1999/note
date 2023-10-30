@@ -11,7 +11,7 @@
 脚本运行时，首先运行自动执行段；然后，键盘/鼠标每捕捉到一个hotkey / hotstring，就执行相应子程序；在子程序内部，可以调用其他的子程序或者其他的函数、执行命令
 
 ```assembly
-GLOB_VAR = 0
+GLOB_VAR := 0
 
 lbl:
     MsgBox, 这是自动执行段
@@ -24,60 +24,84 @@ function(param, ByRef ref_param, optional:="") ; 普通参数、引用传参、�
 }
 ```
 
-
+AHK里面其实有两套语法，分别是和旧版本兼容的Legacy Syntax，以及新版的语法。本笔记中，除了必须使用Legacy Syntax的部分（主要是“命令”一节介绍的语法），均使用新版的语法
 
 ## 表达式
 
 ahk的变量没有严格类型概念。一个表达式可以包含以下内容：
 
-* 字符串
-
 ```assembly
+; 字符串
+; 空白符的转义字符是`n`r等，双引号的转义字符是两个双引号
 "this is a string"
-"%和,不需要转义`r`n""双引号“”的转义字符是两个双引号"
-```
 
-* 变量
-
-不需要先声明再定义，用赋值运算符赋值
-
-```assembly
+; 变量
+; 不需要先声明再定义，用赋值运算符 := 赋值
+; 注意：=, +=, ++等运算符都是Legacy Syntax，最好只用:=
 var := 1
-; 注意AHK的等号非常奇怪，既可以用于赋值也可以判断相等，为了避免歧义，请总是使用赋值运算符
-; 另外，AHK的增量赋值(包括但不仅限于+=, ++)都有奇怪的特性。最好只用:=
-```
 
-变量可以通过连接表达式组合成文本
-
-```assembly
+; 变量可以通过连接表达式组合成字符串
 "the value is " var     ; 隐式连接
 "the value is " . var   ; 显示连接
 format("the value is {0}", var)  ; 格式化字符串
 ```
 
-有若干内置变量（通常都以`A_`开头，如`A_TimeIdle`，这类变量只读。另外，可以用`global`和`static`声明全局变量和静态变量，用法同C
+有若干内置变量（通常都以`A_`开头，如`A_TimeIdle`，这类变量只读）。另外，可以用`global`和`static`声明全局变量和静态变量，用法同C
 
-* 运算符
+## 命令
 
-加减乘除，`?:`，etc.
+命令是一系列预定义的操作。命令语句由命令名称和参数组成，如
+
+```assembly
+MsgBox, 4, , Hello`, World
+; 命令与第一个参数之间的逗号可以省略，参数之间的逗号不可省略
+```
+
+参数分为以下几种：
+
+```assembly
+; InputVar, OutputVar
+; 传入变量名或者dynamic variable reference，效果类似C++的引用传参
+MouseGetPos, x, y
+
+; 文本参数
+; 传入文本。不需要双引号，变量需要用如%var%的形式引用
+; 文本中包含逗号、百分号需要用`转义（部分命令有smart comma handling，不转义仍能执行，但为了可读性建议都转义）
+MsgBox, Mouse at %x% `, %y%
+; 百分号可以强制文本参数接受表达式
+MsgBox % "New mouse position at " . x + 100
+
+; 数字参数
+; 数字文本或者表达式。文档中描述为"This parameter can be an expression"的是数字参数
+MouseMove, x + 100, %y%   ; 两个参数分别是表达式和数字文本
+```
 
 ## 对象
 
-* 简单数组（Simple Array）：<span style="color:red;font-weight:bold">索引从1开始</span>
+**简单数组**（Simple Array）：**索引从1开始**
 
 ```assembly
 arr := [1, 2, 3]  ; 定义数组
-value := arr[0]   ; 访问数组
-arr[2] = 2        ; 赋值
+value := arr[1]   ; 访问数组
+arr[2] := 3       ; 赋值
 
 arr.Length()
 arr.InsertAt(Index, Value, Value2, ...)
 arr.Push(Value, Value2, ...)
-removed = arr.RemoveAt(Index)
-removed = arr.Pop()
+removed := arr.RemoveAt(Index)
+removed := arr.Pop()
+
+; 枚举
+loop % arr.Length() {
+    MsgBox % arr[A_Index]
+}
+
+for index, value in array{
+    MsgBox % "Item " index " is " value
+}
 ```
 
-* 关联数组（Associative Array）：键值对
+**关联数组**（Associative Array）：键值对
 
 ```assembly
 ; 定义关联数组
@@ -90,68 +114,28 @@ asso_arr.Delete(key)
 
 ; 枚举
 for key, value in asso_array {
-    ; do something
+    MsgBox %key% = %value%
 }
 ```
-
-**类**
-
-```assembly
-class ClassName extends BaseClassName
-{
-    InstanceVar := Expression		; 实例变量(实例属性)
-    static ClassVar := Expression	; 静态变量(类属性)
-
-    class NestedClass			; 嵌套类
-    {
-        ...
-    }
-
-    Method()				; 方法, 类定义中的函数称作方法
-    {
-        ...
-    }
-
-    Property[]  			; 属性定义, 方括号是可选的
-    {
-        get {
-            return ...
-        }
-        set {
-            return ... := value		; value 在此处为关键字, 不可用其他名称
-        }
-    }
-}
-```
-
-## 命令
-
-命令是一系列预定义的操作，可以执行特定的指令。一条命令语句命令名称和参数组成。注意，
-
-* 参数是文本，而不是表达式。不需要括在双引号中
-* 变量引用：`%Var%`表示变量 Var 的值。可以用诸如`I am %Var%`甚至`%Var%00`（Var后接两个0，当Var为整数时就相当于乘100）的方式组合文本和变量引用
-* 参数之间用逗号`,`分隔；重音符用作转义字符
-
-```assembly
-MsgBox, The year is %A_Year%.`n
-; 命令名与参数之间的逗号是可选的。但是参数之间的逗号不可省略
-```
-
-命令的参数分为四种：
-
-1. InputVar，OutputVar：动态变量（变量的值是另一个变量的变量名），效果类似C++的引用传参
-2. 文本参数：文本（字面值，变量引用或者两者的组合）。使用`% `开头可以强制一个参数接受表达式
-3. 数字参数：可以是数字（字面值，变量引用或者两者的组合）或者表达式。注意有的参数既可以接受数字又可以接受文本，是文本参数
 
 ## 控制流
 
-* 分支：if - else，switch，使用方法同C。不要忘记括号括起条件表达式，否则可能运行的就不是if而是某个历史遗留的分支命令
-
-* 循环
-
 ```assembly
+; if分支
+; 注意，必须用括号括起条件，否则会使用Legacy Syntax。其他控制流同理
+if (x < 100) {
+    x := x + 100
+} else if (x > 2000) {
+    x := 2000
+} else {
+    x := x
+}
+
+; loop循环
 loop %count%
+; while循环
 while (expression)
+; for循环
 for key , value in expression
 ```
 
@@ -163,7 +147,9 @@ for key , value in expression
 
 * 错误：try - catch
 
-# Hotkey
+# Hotkeys & Hotstrings
+
+## Hotkey
 
 ```assembly
 ; 基本hotkey。当该按键被按下时跳转执行此过程
@@ -190,7 +176,7 @@ $A::
     Send, You pressed A. Send command won't trigger this.
 ```
 
-# Hotstring
+## Hotstring
 
 ```assembly
 ; 定义hotstring。输完内容后按空格、回车、tab、括号、分号等EndChars触发
@@ -214,8 +200,6 @@ $A::
 ; 不自动退格
 :B0:1+1=:: Send, 2
 ```
-
-# 按键
 
 ## Hotkey Modifier（修饰键）
 
@@ -262,14 +246,6 @@ Send {Shift}a   ; 输出shift，然后输出a
 | 鼠标   | LButton, RButton, MButton, WheelDown, WheelUp |
 
 特别地，`%A_ThisHotkey%`表示被按下的按键
-
-# Send
-
-send指令能产生各类键盘动作。例：
-
-```assembly
-Send, some random text
-```
 
 # 鼠标
 
@@ -324,7 +300,7 @@ RelativeTo：TargetType 要关联的区域。如果省略, 则默认为 Screen
 
 # 其他指令
 
-sleep, 时间（单位：ms）
+sleep, 毫秒
 Run, 文件路径/网址
 Msgbox, 字符串
 SoundBeep
@@ -386,13 +362,6 @@ $Esc::
 ```
 
 ```assembly
-; 我的世界滑稽纪元2自动砍滑稽脚本
-
-#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-
 ; 滑稽纪元2魔改版自动砍滑稽
 ; 滑稽碎片放物品栏第8格，斧子放第九格，指针指着滑稽碎片黑色部分
 ; 使用方法：u开始，i暂停

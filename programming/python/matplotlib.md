@@ -11,24 +11,24 @@ plt.rcParams['axes.unicode_minus']=False    # 用来正常显示负号
 
 ## Coding Style
 
-plt中有所谓的"current figure"和"current axes"，使用模块级别的函数时，就是操作当前对象。这种方法与MATLAB的绘图一致，被称为MATLAB style
+Matlab Style使用模块级别的函数绘图，模块会自动创建并管理绘图区域。此风格与Matlab的绘图一致
 
 ```python
+# Matlab Style
 plt.plot([1, 2, 3])
 plt.title('example')
 plt.show()
 ```
 
-当然，也可以先显式创建figure和axes，然后对它们进行操作，称作Object Oriented style
+另一种风格是Object Oriented Style，由用户创建figure和axes，然后对它们进行操作。绘图区域较为复杂时，此风格操作更简便、可读性更强。建议统一使用此方式
 
 ```python
+# Object Oriented Style
 fig, ax = plt.subplots()
 ax.plot([1, 2, 3])
 ax.set_title('example')
 plt.show()
 ```
-
-两种方法相比，显然Object Oriented style更好官方文档建议使用面向对象方法绘图
 
 ## 示例
 
@@ -56,23 +56,23 @@ ax1.grid(linestyle='--', color='gray')  # 网格
 ax1.legend(loc='lower right')  # 绘制标签，即绘图时的label参数
 plt.tight_layout()  # 自动调整排版
 
-# 显示图片
-plt.show()
-
 # 保存图片（不能先显示再保存，会出问题。但可以先保存再显示）
 fig.savefig('fig.png', dpi=192, transparent=True, format='png')
+
+# 显示图片
+plt.show()
 
 # 关闭图片并释放内存
 fig.close()
 ```
 
-# 图片元素
+## 图片元素
 
 ![](../../images/parts_of_figure.webp)
 
 * **Figure**
 
-Figure包含了图像的所有元素，包括Axes，少数特殊的Artists，以及Canvas（注意用户一般不会直接绘制Canavs，而是通过其他对象来操作Canvas）
+Figure包含了图像的所有元素，包括Axes，少数特殊的Artists，以及Canvas（注意：用户一般不需要直接绘制Canavs，而是通过其他对象来操作Canvas）
 
 * **Axes**
 
@@ -82,11 +82,13 @@ Axes是主要的图像内容，包含了数据图线等元素。一个Figure中�
 
 注意：英语中Axis是Axes的单数形式，但Axis和Axes是完全不同的两种对象
 
-Axis是图像的轴，负责图像取值范围（可以用`axes.set_xlim`的方法从Axis所属Axes设置），刻度（tick，刻度位置由Locator对象决定）和刻度标签（ticklabel，刻度标签格式由Formatter对象确定）
+Axis是图像的坐标轴，负责图像取值范围（可以用`axes.set_xlim`的方法从Axis所属Axes设置），刻度（tick，刻度位置由Locator对象决定）和刻度标签（ticklabel，刻度标签格式由Formatter对象确定）
 
 * **Artist**
 
 Artist包括了几乎所有图像元素。Figure, Axes, Axis都是Artist的子类，但多数Artist都被绑定至Axes对象，而不能被多个Axes共享。绘制图像时，所有Artist被画到Canvas上
+
+# 绘图区域
 
 ## figure与axes
 
@@ -130,8 +132,8 @@ ax.spines['bottom'].set_color(color)
 ax.tick_params(axis='both', colors=color)
 ax.xaxis.label.set_color(color)  # y轴设置略去
 
-# 设置坐标轴刻度
-ax1.set_xscale('log')  # 坐标系选取
+# 坐标轴刻度
+ax1.set_xscale('log')
 ax1.set_xlim(0, 1)     # 坐标范围。可以用get_xlim获取
 ax1.tick_params('x', which='both', left=False) # tick样式
 ax1.set_xticks(np.linspace(0, 1, 5))           # tick位置

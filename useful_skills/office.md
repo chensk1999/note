@@ -81,3 +81,7 @@ Visio字体由其Master shape的style定义（[来源](https://social.technet.mi
 2. 文件阻止设置 - 选中要打开的文件类型
 3. 受信任位置 - 添加文件所在位置
 4. 打开文件
+
+# Libre Office
+
+菜单无法正常显示：Tools - Options - LibreOffice - VIew - 勾选Use OpenGL

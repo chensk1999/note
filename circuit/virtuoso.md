@@ -148,24 +148,23 @@ Options-Display - Grid Controls，建议将Type调成None，并且需要将X / Y
 
 - 其他
 
-| Key                | Usage                                                        |
-| ------------------ | ------------------------------------------------------------ |
-| F2                 | 保存                                                         |
-| F3                 | 设置工具属性（比如，P，F3，可以设置Path的宽度等属性；C，F3，可以批量复制） |
-| D, Ctrl+D          | **D**eselect / Deselect All                                  |
-| Ctrl+Y             | 在重叠对象之间切换                                           |
-| Backspace          | 撤销上一次点击（可以在画Path过程中用）                       |
-| N, Shift+N, Ctrl+N | 更改画线的默认方向（斜/水平竖直/自动转弯的水平竖直）         |
-| G                  | **G**ravity（自动吸附到边上）                                |
-| T                  | Layer **T**ap（切换到点击的层）                              |
-| V                  | Attach（比如将Label关联到Pad上）                             |
-| Shift+X, Shift+B   | Descend, Ascend                                              |
+| Key                 | Usage                                                        |
+| ------------------- | ------------------------------------------------------------ |
+| F2                  | 保存                                                         |
+| F3                  | 设置工具属性（比如，P，F3，可以设置Path的宽度等属性；C，F3，可以批量复制） |
+| F4                  | Partial Select / Full Select                                 |
+| D, Ctrl+D           | **D**eselect / Deselect All                                  |
+| Ctrl+Y              | 在重叠对象之间切换                                           |
+| Backspace           | 撤销上一次点击（可以在画Path过程中用）                       |
+| N, Shift+N, Ctrl+N  | 更改画线的默认方向（斜/水平竖直/自动转弯的水平竖直）         |
+| G                   | **G**ravity（自动吸附到边上）                                |
+| T                   | Layer **T**ap（切换到点击的层）                              |
+| V                   | Attach（比如将Label关联到Pad上）                             |
+| X, Shift+X, Shift+B | Edit in place, Descend edit, Ascend                          |
 
 ## 其他
 
 从原理图生成器件：Connectivity - Generate - Selected From Source，切到原理图选择元件。注意Layout Editor L没有此功能，需要用XL
-
-Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对象的一部分进行编辑。比如选中两个Rectangle的左边，就可以同时拉伸它们的左边
 
 导出gds2格式版图：File - Export - stream；导入版图：File - Import - Stream，选择Stream File和Library、Technology Library即可。注意导入时可能建立很多个cellview，最好导入到新的库（在Library填库名即可，不需手动建库）
 
@@ -183,6 +182,8 @@ Partial Select（工具栏靠左边，或者快捷键F4）：可以只选中对�
 
 DRC（Design Rule Check)检查布局布线是否违反设计规则（常见违例有走线太近、天线效应等）
 
+底层模块需要保证没有密度之外的错误；当前密度可以在Check Density_PRINT看
+
 ## LVS
 
 LVS (Layout versus Schemetic)检查原理图和版图是否一致
@@ -194,7 +195,7 @@ LVS (Layout versus Schemetic)检查原理图和版图是否一致
 
 PEX (Parasitic Extraction)：提取寄生参数用于后仿真
 - 抽参数可能出现找不到library的错，原因是library在`cds.lib`和`lib.defs`两个文件中都有定义，而`lib.defs`文件没有更新。可以手动修改，或者Tools - Library Path Editor
-- 黑箱子：Inputs - Blocks，只勾选要抽取的Cell，然后Outputs - Extraction Type选ADMS
+- 黑箱子：Inputs - Blocks，只勾选要抽取的Cell，然后Outputs - Extraction Type选ADMS（Analog-Digital Mixed Signal）
 
 ## RVE
 
@@ -204,7 +205,7 @@ RVE（Result Viewing Environment）是查看寄生参数的工具
 
 # 仿真
 
-仿真主要工具是ADE L和ADE XL（ADE：Analog Design Environment）。ADE L和XL是软件界面，底层的仿真器都是Spectre（也可以手动加载别的仿真器，比如数模混仿用AMS）
+仿真主要工具是ADE L和ADE XL（ADE：Analog Design Environment）。ADE L和XL是软件界面，底层的仿真器是相同的（老服务器默认都是Spectre。也可以手动加载别的仿真器，比如数模混仿用AMS。新一代仿真器Spectre X据说在不牺牲精度的同时速度还比Spectre快好几倍）
 
 ## 流程
 
@@ -234,17 +235,45 @@ XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基�
 
 ## 仿真种类
 
-**一般**
+### 一般
 
-- tran：瞬态（transient）仿真，仿真电路行为。必须写 stop time！有 conservative、moderate、liberal三种模式，conservative精度最高，moderate次之，liberal精度最低。一般模拟电路用conservative或者moderate，数字电路用liberal
+- tran：瞬态（transient）仿真，仿真电路行为
 - dc：直流静态工作点仿真。建议勾选 Save DC Operating Point。Sweep Variable可以仿静态工作点随变量的变化
 - ac：交流仿真
 
-**周期**
+### 周期
 
-- pss：周期稳态（Periodic Steady-State）仿真，仿真周期性电路的工作点
-- pac：周期交流（Periodic AC）仿真
-- pnoise：周期噪声（Periodic Noise）仿真
+**pss**：周期稳态（Periodic Steady-State）仿真，仿真周期性电路的工作点
+
+- Engine：Shooting通过瞬态仿真求解，Harmonic Balance在频域求解。有高次谐波（比如方波）而且关注时域波形的电路shooting精度更高；高Q值电路Harmonic Balance精度更高
+- Fundamental Tones - Beat Frequency / Beat Period是各个频率的最大公因子（比如，一个PLL输入时钟是800 MHz，输出是300 MHz，Beat Frequency就是100MHz）
+- Output Harmonics：计算的谐波数量。注意，是相对于Beat Frequency的谐波。不影响精度，但影响仿真时间。需要看几次谐波就填几，不关注谐波时可以填0
+- Additional Time for Stabilization (tstab) 是电路达到稳态需要的时间，一般填周期10倍以上
+
+**pac**：周期交流（Periodic AC）仿真
+
+**pnoise**：周期噪声（Periodic Noise）仿真。必须先跑PSS仿真求得静态工作点才能跑
+
+- Output Frequency Sweep Range：计算噪声的频率范围
+- Sidebands：计算多少个sideband，比如设置maximum sideband = 10，就会计算1~10次谐波附近的噪声。可以取PSS仿真降低40 dB的谐波作为maximum sideband，然后增加sideband数量，直到噪声结果不变
+- Reference Side-Band：输入与输出频率的变化，没有变化时填0。这项设置应该是给混频器等电路用的
+- 查看仿真结果：1. Results - DIrect Plot（注意：和tran的direct plot不同，不需要点选信号，而是直接点击GUI的Plot）；2. Results - Print - Noise Summary。Noise Summary中的类型有fn MOS管闪烁噪声，id MOS管热噪声，rd 电阻热噪声等
+  - Output Noise，Input Noise：输入输出参考噪声
+  - Noise Figure：简称NF，$NF = SNR_i / SNR_o$，其中$SNR_i$和$SNR_o$是输入输出的信噪比
+  - Noise Factor：简称F，$F = 10 \cdot log_{10}(NF)$
+
+
+### 仿真设置
+
+在Choosing Analysis界面右下的Options可以进行更多设置
+
+**Algorithm**
+
+- Convergence Parameters
+  - cmin：若电路中有浮空节点，可能导致“Zero diagonal found in Jacobian”；设置cmin = 1f（在每个节点加上1fF的寄生电容）一般能解决问题。注意：如果电路中有小尺寸管子，或者其他对寄生特别敏感的元件，可能导致结果出现很大偏差
+- Integration Method Parameters
+  - 精度是`euler < trap < gear2`，速度反之
+  - `traponly`和`gear2only`表示只用`trap` / 只用`gear2`算法
 
 ## 变量与仿真结果
 
@@ -267,7 +296,7 @@ XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基�
 - Outputs - Save All
 - Analyses - Choose - Options - Output（会覆盖前一项的设置。建议不要动）
 
-前仿真可以用默认设置，后仿真建议设置selected，否则仿真结果动辄几十几百GB。注意，信号保存选项和电流保存选项是分开的。默认不保存电流。保存选项有
+前仿真可以用默认设置，后仿真建议设置selected，否则仿真结果动辄几十几百GB。注意，信号保存选项和电流保存选项是分开的。保存选项有
 
 - selected：只保存Outputs中的信号
 - lvl：保存`nestlvl`深度的信号，比如`nestlvl = 0`就只保存顶层的信号
@@ -306,13 +335,30 @@ XL功能比L强大很多，但用起来比较复杂。这一节仅介绍最基�
 
 首先跑PEX，提取clibre view；Setup - Environment，在Switch View List开头加上calibre
 
+## 仿真速度与精度设置
+
+以下设置，可以在Setup - High-Performance Simulation配置，也可以在Setup - Environment - User Command Line Option加上参数。（部分设置在GUI中没有，只能加参数）
+
+这些方法基本都涉及速度精度的折中，注意不要光顾着速度就忘了精度。[参考](https://community.cadence.com/cadence_blogs_8/b/cic/posts/spectre-optimizing-spectre-aps-performance)
+
+- **多线程**：Setup - High-Performance Simulation - Simulation Performance Mode - APS。APS（Accelerated Parallel Simulator）并行仿真提高速度，精度不受影响
+- **`++aps`和Errpreset**（此设置精度越高速度就越低。为了简洁起见只说精度不说速度）
+  - `+aps > ++aps`
+  - `conservative > moderate > liberal`，且此项影响大于前一项
+  - 精度从高到低分别是`+aps=conservative`，`++aps=conservative`，`+aps=moderate`，`++aps=moderate`，`+aps=liberal`，`++aps=liberal`
+  - 据黄鲁老师说，数字电路用liberal、模拟电路用conservative或者moderate
+- `+postlayout`：合并部分RC，用于后仿真加速，同样牺牲精度
+  - `+postlayout=upa`（Ultra precision analog）精度最高，`+postlayout=hpa`（High precision analog）次之（1% between no reduction and `+postlayout=hpa`），`+postlayout`精度最差
+  - 据李嘉铭说，速度差别不大，精度差别没有验证过
+
+
+官方建议设置使用APS、从`++aps=moderate +postlayout=hpa`开始，根据结果调整仿真精度。这种流程有点理想化，仅当参考
+
 ## 其他细节
 
 **设置电路初值**：ADE L - Simulation - Convergence Aids - Node Set / Initial Condition（补充说明：仿真器进行tran仿真之前会进行DC仿真求解电路初值。Node Set设置DC仿真迭代初值，**帮助仿真收敛**；Initial Condition设置DC仿真全程的节点电压，用于**设置电路初值**。如果Initial Condition设成一个正常无法达到的状态，可能导致后续tran仿真错误。[Source](https://community.cadence.com/cadence_technology_forums/f/rf-design/29843/ade--difference-between-node-set-and-initial-condition)）
 
-遇到“**Zero diagonal found in Jacobian**”：通常是因为电路中有浮空节点。首先检查电路有没有出错。如果确实会有浮空节点，设置ADE L - Analyses - Choose - Options - Algorithm - Convergence Parameters - cmin为1f（在每个节点加上1fF的寄生电容）一般能解决问题
-
-**并行仿真**：Setup - High-Performance Simulation，选择APS以及Use ++aps，就能使用多核仿真；另外，ADE XL - Options - Job Setup设置数量大于1，Options - Run Options选择Parallel，可以同时进行多个仿真
+**并行仿真**：ADE XL - Options - Job Setup设置数量大于1，Options - Run Options选择Parallel，可以同时进行多个仿真
 
 使用了CMOS库之后要在 Setup - Environment 删除名字里包含 cmos 的几个视图，否则可能出现 no corresponding terminal 的错误
 

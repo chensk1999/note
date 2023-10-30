@@ -632,7 +632,7 @@ Verilog-AMS（Analog and Mixed Signal extension）是Verilog的混合信号扩�
 
 ```verilog
 // Verilog-A模块示例：RLC器件的并联
-module shunt_rlc (t1, t2);
+module shunt_rlc(t1, t2);
     // 声明IO方向（input, output, inout）
     // input信号的值可以在表达式中使用，但不可被设置；output反之；inout均可
     inout t1, t2;
@@ -653,11 +653,30 @@ module shunt_rlc (t1, t2);
         I(t1, t2) <+ idt(V(t1, t2)) / L;    // idt: 对时间积分(integral dt)
         I(t1, t2) <+ ddt(V(t1, t2)) * C;    // ddt: 对时间微分(derivative dt)
         // <+是贡献(contribution)算符，模拟信号只能用贡献算符赋值，不能用=赋值
-        // 多个电流贡献相当于器件并联；多个电压贡献相当于器件串联
+        // 多个电流贡献相当于器件并联；多个电压贡献相当于器件串联。同一个节点不能同时有电压和电流贡献
     end
 endmodule
 
 // Verilog-AMS示例：8bit DAC
+module dac_8bit(d, v);
+    input [7:0] d;
+    output v;
+    electrical [7:0] d;
+    electrical v;
+
+    parameter vref = 1;
+    parameter lsb = 1.8 / 255;
+    real vout;
+    genvar i;
+
+    analog begin
+        vout = 0;
+        for (i=0; i<8; i=i+1) begin
+            vout = vout*2 + ((d[i] > 0.9) ? lsb : 0);
+        end
+
+        V(v) <+ transition(vout, 0, 1e-9);
+    end
 ```
 
 ## 电流与电压
@@ -704,16 +723,12 @@ integer y = 13 from (-75, 75) exclude [-5, 5] exclude 12;
 ```verilog
 parameter real gain = 1e6;
 parameter real offset = 0;
-
 real vi;
 
 analog begin
-    // 变量赋值
     vi = V(VIP, VIN) + offset;
 
-    // 控制流语法和Verilog基本一样，不再赘述
     if (gain < 1e12) begin
-        // 支路贡献语句。同一个节点不能同时有电压和电流贡献
         V(VOUT) <+ gain * vi;
     end else begin
         // 间接支路贡献。寻找满足条件的值（条件必须是信号 == 表达式）
@@ -725,7 +740,7 @@ end
 
 ## 事件
 
-可以检测事件来模拟一些特殊行为，比如在仿真开始时初始化变量、在上升沿进行采样
+可以检测事件来模拟一些特殊行为，比如在仿真开始时初始化变量、在上升沿进行采样。注意，下列事件都要放在analog块内
 
 ```verilog
 analog begin
@@ -758,6 +773,50 @@ analog begin
 end
 ```
 
+## 模拟运算符
+
+模拟运算符的输出不仅与当前输入有关，也和过去输入、电路内部状态相关。因此，不能在for循环、always块等位置使用（因为它们是否执行、何时执行执行是不确定的）
+
+**阶跃信号滤波**
+
+以下两种滤波器可以防止输出信号太快（比如，阶跃信号），导致仿真速度变慢，甚至无法收敛。所有输出可能突变的地方都该加上滤波器
+
+```verilog
+// transition filter。用于（从数字信号）产生实际阶跃信号
+parameter real delay = 0;
+parameter real t_rise = 1e-9;
+parameter real t_fall = 1e-9;
+V(VOUT) <+ transition(vref, delay, t_rise, t_fall);
+
+// slew filter。用于（从阶跃模拟信号）产生实际阶跃信号
+parameter real max_pos_rate = 1e9;
+parameter real max_neg_rate = -1e9;
+V(VOUT) <+ slew(vref, max_pos_rate, max_neg_rate);
+```
+
+**拉普拉斯滤波器**
+
+```verilog
+V(VOUT) <+ laplace_zp(vin, {0, 0}, {1, 2, 1, -2});
+V(VOUT) <+ laplace_nd(vin, {0, 1}, {1, -0.4, 0.2});
+```
+
+前一种方法用零点和极点（Zero-Pole）表示传递函数；后一种用分子和分母（Nominator-Denominator）的系数表示：
+$$
+H(s) = \frac{
+    \Pi_k(1 - s / z_k)
+}{
+    \Pi_k(1 - s / p_k)
+} = \frac{
+    \sum_k(n_k s^k)
+}{
+    \sum_k(d_k s^k)
+}
+$$
+例子中，两个方法的传递函数都是$H(s) = \frac{s}{1 - 0.4s + 0.2s^2}$，其零点为0，极点为$1 \pm 2j$
+
+还可以混合使用，分别是`laplace_zd`和`laplace_np`
+
 ## 其他
 
 ```verilog
@@ -770,17 +829,6 @@ flicker_noise(power, exp);
 
 // 随机数。之后有需要再看
 $random;
-
-// transition filter。用于（从数字信号）产生实际阶跃信号
-delay = 0;
-t_rise = 1e-9;
-t_fall = 1e-9;
-V(VOUT) <+ transition(vref, delay, t_rise, t_fall);
-
-// slew filter。用于（从阶跃模拟信号）产生实际阶跃信号
-max_pos_rate = 1e9;
-max_neg_rate = -1e9;
-V(VOUT) <+ slew(vref, max_pos_rate, max_neg_rate);
 ```
 
 # 其他

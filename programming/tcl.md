@@ -1,6 +1,4 @@
-# tcl note
-
-tcl是我学过的语言中最愚蠢的之一。它无类型，全部东西都可被解释为字符串，区分大小写
+Tcl是一种脚本语言，它无类型，全部东西都可被解释为字符串
 
 # 基本语法
 
@@ -14,32 +12,35 @@ cmd1 arg1; cmd2 arg2
 set name Chen
 puts $name
 
-# 双引号表字符串。双引号会发生变量替换
-puts "My name is $name"     # result: My name is Chen
-
-# 大括号表字符串。内部不发生替换
-puts {My name is $name}     # result: My name is $name
-
-# 方括号表运算或定义列表
-puts [clock format [clock seconds] -format "%Y-%m-%d %T"]
-set l1 {1 2 3}
-
-# 也可以用指令定义列表
-set l2 [list 1 2 3]
-set l3 [split "1.2.3" .]
-
-# 圆括号定义数组/引用数组/改变运算顺序
-set arr(1) 1
-puts $arr(1)
-puts [expr (2+3)**2]
+# 方括号运算
+puts [expr 1+1]
 
 # 转义字符
 puts \$name
 ```
 
+# 数据类型
+
+```tcl
+# 双引号字符串。双引号会发生变量替换
+puts "My name is $name"     # result: My name is Chen
+
+# 大括号字符串。内部不发生替换
+puts {My name is $name}     # result: My name is $name
+
+# 列表
+set l1 {1 2 3}
+set l2 [list 1 2 3]
+puts [lindex $l1 0]
+
+# 关联数组
+set  marks(english) 80
+puts $marks(english)
+```
+
 # 运算符
 
-四则运算、取余、关系、位运算、布尔算符从略；乘方`**`同python，有三目运算符`?:`
+四则运算、取余、关系、位运算、布尔算符从略；乘方`**`，三目运算符`?:`
 
 | Operator | Usage      |
 | -------- | ---------- |
@@ -84,7 +85,7 @@ for {set i 0} {$i < 100} {incr i} {
 }
 
 # foreach loop
-days {Mon Tue Wed Thu Fri Sat Sun}
+set days {Mon Tue Wed Thu Fri Sat Sun}
 foreach day $days {
     puts $day
 }

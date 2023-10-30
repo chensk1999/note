@@ -442,10 +442,10 @@ for i = 1:length(files)
 fprintf('a = %d', 1);
 disp([1 2 3]);
 
-% 保存数据。会自动覆盖同名文件
+% 保存数据
 save('workspace.mat')           % 保存工作区所有变量
 save('data.mat', data)          % 保存指定的变量
-dlmwrite('data.txt', M, ',')    % 保存ascii delimited file
+writematrix(data, 'data.txt', 'Delimiter', ',');
 
 % 读取文件。大部分文件（比如excel表、csv、空格/逗号分隔的文本文件）都能自动解析成好用的形式
 data1 = load('workspace.mat');

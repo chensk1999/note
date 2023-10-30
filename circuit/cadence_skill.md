@@ -1,109 +1,22 @@
 Cadence SKILL是Virtuoso以及部分Cadence公司的软件使用的语言。它是一种Lisp方言
 
-# LISP简介
+# 数据结构
 
-LISP有以下几种数据类型
-
-- 列表：`(element1 element2 element3 ...)`，底层实现是链表，每个节点包括两个指针：一个指向节点元素，另一个指向下一节点。尾节点的 Next 指针为 Nil
-- 原子
-  - 符号（Symbol）：可以指向任何对象的指针。是全局变量
-  - 字面值，包括数字和字符串
-
-特别地，nil 表示表示逻辑非或者空列表。一般用 t 表示逻辑真（也可以用任何非 nil 对象表示逻辑真）
-
-Lisp与Python有许多相似之处（因为Python借鉴了Lisp）：所有变量都是对象，只有隐式的指针，而且两者的 GC 也非常相似。甚至Lisp的元编程范式在Python中都有一定程度的对应（lambda函数、map、reduce等）
-
-## 表达式
-
-表达式从左到右求值。字面值的值是自身，符号的值是它指向的对象，列表的值是将第一个元素作为函数、剩余元素作为实参求得的值
+## 数字
 
 ```lisp
-5       ; 5
-(+ 2 3) ; 5
-(/ (* 7 9) (- 5 2))     ; = (7*9) / (5-2) = 21
+; 整数
+'(15 0b1111 017 0xf)
+
+; 浮点数。可以用国际单位制的词头作为后缀
+'(0.015 1.5e-2 15m)
 ```
-
-## 操作符
-
-### Quote
-
-```lisp
-; 单位元，(quote arg) -> arg。可缩写为'arg，quote作用的对象不会被求值
-nil         ; 求值得到自身
-'nil        ; quote单位元性质，得到nil自身
-(+ 3 5)     ; 求值得8
-'(+ 3 5)    ; 单位元性质，得到原列表。原列表不会再被求值
-(defparameter SYMBOL 10)
-SYMBOL      ; 10。符号求值得到它指向的对象
-'SYMBOL     ; SYMBOL。符号不被求值，得到符号自身（即指向10的指针）
-```
-
-简单的说，无 quote 的对象可以是表达式、函数，有 quote 的对象可以当作是数据、变量
-
-### 列表操作
-
-```lisp
-; cons
-; CONStruct，构建列表。(cons arg1 arg2)
-; 如果arg2是原子，表达式值为(arg1, arg2)。如果arg2是列表，将arg1插入到列表开头
-(cons 1 2)          ; (1 2)
-(cons '(1 2) nil)   ; ((1 2))
-
-; car
-; 取列表的首元素
-; 据传是Contents of the Address part of Register number的缩写
-; 也有说法认为来自于最早的Lisp实现此功能时使用的的CPU指令
-(car '(1 2 3))      ; 1
-
-; cdr
-; 取列表首元素之后的元素，即链表首节点的Next指针
-; 据传是Contents of the Decrement part of Register number的缩写
-(cdr '(1 2 3))      ; (2 3)
-```
-
-### 变量
-
-```lisp
-; let，定义局部变量
-; (let ((var1 value1) (arg2 value2)) (expression))
-(let ((x 1) (y 2)) (+ x y))
-
-; defparameter，定义全局变量
-(defparameter GLOB 1)
-
-; setf，变量赋值。可以用setf隐式定义全局变量
-(setf GLOB 100 ANOTHER_GLOB t)
-```
-
-### 控制流
-
-```lisp
-; if
-; (if cond value_when_t value_when_nil)
-(if (> 5 3) "5>3" (- 5 3))
-```
-
-### 函数
-
-```lisp
-; lambda：最早的函数定义式
-; (lambda (args) (expression))
-(lambda (x) (+ x 1))
-
-; defun：定义有名字的函数，可以视作defparameter + lambda
-; (defun name (args) (expression))
-
-; sharp quote：函数指针
-#'+
-```
-
-# SKILL语法
 
 ## 符号
 
+符号 ≈ 指针；一般来说，直接使用符号会对符号求值（即取得它指向的对象），因此也经常用符号指变量
+
 ```lisp
-; 符号 ≈ 指针
-; 一般来说，直接使用符号会对符号求值（即取得它指向的对象）
 ; 用quote操作符作用的符号不会被求值（即依然是指针）
 a = 10
 b = a       ; b = 10, type(b) = fixnum, type('b) = symbol
@@ -113,44 +26,60 @@ c = 'a      ; c = 'a, type(c) = symbol
 set(c 5)        ; a = 5
 b = symeval(c)  ; b = a
 
-; 作为宏/某些特殊函数的参数时，符号会表示它自己，而不会被求值为它指向的对象
+; 作为宏/某些特殊函数的参数时，符号会表示它自己，而不会被求值
 ; 此时称作implicitly quoted
 setq(c 5)       ; c = 5, 等效于赋值运算
-```
 
-```lisp
 ; 用函数操作符号
 gensym("net")       ; 产生符号，会自动加后缀以区分
 gensym('net)
 get_pname('net)     ; 获取符号的打印名
 ```
 
-## 运算符
+**Property List**
 
-SKILL的所有运算符都有两种写法，Operator形式用中缀表达式进行运算，Function形式用函数调用方式进行运算。一般会使用 Operator 形式，但由于错误信息会用 Function 形式，有必要把两种都记住
+每个符号都有一个Property List，其效果类似其他语言的结构体。符号的默认Property List都是nil
 
-| Operator               | Function                                   | Note                                                         |
-| ---------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| `<, <=, >, >=, ==, !=` | lessp, leqp, greaterp, geqp, equal, nequal | Returns t or nil                                             |
-| `&&, ||`               | and, or                                    | 表达式值为最后一个计算的值。在结果为真时，对于and是最后一个值；对于or，是第一个非nil值 |
+```lisp
+; 定义属性
+a.x = 100
+putprop('a 200 'y)
+setplist('b '(x 100 y 200))
+
+; 访问属性
+plist('a)
+b.x
+get('b 'y)
+b.z     ; 访问不存在的属性，返回nil
+
+; 用->运算符访问属性
+c = 'a
+c->x
+```
+
+注意：property list是全局的，有的时候同名变量（即使一个是局部变量，另一个是全局变量）会共用property list
 
 ## 列表
 
+列表（List）是SKILL最核心的数据类型。其底层实现是链表
+
 ```lisp
 ; 定义列表
-l1 = '(1 2 3)       ; quote函数获得列表字面值
-l2 = list(4 5 6)    ; list函数产生列表
-l3 = cons(0 l1)     ; cons函数构建列表元素，并插入到l1开头
-l4 = append(l1 l2)  ; append函数连接两个列表
+a = '(1 2 3)
+b = list(1 2 3)
 
-; 引用列表元素
-car(l1)     ; 引用列表首元素
-cdr(l1)     ; 引用首元素之外的元素（即，链表首节点的Next指针）
-nth(2 l1)   ; 引用第n个元素
+c = cons(1 a)       ; 在列表头添加元素
+d = append(a b)     ; 拼接列表
 
-; 其他列表函数
-length(l1)      ; 列表长度
-member(2 l1)    ; 是否包含元素（返回nil / 以2为首元素的列表）
+; 访问列表
+car(a)      ; 访问列表首元素(Contents of the Address part of Register)
+cdr(a)      ; 引用首元素之外的元素，即链表首节点的Next指针(Contents of the Decrement part of Register)
+nth(0 a)    ; 访问第n个元素（下标从0开始）
+length(a)   ; 列表长度
+
+member(1 '(0 1 2))  ; 寻找列表元素
+; 若没找到，返回nil；找到时，返回从该元素开始的子列表
+; 此例子中，返回'(1 2)
 ```
 
 特别地，可以用二元列表表示坐标，用包含两个二元列表的列表表示方框。SKILL提供了一些特殊方式来操作这种列表
@@ -167,42 +96,89 @@ y = yCoord(coord)
 bBox = '(300:400 500:450)
 
 ; 用car和cdr的复合函数引用四个角的坐标
-ll = car(bBox)      ; 左下角（lower left）坐标
-ur = cadr(bBox)     ; 右上角（upper right）坐标，cadr = car(cadr(...))
-llx = caar(bBox)
-lly = cadar(bBox)
-urx = caadr(bBox)
-ury = cadadr(bBox)
+ll = car(bbox)     ; 左下坐标
+ur = cadr(bbox)    ; car(cdr(bbox))，右上坐标
+llx = caar(bbox)   ; car(car(bbox))，左下x坐标
+lly = cadar(bbox)  ; car(cdr(car(bbox)))，左下y坐标
+urx = caadr(bbox)  ; car(car(cdr(bbox)))，右上x坐标
+ury = cadadr(bbox) ; car(cdr(car(cdr(bbox))))，右上y坐标
 ```
 
-## 控制流
+## 字符串
+
+```lisp
+; 连接字符串
+strcat("a" "b" "c")             ; "abc"
+buildString('("a" "b" "c") ".") ; "a.b.c"
+
+evalstring("1+2")   ; evaluate & return expression
+loadstring("procedure(f(n) if(n==0 1 f(n-1)*n))")
+                    ; parse & execute expression, return t if success
+```
+
+## Array
+
+```lisp
+; 声明数组
+declare(arr[3])   ; declare array with 3 elements
+arr[0] = 1
+arr[1] = 3.14
+arr[2] = "whatever"
+arr[3]      ; index out of bound
+```
+
+## 运算符
+
+SKILL的所有运算符都有两种写法，Operator形式用中缀表达式进行运算，Function形式用函数调用方式进行运算。一般会使用 Operator 形式，但由于错误信息会用 Function 形式，有必要把两种都记住
+
+| Operator               | Function                                   | Note                                                         |
+| ---------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| `<, <=, >, >=, ==, !=` | lessp, leqp, greaterp, geqp, equal, nequal | Returns t or nil                                             |
+| `&&, ||`               | and, or                                    | 表达式值为最后一个计算的值。在结果为真时，对于and是最后一个值；对于or，是第一个非nil值 |
+
+### Quote
+
+```lisp
+; 单位元，(quote arg) -> arg。可缩写为'arg，quote作用的对象不会被求值
+nil         ; 求值得到自身
+'nil        ; quote单位元性质，得到nil自身
+(+ 3 5)     ; 求值得8
+'(+ 3 5)    ; 单位元性质，得到原列表。原列表不会再被求值
+(defparameter SYMBOL 10)
+SYMBOL      ; 10。符号求值得到它指向的对象
+'SYMBOL     ; SYMBOL。符号不被求值，得到符号自身（即指向10的指针）
+```
+
+简单的说，无 quote 的对象可以是表达式、函数，有 quote 的对象可以当作是数据、变量
+
+## 表达式
+
+表达式从左到右求值。字面值的值是自身，符号的值是它指向的对象，列表的值是将第一个元素作为函数、剩余元素作为实参求得的值
+
+```lisp
+5       ; 5
+(+ 2 3) ; 5
+(/ (* 7 9) (- 5 2))     ; = (7*9) / (5-2) = 21
+```
+
+# 控制流
 
 ```lisp
 ; if-then-else （注意：if和括号中间不能有空格）
 ; 控制流其实都是函数，而函数调用当然不允许函数名和括号中间有空格
+; 从Lisp的角度看if函数：如果第一个参数为真，计算第二个参数的值并返回；否则，计算第三个参数的值并返回
 if( shape == "rect" then
     println("Shape is rectangle")
     rectCnt++
 else
     println("Shape is not rectangle")
-  )
-; 从Lisp的角度看if函数：如果第一个参数为真，计算第二个参数的值并返回；否则，计算第三个参数的值并返回
-; 从命令式角度看：if表达式的值是被求值的最后一个表达式的值
+)
 
-; when分支
-when( shape == "ellipse"
-  println("Shape is ellipse")
-  ellipseCnt++
-  )
-; 如果第一个参数为真，计算第二个参数的值并返回；否则返回nil
-
-; unless分支
-unless( shape == "rect" || shape == "ellipse"
-  println("Illegal shape")
-  )
-; 如果第一个参数为真，返回nil；否则计算第二个参数的值并返回
+; when分支和unless分支
+; 略
 
 ; case分支
+; 如果匹配到了某个分支，计算该分支并返回；若未匹配，则计算最后一个分支
 case( shape
   ("rect"
     println("Shape is rectangle")
@@ -216,16 +192,16 @@ case( shape
      println("Illegal shape")
      )
   )
-; 如果第一个参数匹配到了某个分支，计算该分支并返回；若未匹配则计算最后一个分支
 
 ; for 循环。注意循环变量只能是int
+; 循环变量不影响外部同名变量。for函数总是返回t
 sum = 0
 for( i 1 5      ; i从1到5
-  sum = sum + i
-  )
-; 循环变量不影响外部同名变量。for函数总是返回t
+    sum = sum + i
+)
 
 ; foreach循环
+; 类似for循环，foreach不影响外部同名变量。foreach总是返回被迭代的列表
 shapes = ("rect" "ellipse" "rect" "line")
 foreach( shape shapes
   case(shape
@@ -236,12 +212,11 @@ foreach( shape shapes
     (t          misCnt++)
     )
   )
-; 类似for循环，foreach不影响外部同名变量。foreach总是返回被迭代的列表
 ```
 
-## 函数
+# 函数
 
-- 定义
+**定义函数**
 
 ```lisp
 ; Lisp style (not recommended)
@@ -268,7 +243,7 @@ add = lambda((x y) x+y)
 
 还有一种 nlambda 函数，它会将参数不求值直接传入。指导手册不建议使用，但没有说为什么。如果需要未求值的实参，可以用宏
 
-- 调用
+**调用函数**
 
 ```lisp
 ; Algebraic style (recommended)
@@ -284,66 +259,18 @@ func arg1 arg2
 func(?key1 1 ?key2 2)
 ```
 
-# 数据结构
-
-## Property List
+# IO
 
 ```lisp
-; 可以用property list实现类似于其他语言的类的效果
-setplist('point '(x 3 y 5))     ; x and y are implicitly quoted
-point       ; undefined variable，之后对point赋值不影响property list
-point.x     ; = 3
-
-ppoint = 'point
-ppoint->x   ; 3
+print("Hello")         ; 用默认打印格式打印
+println("World")       ; 比print多一个换行符
+printf("%.3f\n" a)     ; 用自定义格式输出
+fprintf(port "%n" 42)  ; 输出到指定端口，常用于写入到文件
+pprint('(1 2 3))       ; pretty paint，打印长列表时比较好看
+s = sprintf(nil "%L" '(1 2 3))  ; 输出到指定端口，然后返回该字符串（此例子中端口为nil，格式化字符串仅返回到s，没有输出）
 ```
 
-property list是全局的，有的时候同名变量（即使一个是局部变量，另一个是全局变量）会共用property list
-
-## String
-
-```lisp
-; 连接字符串
-strcat("a" "b" "c")             ; "abc"
-buildString('("a" "b" "c") ".") ; "a.b.c"
-
-evalstring("1+2")   ; evaluate & return expression
-loadstring("procedure(f(n) if(n==0 1 f(n-1)*n))")
-                    ; parse & execute expression, return t if success
-```
-
-
-
-## Defstruct
-
-## Array
-
-```lisp
-; 声明数组
-declare(arr[3])   ; declare array with 3 elements
-arr[0] = 1
-arr[1] = 3.14
-arr[2] = "whatever"
-arr[3]      ; index out of bound
-```
-
-# 杂项
-
-右方括号`]`可以作为 super right bracket 匹配任意个左括号，引号+右方括号`"]`能匹配未配对双引号
-
-Comma `,` 和Comma-At `,@` 可以表示求值
-
-```lisp
-a = (2 3 4)
-'(1 a)      ; (1 a)
-'(1 ,a)     ; (1 (2 3 4))
-'(1 ,@a)    ; (1 2 3 4)
-
-; boundp 判断变量是否被赋过值。
-boundp('var) && var     ; 如果var有值，求其值；否则得到nil
-```
-
-# 常用函数
+格式化字符串的关键字和 C 差不多，特别地可以用`%L, %P, %B`格式化列表、点、方框；`%s`除了格式化字符串之外，还可以格式化 Symbol；用`%n`格式化整形数或者浮点数
 
 ## 文件操作
 
@@ -353,16 +280,15 @@ isFile("filename")  ; t or nil
 isDir("dirname")
 
 ; 判断文件读写权限
-isReadable("file_or_dir")   ; permission to read file / list directory
-isWritable("file_or_dir")   ; permission to wirte file / update directory
-isExecutable("file_or_dir") ; permission to execute file / search directory
-; All of them returns nil if specified file/dir does not exist
+isReadable("file_or_dir")
+isWritable("file_or_dir")
+isExecutable("file_or_dir")
 
 getDirFiles("dir")          ; list files in directory
 simplifyFilename("file")    ; returns absolute path
 ```
 
-读写文件都要通过 port，它类似于C的文件指针。SKILL预定义的port有`piport, poport, errport, ptport, woport`，前三个相当于C的`stdin, stdout, stderr`，后两个等同于`stdout`，用于输出trace和warning
+读写文件都要通过 port，它类似于C的文件指针。SKILL预定义的port有`piport, poport, errport, ptport, woport`，前三个相当于C的`stdin, stdout, stderr`，后两个用于输出trace和warning
 
 ```lisp
 ; opening ports
@@ -408,6 +334,33 @@ pi = instring(s)
 fscanf(pi, "%s" a)  ; a = Hello
 ```
 
+# 杂项
+
+右方括号`]`可以作为 super right bracket 匹配任意个左括号，引号+右方括号`"]`能匹配未配对双引号
+
+Comma `,` 和Comma-At `,@` 可以表示求值
+
+```lisp
+a = (2 3 4)
+'(1 a)      ; (1 a)
+'(1 ,a)     ; (1 (2 3 4))
+'(1 ,@a)    ; (1 2 3 4)
+
+; boundp 判断变量是否被赋过值。
+boundp('var) && var     ; 如果var有值，求其值；否则得到nil
+```
+
+反斜杠表示续行
+
+```lisp
+s = "this is a long \
+string"
+```
+
+
+
+# 常用函数
+
 ## 字符串操作与输出
 
 ```lisp
@@ -449,51 +402,15 @@ OCEAN（Open Command Environment for Analysis）是SKILL的子集，专门用于
 
 然后从ocean交互界面（在命令行运行bash615之后执行指令`ocean`打开）或者从CIW运行脚本：`load "script.ocn"`
 
-## Setup Simulation
-
-自动生成的脚本里面已经包含了这一部分。将来哪天自动生成不够用了再补充这部分的笔记
-
-注意：从GUI跑仿真的时候是“netlist and run”，但自动生成的脚本没有 netlist 步骤，因此要先用GUI跑一次，产生了网表再运行脚本。更改了电路之后也要先用GUI跑一次再运行脚本
-
-用脚本生成netlist可以参考[这里](https://community.cadence.com/cadence_technology_forums/f/custom-ic-design/38480/post-layout-simulation-using-ocean-script)，大意是用`design`函数设置被仿真的Cellview、用`envOption`函数设置`switchViewList`，然后调用`createNetlist`函数。之前试过一次，不太成功，以后有必要再学
-
-```lisp
-; Design Variables
-a = desVar("delay" 50p)     ; set design variable (and returns it)
-b = desVar("delay")         ; get design variable
-
-; 变量的值可以是表达式，且顺序无所谓
-desVar("a" "b+1")
-desVar("b" 1)
-; a = 2, b = 1
-```
-
 ## 运行仿真
 
-这一部分同样被很好地自动生成了，一般没有动的必要
-
-```lisp
-; Parametric Analysis
-paramAnalysis("var1" ?start 0 ?stop 200p ?step 10p
-    paramAnalysis("var2" ?values '(100m 200m 300m))
-)
-paramRum()
-
-; 使用for循环扫参数（不推荐，但需要在循环体内做特殊操作时不得不这么做）
-for(v1 0 20
-    desVar("var1" v1*20p)
-    foreach(v2 '(100m 200m 300m)
-        desVar("var2" v2)
-        run()
-    )
-)
-```
+从GUI界面要容易得多，而且没什么是必须用OCEAN脚本做的，强烈不建议用脚本运行仿真。此部分笔记略过
 
 ## 访问数据
 
-用ADE L仿真结束之后，数据被存在`~/simulation/<testSchemName>/spectre/schematic/psf`文件夹内。可以用 CIW - Tools - ADE L - Results Browser - File - Open Result 选择打开（但是不建议，因为这里面包括了所有 net 的仿真数据，在GUI里面很难找想要的东西）。下一次仿真时，仿真结果会自动被删除。在此之前随时都可以打开
+仿真数据默认存在`~/simulation/`目录下的`psf`文件夹内（存储位置可以在`.cdsenv`文件中设置）。可以用 CIW - Tools - ADE L - Results Browser - File - Open Result 选择打开（但是不建议，因为这里面包括了所有 net 的仿真数据，在GUI里面很难找想要的东西）
 
-用ADE XL仿真时，在Output Setup添加Ocean脚本，会自动打开仿真结果
+用ADE L仿真时，每次仿真开始时自动删除之前的仿真结果；ADE XL则保存最近的10个结果（可以在Options - Save设置）
 
 ```lisp
 ; 打开仿真结果
@@ -503,10 +420,15 @@ openResults("~/simulation/testcell/spectre/schemetic/psf")
 results()           ; 查看可选结果类别，比如tran，ac等
 outputs()           ; 查看所有器件和net名
 selectResult('tran)
+; 在ADE XL的Output Setup添加的脚本不需要这两步
 
 ; 处理数据，绘制波形、打印数据
 VIN = v("/VIN")
 IIN = i("/IIN")
+
+; 仿真参数
+vgs = desVar("vgs")  ; Design Variable
+W = VAR("W")         ; Global Variable
 
 ; cautious: v & i works in mysterious ways
 getData("/VIN")    ; equivalent to VIN
@@ -549,7 +471,7 @@ OCEAN的绘图没有面向对象的形式，只能用面向过程的绘图
 
 ```lisp
 ; 打开窗口
-win_id = newWindow()    ; 打开新窗口。win_id是一个vtype对象
+win_id = newWindow()    ; 打开新窗口
 clearAll()              ; 或者不开新窗口，而是清除上次绘制的图，在原窗口重新绘图
 ; 又或者，什么都不做，直接绘图，和之前的图叠起来
 

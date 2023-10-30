@@ -1,12 +1,12 @@
-# HTML，CSS与JS
+# HTML，CSS与JavaScript
 
 HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述网页的行为
 
-原则上来说三个都可以塞进html页面里，但这就很难开发了，所以更常见的做法是三者分开，在html里面调CSS和JS
+原则上来说三个都可以塞进html页面里，但更常见的做法是三者分开，在html里面调CSS和JavaScript
 
 # HTML
 
-HTML(超文本标记语言，Hyper-Text Markup Language)是用于创建网页的标准标记语言
+HTML（超文本标记语言，Hyper-Text Markup Language）是用于创建网页的标准标记语言
 
 HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```）结束，起止标签中间的内容就是元素的内容，标签可以没有内容，甚至可以在起始的同时终止（比如，换行标签`<br />`。一些不规范写法将其写成`<br>`，可能会被当作缺少终止标签）
 
@@ -171,7 +171,7 @@ XHTML是结合了XML和HTML的一种标记语言
 
 # CSS
 
-CSS指层叠样式表（**C**ascading **S**tyle **S**heets），它定义了HTML样式，存储于可层叠的表中
+CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式，存储于可层叠的表中
 
 ```css
 /* 选择器，作用于所有<p>标签 */
@@ -391,7 +391,7 @@ var1 = 1;
 window.var1;  // == 1
 ```
 
-# 常用HTML事件
+## 常用HTML事件
 
 | 事件        | 含义                         |
 | ----------- | ---------------------------- |
