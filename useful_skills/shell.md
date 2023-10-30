@@ -52,7 +52,18 @@ Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10�
 ### 控制流
 
 ```bash
+# 遍历当前目录所有文件
+for f in *; do
+  echo "File -> $f"
+done
 
+# 正则表达式替换
+# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
+a='Hello, world'
+f='example.png'
+echo "${a/o/O}"       # 匹配第一个，得到HellO, world
+echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
+echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
 # cmd.exe
@@ -177,4 +188,20 @@ $s2 = "{0}-{1}.png" -f $prefix, $name
 
 # 转义字符`（反引号）
 echo "`"Hello`""
+```
+
+### 执行策略
+
+Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
+
+- Restricted：不允许运行脚本（默认策略）
+- AllSigned：允许有数字签名的脚本
+- RemoteSigned：允许有数字签名的脚本、本地编写的脚本
+- Bypass：允许所有脚本且不警告
+
+建议设置为RemoteSigned
+
+```powershell
+Get-ExecutionPolicy
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
 ```

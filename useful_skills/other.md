@@ -1,33 +1,44 @@
-# Windows
+# Windows 10
 
 ## hotkeys
 
-win + R：运行。建立一个文件夹，把它加入系统环境变量PATH中，再把想要的东西的快捷方式放进去，就能够直接从win + R启动
+- win + R：运行。建立一个文件夹，把它加入系统环境变量PATH中，再把想要的东西的快捷方式放进去，就能够直接从win + R启动
+- win + Tab：虚拟桌面
 
-win + Tab: 虚拟桌面
-
-## windows 10关闭网络搜索
+## 关闭网络搜索
 
 使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
 
-# bash
+## 右键菜单栏
+
+右键菜单，也叫做Context Menu，相关注册表项[参考](http://up.houheaven.com/Regedit/Reg_03.htm)
+
+### 删除
+
+可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
 
 ```bash
-# 遍历当前目录所有文件
-for f in *; do
-  echo "File -> $f"
-done
+# 文件夹
+\HKEY_CLASSES_ROOT\Folder
+\HKEY_CLASSES_ROOT\Directory
+# 文件
+\HKEY_CLASSES_ROOT\*
+\HKEY_CLASSES_ROOT\AllFilesystemObjects
+# 桌面
+\HKEY_CLASSES_ROOT\DesktopBackground
 
-# 正则表达式替换
-# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
-a='Hello, world'
-f='example.png'
-echo "${a/o/O}"       # 匹配第一个，得到HellO, world
-echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
-echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
+# 删的时候发现了，但是删完看不到效果的
+\HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
 ```
 
+### 增加
 
+1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
+2. 将command的值设为指令，如`notepad.exe %1`
+
+`<somewhere>`具体是哪里：
+
+1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`
 
 # mingw编译&make
 

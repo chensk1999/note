@@ -1841,7 +1841,7 @@ class PurePath(object):
         return self
 ```
 
-## 检测中文
+**检测中文**
 
 ```python
 def is_cjk(char):
@@ -1857,4 +1857,3 @@ def is_cjk(char):
 - `FF00~FFEF`：全角标点、全角英数、半角片假名和半角谚文等
 
 符号的unicode其实挺混乱的。比如说，中文逗号是`0xFF0C`Fullwidth Comma，顿号是`0x3001`Ideographic Comma。日文则用Ideographic Comma做逗号
-

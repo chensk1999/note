@@ -1,8 +1,6 @@
 # HTML，CSS与JavaScript
 
-HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述网页的行为
-
-原则上来说三个都可以塞进html页面里，但更常见的做法是三者分开，在html里面调CSS和JavaScript
+HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述网页的行为。较为成熟的开发模式是分别设计HTML、CSS和JavaScript，然后在HTML里面调用另外两者。简单的网页可以把全部东西塞进html里，但考虑可维护性，还是强烈不建议这么做
 
 # HTML
 
@@ -43,7 +41,7 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
             <sup>上标</sup>
             <del>删除线</del>
         </p>
-        
+
         <p style="color:blue;margin-left:20px;">
             内联样式。常用样式：
             background-color   背景颜色
@@ -54,10 +52,10 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
             在旧版本，有font, center, strike标签，color, bgcolor属性用来实现样式
             现在建议只使用style
         </p>
-        
+
         <!-- 图像 -->
         <img src="boat.gif" alt="加载不出来的时候显示这段文字" width="304" height="228">
-        
+
         <!-- 表格 -->
         <table width="500" border="1" cellpadding="10">
             <caption>标题</caption>
@@ -74,12 +72,12 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
                 <td>row 2, cell 2</td>
             </tr>
         </table>
-        
+
         <li>无序列表</li>
         <ol>
             <li>li套在ol里为有序列表</li>
         </ol>
-        
+
         <div>
             块级元素，经常当作容器
         </div>
@@ -122,19 +120,19 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
     height:300px;
     width:100px;
     float:left;
-    padding:5px; 
+    padding:5px;
 }
 #section {
     width:350px;
     float:left;
-    padding:10px; 
+    padding:10px;
 }
 #footer {
     background-color:black;
     color:white;
     clear:both;
     text-align:center;
-    padding:5px; 
+    padding:5px;
 }
 ```
 
@@ -194,7 +192,7 @@ p
 <head>
     <!-- 外部样式表 external style sheet -->
     <link rel="stylesheet" type="text/css" href="mystyle.css">
-    
+
     <!-- 内部样式表 internal style sheet -->
     <style>
         hr {color:sienna;}
@@ -213,9 +211,202 @@ p
 
 # JavaScript
 
-## JS代码块
+## 语法
 
-一般在head中或者body的底部定义script，在有需要的时候调用。代码在网页加载时会被运行一次
+### 数据类型与变量
+
+JavaScript是弱类型的动态语言。动态是说变量不与某个类型绑定，弱类型指操作设计不匹配的类型时，它进行隐式类型转换而不抛出错误
+
+JS有5种基本类型 + 1种引用类型，引用类型又可以细分为许多种子类型：
+
+```javascript
+// 基本类型
+let x;      // Undefined
+x = null;   // Null
+x = 1.5;    // Number
+x = 'Joe';  // String，单引号或者双引号均可
+x = true;   // Boolean
+x = BigInt("1234567890");   // BigInt
+const sym = Symbol("foo");  // Symbol
+
+// 引用类型
+const arr = [1, 2, 3];  // 数组
+const obj = {name:"John", age:14};  // 对象
+const dat = new Date();
+
+// 获取类型。注意typeof是个特殊运算符，不是函数
+typeof "abc";
+
+// 显式类型转换
+x = Number("3.2");   // 转化为数字
+x = parseInt(x);     // 转化为整数
+x = String("x");     // 字符串
+```
+
+**声明变量**
+
+声明变量有若干种方式。建议普通变量用let声明，常量和引用类型变量（列表、对象等）用const声明
+
+```javascript
+a = 0;  // 不声明直接使用
+let b;  // let声明，作用域为当前block
+var c;  // var声明，作用域延伸到当前block之外
+const d = 0;  // const声明，不允许再次赋值
+```
+
+**字符串**
+
+```javascript
+// 字符串
+let text = 'some string';
+text.replace('pattern', 'repl')
+
+// 常用属性和方法
+text.length;       // 字符串长度
+text.slice(0, 2);  // 截取片段。此例子返回前两个字符。可以用负数索引，也可以省略第二个参数
+text.charAt(0);    // 获取指定位置字符。也可以用str[0]
+text.trim();       // 去除头尾空白
+text.split(' ');   // 分割
+
+// 正则表达式
+// 格式：/表达式内容/[修饰]；常用修饰：i不区分大小写，g全局匹配，m多行匹配
+let pattern = /regexp/gi;
+text.includes(pattern);  // 返回是否匹配到（布尔值）
+text.match(pattern);     // 返回包含了每个匹配的列表
+text.search(pattern);    // 返回匹配子串起始位置
+text.replace(/some/g, 'random');  // 替换
+
+// Template Literal 格式化字符串。使用反引号
+let firstName = "John";
+let lastName = "Doe";
+let text = `Welcome ${firstName}, ${lastName}!`;
+```
+
+**列表**
+
+```javascript
+// 定义与访问。注意，用const声明列表仍然给操作列表内的东西赋值
+const cars = ["Saab", "Volvo", "BMW"];
+console.log(cars[0]);
+cars[100] = "Opel";  // 注意：超出范围不会报错，但是3~99全部变成undefined
+
+// 常用方法
+const fruits = ["Banana", "Orange", "Apple", "Mango"];
+fruits.pop();             // 弹出末尾元素
+fruits.push("Kiwi");      // 在末尾添加元素
+fruits.shift();           // 弹出首个元素
+fruits.unshift("Lemon");  // 在开头插入元素
+fruits.slice(0, 3);       // 截取第0~第3个元素
+fruits.splice(2, 0, "Lemon", "Kiwi");  // 在2号位置插入Lemon和Kiwi，然后删除0个元素
+fruits.concat(["Lemon", "Kiki"]);      // 拼接列表
+fruits.sort(function(a, b){return a-b});
+fruits.indexOf("Apple");  // 寻找元素位置
+
+// 使用高阶函数的方法。约定接受三个参数：func(value, index, array)
+fruits.map(func);     // 将func作用于每个元素，返回其返回值构成的列表
+fruits.filter(func);  // 用func检查每个元素，返回通过检查（返回值为真）的元素构成的列表
+fruits.every(func);   // all(fruits.map(func))
+fruits.some(func);    // any(fruits.map(func))
+```
+
+**对象**
+
+```javascript
+// 定义对象
+const car = {
+    type:"Fiat",
+    model:"500",
+    color:"white",
+    create_description: function() {
+        return this.type + " " + this.model;
+    }
+};
+
+// 访问对象
+console.log(car.type);
+car["model"] = 404;
+```
+
+### 运算符
+
+算数运算符（`+-*/%`)，赋值运算符（`=, +=, -=, *=, /=, %=`），自增自减（`++, --`），条件（`? :`），比较（`>, <, ==, >=, <=, !=`）和大部分编程语言相同，以下列出独特的运算符
+
+```javascript
+a === b;   //绝对等于，值和类型均相等
+a !== b;   //不绝对等于，值或类型不相等
+```
+
+### 控制流
+
+```javascript
+// if分支
+if (time < 10) {
+    console.log("Good morning");
+} else if (time < 20) {
+    console.log("Good day");
+} else {
+    console.log("Good evening");
+}
+
+// switch分支
+//switch ... case ... default，同C
+
+// for循环
+const fruits = ["Banana", "Orange", "Apple", "Mango"];
+let text = "<ul>";
+for (let i=0; i<fruits.length; i++) {
+    text += "<li>" + fruits[i] + "</li>";
+}
+text += "</ul>";
+
+// for in循环
+const person = {fname:"John", lname:"Doe", age:25};
+for (let p in person) {
+  console.log(p + " " + person[p]);
+}
+
+// while循环，do/while循环
+// 略
+
+// break和continue：跳出循环、跳过本次迭代
+// 还可以给代码块加标签，跳出指定的代码块
+var x = false;
+label:
+{
+    //do something
+    if (x) break label;
+    //do some other things
+}
+
+// 错误处理
+try {/*do something*/}
+catch(err) {/*发生错误之后执行这段*/}
+finally {/*不论有没有捕捉到错误都会运行*/}
+
+//抛出异常
+throw exception;  //异常可以是字符串、数字、逻辑值或对象
+```
+
+### 函数
+
+用关键字function声明函数，函数内变量生存期为函数执行期间，作用域为函数内；函数外变量的生存期为网页存续期间，作用域为整个网页
+
+```javascript
+// 定义函数
+function func(a, b) {
+    return a * b;
+}
+
+// 调用函数
+let x = func(3, 4);
+console.log(x);
+```
+
+## 调用
+
+### 代码块
+
+JavaScript以代码块的形式嵌入到html，一般定义在head中或者body的底部。其中的代码在网页加载时会被运行一次，之后还可以事件处理器等方式调用
 
 ```html
 <head>
@@ -224,31 +415,31 @@ p
 
     <!-- 在head中写脚本 -->
     <script>
-        function func() {document.getElementById("demo").innerHTML="Hello World!";}
+        function funcInHead() {document.getElementById("demo").innerHTML="Head";}
     </script>
 </head>
 
 <body>
+    <p id="demo">Javascript Demo</p>
+    <button type="button" onclick="funcInHead()"> Button1 </button>
+    <button type="button" onclick="funcInBody()"> Button2 </button>
+
     <!-- 在body底部写脚本 -->
     <script>
-        function funcInBody() {\*do something*\}
+        function funcInBody() {document.getElementById("demo").innerHTML="body";}
     </script>
 </body>
 ```
 
-## 事件
+### 事件
 
-事件是用户的某种动作，比如鼠标点击、按键、调整页面大小等。一般在通过侦听代码监听事件、依据发生的事件调用函数
-
-* 事件处理器属性
-
-将html标签的事件处理器属性设置为js函数，当事件发生时就会调用函数
+事件是用户的某种动作，比如鼠标点击、按键、调整页面大小等。将JavaScript代码绑定给HTML的事件处理器就能在事件发生时自动调用代码，如：
 
 ```html
-<button onclick="func()"> 调用函数 </button>
+<button onclick="this.innerHTML = Date()"> 获取当前时间 </button>
 ```
 
-当然，这个onclick属性不该写死在html里面，它应该通过js动态赋值。将页面内容与网页行为分离能大大降低开发和维护的难度
+更常见的做法是不把onclick属性写死在html里面，而是用JavaScript把代码动态绑定到事件处理器。将页面内容与网页行为分离能大大降低开发和维护的难度
 
 ```javascript
 // 定义事件处理函数
@@ -257,18 +448,14 @@ bgChange(event) {
   e.target.style.backgroundColor = rndCol;
 }
 
-// 只有一个标签
-const btn = document.querySelector('button');
-btn.onclick = bgChange
-
-// 给多个标签绑定相同函数
+// 把这个函数绑定到全部Button
 const buttons = document.querySelectorAll('button');
 for (let i = 0; i < buttons.length; i++) {
   buttons[i].onclick = bgChange;
 }
 ```
 
-* EventListener
+- EventListener
 
 相比于事件处理器属性，事件监听器允许给一个事件绑定多个行为，还能很方便地动态管理这些行为
 
@@ -278,120 +465,7 @@ btn.addEventListener('click', bgChange);
 btn.removeEventListener('click', bgChange);
 ```
 
-## 数据类型与变量
-
-```javascript
-// 基本类型
-var x;      // undefined
-x = 1.5;    // number
-x = 'Joe';  // string，单引号或者双引号均可
-x = true;   // boolean
-x = null;   // 值为null，类型不变
-x = undefined;
-            // 值和类型都不定，null == undefined，但null !== undefined
-
-// 字符串
-var str = 'some string';
-str.length;
-str.search('/regular expression/i')
-    // 返回子串起始位置
-    // js中的正则表达式：/表达式内容/[修饰]
-    // 一些常用修饰：i不区分大小写，g全局匹配，m多行匹配
-str.replace('pattern', 'repl')
-
-// RegExp对象
-var pattern = /regexp/
-pattern.test('string')
-    // 测试string是否匹配pattern模式，返回boolean
-
-// 引用类型
-var arr = new Array();  // JS数组和python列表差不多
-var arr2 = [1, 4];
-var person = {name:"John", age:14};
-    // object，可以用person["name"]或person.name来引用
-
-// typeof
-typeof x;   // 返回x的类型
-
-// 强制类型转换，以String为例，Number也类似
-String(x);
-x.toString();
-```
-
-### 变量提升
-
-JavaScript允许先定义后声明，这种情况下，声明语句会被自动提升到定义前。但是在声明同时初始化的变量不会被提升，还有一些其他的复杂规则。因此还是得好好的先声明再使用
-
-或者使用```"use strict"```指令，在ECMAScript5及之后版本中，此指令声明严格模式，不允许先定义再声明，同时禁止了一些不太安全的操作
-
-## 运算符
-
-算数运算符（+-*/%)，赋值运算符（=, +=, -=, *=, /=, %=），自增自减（++, --），条件（? :），比较（>, <, ==, >=, <=, !=）
-
-大部分和C一致，以下列出不一样的地方
-
-```javascript
-'a' + 5    // = 'a5'，字符串间、字符串与数字间可以做加法
-
-a === b;   //绝对等于，值和类型均相等
-a !== b;   //不绝对等于，值或类型不相等
-```
-
-## 语句
-
-```javascript
-//条件执行
-//if ... else if ... else，同C
-
-//分支选择
-//switch ... case ... default，同C
-
-//for循环
-//for( ;  ; )，同C
-
-//for/in循环
-//例：for(x in person) {do something}，类似python的for循环
-
-//while循环，do/while循环
-//同C
-
-//break
-//类似C，但js可以给代码块加标签，可以指定跳出任意代码块
-var x = false;
-label:
-{
-    //do something
-    if (x) break label;
-    //do some other things
-}
-
-//continue
-//同C
-
-//错误处理，类似python
-try {/*do something*/}
-catch(err) {/*发生错误之后执行这段*/}
-finally {/*不论有没有捕捉到错误都会运行*/}
-
-//抛出异常
-throw exception;  //异常可以是字符串、数字、逻辑值或对象
-```
-
-## 函数
-
-用关键字function声明函数，函数内变量生存期为函数执行期间，作用域为函数内；函数外的为网页存续期间，作用域为整个网页；可以给未声明的变量赋值，它会自动称为网页的属性（可以删除）
-
-```javascript
-function func(a, b)
-{
-    return a*b;
-}
-
-var1 = 1;
-window.var1;  // == 1
-```
-
-## 常用HTML事件
+**常用HTML事件**
 
 | 事件        | 含义                         |
 | ----------- | ---------------------------- |
@@ -408,5 +482,25 @@ window.var1;  // == 1
 <button onclick="displayDate()">现在的时间是?</button>
 ```
 
+## HTML DOM
 
+DOM（文档对象模型，Document Object Model）是描述文档的树状结构。JavaScript可以通过操作DOM访问网页元素。JavaScript提供了丰富的DOM API，使用`document`、`console`等对象就能访问网页内容，如：
 
+```javascript
+document.getElementById("demo").innerHTML = "Hello World";
+```
+
+此例子将首个id为demo的元素内容更改为Hello World
+
+**获取网页元素**：有很多种方法，最一劳永逸的是用CSS Selector：
+
+```javascript
+const elements = document.querySelectorAll("p.intro");
+```
+
+**访问网页元素**
+
+```javascript
+element.innerHTML = "Hello";          // 元素的内容
+let ei = element.getAttribute("id");  // 访问标签的属性
+```
