@@ -6,16 +6,16 @@ HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述�
 
 HTML（超文本标记语言，Hyper-Text Markup Language）是用于创建网页的标准标记语言
 
-HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```）结束，起止标签中间的内容就是元素的内容，标签可以没有内容，甚至可以在起始的同时终止（比如，换行标签`<br />`。一些不规范写法将其写成`<br>`，可能会被当作缺少终止标签）
+HTML由多个**元素**（Element）组成。元素由起始标签、元素的内容、终止标签构成，例如`<p>Hello, World</p>`。元素可以没有内容，甚至可以在起始的同时终止（比如，换行标签`<br />`。一些不规范写法将其写成`<br>`，可能会被当作缺少终止标签）
 
-不同种类的标签定义了不同的网页元素（如，标题`<title>`，段落`<p>`，etc.）。标签常具有属性，属性可能规定了其样式，也可能是用于区分不同标签的，比如`<img src="logo.png" width=100 />`具有src和width两个属性
+元素常具有**属性**（Attribute），属性用键值对表示，且属性值必须用引号括起来；属性通常写在开始标签。例：`<a href="example.html">链接</a>`
 
 ## 基础
 
 ```html
-<!DOCTYPE html>   <!-- 声明是html5文档。标签对大小写不敏感，在将来版本会强制用小写标签 -->
+<!DOCTYPE html>   <!-- 声明是html5文档。建议用小写标签 -->
 <html>            <!-- 根元素 -->
-    <head>            <!-- 包含元数据 -->
+    <head>            <!-- head标签是元数据 -->
         <title>文档标题</title>
         <meta charset="utf-8">
         <base href="//www.runoob.com/images/" target="_blank">     <!-- 默认链接 -->
@@ -153,12 +153,12 @@ HTML元素以起始标签（如```<p>```）起始，终止标签（如```</p>```
 
 # XML
 
-XML（EXtensible Markup Language）是类似HTML的标记语言，但注重传输数据而非显示数据。XML没有预定义标签，标签名对大小写敏感，允许嵌套标签（但必须是严格的嵌套），每个XML文档有且仅有一个根元素
+XML（EXtensible Markup Language）是类似HTML的标记语言，但注重传输数据而非显示数据。XML没有预定义标签，标签名对大小写敏感，允许嵌套元素（但必须是严格的嵌套），每个XML文档有且仅有一个根元素
 
 ## XML命名空间(XML Namespaces)
 
-<前缀:标签名 xmlns:前缀="命名空间">
-<root xmlns:前缀="命名空间">（在根元素中声明）
+`<前缀:标签名 xmlns:前缀="命名空间">`
+`<root xmlns:前缀="命名空间">`（在根元素中声明）
 一个命名空间被定义后，拥有相同前缀的元素都与该空间相关联
 命名空间通常使用对应的url
 
@@ -169,22 +169,76 @@ XHTML是结合了XML和HTML的一种标记语言
 
 # CSS
 
-CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式，存储于可层叠的表中
+CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，如
 
 ```css
-/* 选择器，作用于所有<p>标签 */
-p
+p   /*选择器*/
 {
-    color:red;
-    text-align:center;
+    color: red;  /*属性&值*/
+    text-align: center;
 }
-
-/* id选择器，作用于有这个id的html标签，例如：<div id="para1"> */
-#para1 {text-align:center; color:red;}
-
-/* class选择器，作用于所有class="center"的html标签 */
-.center {text-align:center;}
 ```
+
+“层叠”指多个规则可以叠加起来对同一个元素生效
+
+## CSS选择器
+
+**简单选择器**
+
+```css
+/*元素选择器。选中所有<p>元素*/
+p {color: red;}
+
+/*id选择器。选中id属性为main的元素，如<h1 id="main">*/
+#main {color: blue;}
+
+/*类选择器。选中class属性为main的元素，如<h2 class="main">*/
+.main {color: green;}
+```
+
+**属性选择器**
+
+```css
+/*具有role属性的元素*/
+[role] {color: olive}
+
+/*role属性值为navigation的元素*/
+[role="navigation"] {color: purple;}
+```
+
+属性选择器有许多变体，语法是将`[attribute="value"]`中的等号替换为其他运算符
+
+| 符号 | 例子           | 说明                 | 例子                        |
+| ---- | -------------- | -------------------- | --------------------------- |
+| `~=` | `[role~=navi]` | 属性包含独立词navi   | `<div role="navi">`         |
+| `|=` | `[role|=navi]` | 属性开头是独立词navi | `<div role="navi sidebar">` |
+| `^=` | `[role^=navi]` | 属性开头是navi       | `<div role="navigation">`   |
+| `$=` | `[role$=navi]` | 属性结尾是navi       | `<div role="panavi">`       |
+| `*=` | `[role*=navi]` | 属性包含navi         | `<div role="panavim">`      |
+
+前两个的“独立词”指用空格、横线分割开的完整词，比如`p[lang~=en]`能匹配到`<p lang="en-us">`、`<p lang="en Zh">`，但是匹配不到`<p lang="enable">`
+
+**组合器**
+
+```css
+/*后代选择器。<div>元素内的所有<p>元素*/
+div p {background-color: white;}
+
+/*子选择器。<div>子元素中的所有<p>元素*/
+div > p {background-color: silver;}
+
+/*相邻兄弟选择器。紧随<div>之后的<p>元素*/
+div + p {background-color: gray;}
+
+/*通用兄弟选择器。与<div>同级的所有<p>元素*/
+div ~ p {background-color: black;}
+```
+
+**其他**
+
+伪类（pseudo-class）选择器：选择特殊状态的元素，比如鼠标悬停、已访问的链接
+
+伪元素（pseudo-element）选择器：选择元素的指定部分，比如首字母、元素之前或之后
 
 ## 使用样式表
 
@@ -202,7 +256,7 @@ p
 </head>
 
 <body>
-    <!-- 内联样式 inline style。会导致内容和样式混杂、样式无法复用 -->
+    <!-- 内联样式 inline style -->
     <p style="color:sienna;margin-left:20px">这是一个段落。</p>
 </body>
 ```
@@ -215,9 +269,9 @@ p
 
 ### 数据类型与变量
 
-JavaScript是弱类型的动态语言。动态是说变量不与某个类型绑定，弱类型指操作设计不匹配的类型时，它进行隐式类型转换而不抛出错误
+JavaScript是弱类型的动态语言。动态指变量不与某个类型绑定，弱类型指操作涉及不匹配的类型时，进行隐式类型转换而不抛出错误
 
-JS有5种基本类型 + 1种引用类型，引用类型又可以细分为许多种子类型：
+JS有7种基本类型 + 1种引用类型，引用类型又可以细分为许多种子类型：
 
 ```javascript
 // 基本类型
@@ -235,7 +289,7 @@ const obj = {name:"John", age:14};  // 对象
 const dat = new Date();
 
 // 获取类型。注意typeof是个特殊运算符，不是函数
-typeof "abc";
+typeof arr;
 
 // 显式类型转换
 x = Number("3.2");   // 转化为数字
@@ -245,10 +299,9 @@ x = String("x");     // 字符串
 
 **声明变量**
 
-声明变量有若干种方式。建议普通变量用let声明，常量和引用类型变量（列表、对象等）用const声明
+声明变量有若干种方式。建议普通变量用`let`声明，常量和引用类型变量（列表、对象等）用`const`声明
 
 ```javascript
-a = 0;  // 不声明直接使用
 let b;  // let声明，作用域为当前block
 var c;  // var声明，作用域延伸到当前block之外
 const d = 0;  // const声明，不允许再次赋值
@@ -257,7 +310,6 @@ const d = 0;  // const声明，不允许再次赋值
 **字符串**
 
 ```javascript
-// 字符串
 let text = 'some string';
 text.replace('pattern', 'repl')
 
@@ -285,10 +337,10 @@ let text = `Welcome ${firstName}, ${lastName}!`;
 **列表**
 
 ```javascript
-// 定义与访问。注意，用const声明列表仍然给操作列表内的东西赋值
+// 定义与访问。注意，用const声明列表
 const cars = ["Saab", "Volvo", "BMW"];
 console.log(cars[0]);
-cars[100] = "Opel";  // 注意：超出范围不会报错，但是3~99全部变成undefined
+cars[100] = "Opel";  // 超出范围不会报错，但是3~99全部变成undefined
 
 // 常用方法
 const fruits = ["Banana", "Orange", "Apple", "Mango"];
@@ -298,7 +350,7 @@ fruits.shift();           // 弹出首个元素
 fruits.unshift("Lemon");  // 在开头插入元素
 fruits.slice(0, 3);       // 截取第0~第3个元素
 fruits.splice(2, 0, "Lemon", "Kiwi");  // 在2号位置插入Lemon和Kiwi，然后删除0个元素
-fruits.concat(["Lemon", "Kiki"]);      // 拼接列表
+fruits.concat(["Lemon", "Kiwi"]);      // 拼接列表
 fruits.sort(function(a, b){return a-b});
 fruits.indexOf("Apple");  // 寻找元素位置
 
@@ -332,8 +384,8 @@ car["model"] = 404;
 算数运算符（`+-*/%`)，赋值运算符（`=, +=, -=, *=, /=, %=`），自增自减（`++, --`），条件（`? :`），比较（`>, <, ==, >=, <=, !=`）和大部分编程语言相同，以下列出独特的运算符
 
 ```javascript
-a === b;   //绝对等于，值和类型均相等
-a !== b;   //不绝对等于，值或类型不相等
+a === b;   // 绝对等于，值和类型均相等
+a !== b;   // 不绝对等于，值或类型不相等
 ```
 
 ### 控制流
@@ -349,7 +401,7 @@ if (time < 10) {
 }
 
 // switch分支
-//switch ... case ... default，同C
+// switch ... case ... default，同C
 
 // for循环
 const fruits = ["Banana", "Orange", "Apple", "Mango"];
@@ -373,9 +425,9 @@ for (let p in person) {
 var x = false;
 label:
 {
-    //do something
+    // do something
     if (x) break label;
-    //do some other things
+    // do some other things
 }
 
 // 错误处理
@@ -384,7 +436,8 @@ catch(err) {/*发生错误之后执行这段*/}
 finally {/*不论有没有捕捉到错误都会运行*/}
 
 //抛出异常
-throw exception;  //异常可以是字符串、数字、逻辑值或对象
+let exception = "Runtime Error";
+throw exception;  // 异常可以是字符串、数字、逻辑值或对象
 ```
 
 ### 函数
@@ -476,12 +529,6 @@ btn.removeEventListener('click', bgChange);
 | onkeydown   | 用户按下键盘按键             |
 | onload      | 浏览器已完成页面的加载       |
 
-使用例
-
-```html
-<button onclick="displayDate()">现在的时间是?</button>
-```
-
 ## HTML DOM
 
 DOM（文档对象模型，Document Object Model）是描述文档的树状结构。JavaScript可以通过操作DOM访问网页元素。JavaScript提供了丰富的DOM API，使用`document`、`console`等对象就能访问网页内容，如：
@@ -492,15 +539,17 @@ document.getElementById("demo").innerHTML = "Hello World";
 
 此例子将首个id为demo的元素内容更改为Hello World
 
-**获取网页元素**：有很多种方法，最一劳永逸的是用CSS Selector：
+**获取网页元素**
 
 ```javascript
+let element = document.querySelector("p.intro");
 const elements = document.querySelectorAll("p.intro");
 ```
 
 **访问网页元素**
 
 ```javascript
-element.innerHTML = "Hello";          // 元素的内容
-let ei = element.getAttribute("id");  // 访问标签的属性
+element.innerHTML = "Hello";          // 访问元素的内容
+let ei = element.getAttribute("id");  // 访问元素的属性
 ```
+

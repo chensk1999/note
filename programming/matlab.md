@@ -1,4 +1,6 @@
-# 交互式命令
+# 语法
+
+## 交互式命令
 
 ```matlab
 exp(i*pi/4)     % 计算并立即打印结果
@@ -21,8 +23,6 @@ help [cmd]      % 显示指令帮助
 lookfor [cmd]   % 显示指令参数的帮助
 quit            % 退出
 ```
-
-# 语法
 
 ## 控制流
 
@@ -68,6 +68,168 @@ for i = 0:100
 end
 
 % break & continue。该是怎样就怎样
+```
+
+# 数据类型
+
+## 数组
+
+Matlab的大多数数据都是数组。数字是零维数组，向量是一维数组，矩阵是二维数组
+
+```matlab
+% 定义数组
+r = [1 2 3];        % 行向量
+c = [1; 2; 3;];     % 列向量
+A = [11 12 13; 21 22 23; 31 32 33];  % 矩阵
+B = A * 2;
+
+% 特殊数组的定义
+zeros(5)        % 五阶零方阵
+ones(4, 3)      % 4x3填1的矩阵
+eye(4)          % 四阶单位阵
+lin = 1:1:10    % initval:step:endval，定义一个包括endval的线性行向量
+ua(2, 2) = uint8(0)  % 2x2的uint8矩阵。所有对象数组都可以这样预分配内存
+
+
+% 矩阵运算
+A + B           % 矩阵加法
+A - 1           % 矩阵减法
+A * 2           % 数乘
+A * B           % 矩阵乘法
+A .* B          % 逐元素乘法
+A / B           % 矩阵除法，相当于A * inv(B)
+A ./ B          % 逐元素相除
+A \ B           % 矩阵左除法，相当于pinv(A) * B，或求A*x=B的解
+A .\ B          % 逐元素左除法，相当于B ./ A
+A ^ 2           % 矩阵乘方
+A .^ 2          % 逐元素乘方
+A'              % 矩阵转置
+A.'             % 转置，但复数不取共轭
+
+% 数组索引：索引从1开始
+A(1, 2)         % 第1行第2列
+A(2, :)         % 第二行。注意：A(2)是第二行第一个元素
+A(1:2, 2:3)     % 1~2行的2~3列
+A([3, 1], :)    % 第3行和第1行
+
+% 添加/删除数组元素
+[A[0, :], 14]   % 一维矩阵拼接
+A(:, 2) = []    % 删除第二列
+A(:, :, 2) = A  % 插入到第三维
+a = 1, a(5) = 2 % 给标量插入新元素构成向量。未定义部分填0
+
+% 数组大小
+size(A)         % 对于标量、向量和矩阵，返回[row col]；对于高维数组，返回各维度的长度
+length(A)       % 等于max(size(A))
+numel(A)        % 数组包含元素数量，等于prod(size(A))
+ndims(A)        % 数组维数
+
+% 拼接矩阵
+[M, c]
+[M, r]
+cat(1, M, r)
+cat(2, M, c)
+
+% 其他
+[row, col] = find(A==12)      % 寻找元素
+[M, I] = max(A);              % 寻找最大元素以及其index
+```
+
+## 元胞数组
+
+元胞（Cell Array）是可以包含任意类型数据的容器。1×1元胞数组有时也直接称作元胞
+
+```matlab
+% 定义Cell Array
+c1 = {1 'A'; 3.5 {2 2} }
+c2 = cell(5, 3)         % 5x3的空cell
+
+% 访问Cell Array
+c1(1, 1)    % 圆括号访问元胞集，得到{1}
+c1{1, 1}    % 花括号访问元胞内容，得到1
+```
+
+## 结构体
+
+结构体（struct）是用字段将数据组合在一起的数据结构
+
+```matlab
+% 圆点表示法定义。此例子定义的结构体包含a和b两个字段
+s.a = 1
+s.b = 'value'
+
+% struct函数定义
+s = struct('a', 1, 'b', 'value')
+s = struct()    % 定义没有字段的结构体
+
+% 访问结构体
+s.a = 2
+s.('b')         % 用字符串访问
+
+isfield(s, 'a');    % 判断field是否存在
+```
+
+结构体数组
+
+```matlab
+s = struct('a', 1, 'b', 'value');
+s_arr = [s, s, s];
+
+% 批量访问
+[s_arr.a] = deal(1, 2, 3);
+```
+
+## 表
+
+```matlab
+tb = table();
+tb.a = [1; 2; 3];              % 添加一列
+tb.b = ["abc"; "def"; "ghi"];  % 再添加一列（必须和现有的列高度相同）
+
+if ismember("a", tb.Properties.VariableNames)
+    % 判断列是否存在
+    tb.a(1) = 0;
+end
+```
+
+## 字符与字符串
+
+用单引号括起来的文本字符（char），用双引号括起来的文本是字符串（string）。注意两者不同，比如`'abc' ~- "abc"`，需要用`strcmp`函数。字符串用起来更方便
+
+```matlab
+% 格式化字符串/格式化输出
+filename = sprintf('%.2f.csv', 3.2)
+fprintf('a = %d\n', 10)
+
+strfind('hello, world', 'o')    % 寻找出现的所有位置
+strrep('hello', 'hell', '')     % 将'hello'中的全部'hell'替换为''
+strsplit('hello, world', ' ')   % 分割字符串
+split('hello, world', ' ')      % 分割字符串。可以用在字符串数组上
+strtrim('  hello, world  ')     % 去除开头结尾空白
+
+% 正则表达式
+regexp("ababaab", "a+b", "match");
+
+% 其他一些函数。先在这里列出来，要用再看再补笔记吧
+% extractBefore, extractAfter, extractBetween
+% regexp, regexpi, regexprep, isspace, symvar
+```
+
+因为字符被当作字符数组，进行遍历操作的时候可以用元胞数组
+
+```matlab
+files = {'1.csv', '2.csv', '3.csv'};
+data = {};
+for i = 1:length(files)
+    file = files{i};
+    data{i} = importdata(file, ',', 1);
+```
+
+文本字符和字符串的区别
+
+```matlab
+'abc' + 'def'    % 数组求和，[197, 199, 201]
+"abc" + "def"    % 字符串拼接，"abcdef"
 ```
 
 # 编程
@@ -217,6 +379,11 @@ a = MyNum
 b = MyNum(2)
 a.value = 3.2
 a.increment()
+
+% 类似结构体数组，类数组也允许批量访问
+arr(5) = MyNum();  % 定义长度为5的MyNum数组
+[arr.value] = deal(1, 2, 3, 4, 5);
+varr = [arr.value];
 ```
 
 注意：Matlab默认的类是值类，其内容无法更改，对其赋值会创造一个新的对象。比如例子里面的`increment`函数，它会返回一个新的对象，而原来的不变。内建的数组、元胞数组等都是如此
@@ -261,8 +428,6 @@ classdef MyPosNum < MyNum   % 继承MyNum类
 end
 ```
 
-
-
 ## 工作区
 
 脚本、命令行中的变量储存在基础工作区中，函数则有自己的函数工作区。跨工作区传递数据最好用参数传递，但也有[其他办法](https://ww2.mathworks.cn/help/matlab/matlab_prog/share-data-between-workspaces.html)，比如
@@ -275,166 +440,6 @@ end
 ```
 
 这个办法可用做于gui回调函数，但它的风险和`eval`是等同的
-
-# 数据类型
-
-## 数组
-
-Matlab的大多数数据都是数组。数字是零维数组，向量是一维数组，矩阵是二维数组
-
-```matlab
-% 定义数组
-r = [1 2 3];        % 行向量
-c = [1; 2; 3;];     % 列向量
-A = [11 12 13; 21 22 23; 31 32 33];  % 矩阵
-B = A * 2;
-
-% 特殊数组的定义
-zeros(5)        % 五阶零方阵
-ones(4, 3)      % 4x3填1的矩阵
-eye(4)          % 四阶单位阵
-lin = 1:1:10    % initval:step:endval，定义一个包括endval的线性行向量
-
-% 矩阵运算
-A + B           % 矩阵加法
-A - 1           % 矩阵减法
-A * 2           % 数乘
-A * B           % 矩阵乘法
-A .* B          % 逐元素乘法
-A / B           % 矩阵除法，相当于A * inv(B)
-A ./ B          % 逐元素相除
-A \ B           % 矩阵左除法，相当于pinv(A) * B，或求A*x=B的解
-A .\ B          % 逐元素左除法，相当于B ./ A
-A ^ 2           % 矩阵乘方
-A .^ 2          % 逐元素乘方
-A'              % 矩阵转置
-A.'             % 转置，但复数不取共轭
-
-% 数组索引：索引从1开始
-A(1, 2)         % 第1行第2列
-A(2, :)         % 第二行。注意：A(2)是第二行第一个元素
-A(1:2, 2:3)     % 1~2行的2~3列
-A([3, 1], :)    % 第3行和第1行
-
-% 添加/删除数组元素
-[A[0, :], 14]   % 一维矩阵拼接
-A(:, 2) = []    % 删除第二列
-A(:, :, 2) = A  % 插入到第三维
-a = 1, a(5) = 2 % 给标量插入新元素构成向量。未定义部分填0
-
-% 数组大小
-size(A)         % 对于标量、向量和矩阵，返回[row col]；对于高维数组，返回各维度的长度
-length(A)       % 等于max(size(A))
-numel(A)        % 数组包含元素数量，等于prod(size(A))
-ndims(A)        % 数组维数
-
-% 拼接矩阵
-[M, c]
-[M, r]
-cat(1, M, r)
-cat(2, M, c)
-
-% 其他
-[row, col] = find(A==12)      % 寻找元素
-[M, I] = max(A);              % 寻找最大元素以及其index
-```
-
-## 元胞数组
-
-元胞（Cell Array）是可以包含任意类型数据的容器。1×1元胞数组有时也直接称作元胞
-
-```matlab
-% 定义Cell Array
-c1 = {1 'A'; 3.5 {2 2} }
-c2 = cell(5, 3)         % 5x3的空cell
-
-% 访问Cell Array
-c1(1, 1)    % 圆括号访问元胞集，得到{1}
-c1{1, 1}    % 花括号访问元胞内容，得到1
-```
-
-## 结构体
-
-结构体（struct）是用字段将数据组合在一起的数据结构
-
-```matlab
-% 圆点表示法定义。此例子定义的结构体包含a和b两个字段
-s.a = 1
-s.b = 'value'
-
-% struct函数定义
-s = struct('a', 1, 'b', 'value')
-s = struct()    % 定义没有字段的结构体
-
-% 访问结构体
-s.a = 2
-s.('b')         % 用字符串访问
-
-isfield(s, 'a');    % 判断field是否存在
-```
-
-结构体数组
-
-```matlab
-s = struct('a', 1, 'b', 'value');
-s_arr = [s, s, s];
-
-% 批量访问
-[s_arr.a] = deal(1, 2, 3);
-```
-
-## 表
-
-```matlab
-tb = table();
-tb.a = [1; 2; 3];              % 添加一列
-tb.b = ["abc"; "def"; "ghi"];  % 再添加一列（必须和现有的列高度相同）
-
-if ismember("a", tb.Properties.VariableNames)
-    % 判断列是否存在
-    tb.a(1) = 0;
-end
-```
-
-## 字符与字符串
-
-用单引号括起来的文本字符（char），用双引号括起来的文本是字符串（string）。注意两者不同，比如`'abc' ~- "abc"`，需要用`strcmp`函数。字符串用起来更方便
-
-```matlab
-% 格式化字符串/格式化输出
-filename = sprintf('%.2f.csv', 3.2)
-fprintf('a = %d\n', 10)
-
-strfind('hello, world', 'o')    % 寻找出现的所有位置
-strrep('hello', 'hell', '')     % 将'hello'中的全部'hell'替换为''
-strsplit('hello, world', ' ')   % 分割字符串
-split('hello, world', ' ')      % 分割字符串。可以用在字符串数组上
-strtrim('  hello, world  ')     % 去除开头结尾空白
-
-% 正则表达式
-regexp("ababaab", "a+b", "match");
-
-% 其他一些函数。先在这里列出来，要用再看再补笔记吧
-% extractBefore, extractAfter, extractBetween
-% regexp, regexpi, regexprep, isspace, symvar
-```
-
-因为字符被当作字符数组，进行遍历操作的时候可以用元胞数组
-
-```matlab
-files = {'1.csv', '2.csv', '3.csv'};
-data = {};
-for i = 1:length(files)
-    file = files{i};
-    data{i} = importdata(file, ',', 1);
-```
-
-文本字符和字符串的区别
-
-```matlab
-'abc' + 'def'    % 数组求和，[197, 199, 201]
-"abc" + "def"    % 字符串拼接，"abcdef"
-```
 
 # 文件操作
 
@@ -616,10 +621,6 @@ function callback(obj, event, ax)
     plot(ax, t, sin(event.Value * t));
 end
 ```
-
-# Simulink
-
-Simulink是基于模型的设计工具，可以作为Matlab的附加功能安装
 
 # 数字滤波器
 
