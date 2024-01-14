@@ -415,8 +415,10 @@ end
 
 ### 继承
 
+如果全部超类都是值类，则为值类；句柄类同理；混合继承句柄类和值类需要定义Handle-Compatible Class
+
 ```matlab
-classdef MyPosNum < MyNum   % 继承MyNum类
+classdef MyPosNum < MyNum & MyInt
     methods
         function obj = MyPosNum(value)
             if nargin == 0

@@ -631,13 +631,14 @@ endmodule
 Verilog-AMS（Analog and Mixed Signal extension）是Verilog的混合信号扩展。语法上来说，可以理解为在Verilog的基础上加入了模拟信号、analog块（即模拟信号的always块）。另外，只有模拟部分的Verilog-AMS子集称作Verilog-A
 
 ```verilog
-// Verilog-A模块示例：RLC器件的并联
+// 示例：RLC器件的并联
 module shunt_rlc(t1, t2);
     // 声明IO方向（input, output, inout）
-    // input信号的值可以在表达式中使用，但不可被设置；output反之；inout均可
     inout t1, t2;
-    // 声明信号类型（electrical, wire, reg等）
+
+    // 声明信号类型（electrical, wire, reg等。模拟信号用electrical）
     electrical t1, t2;
+
     // 声明参数
     parameter real R = 1;
     parameter real L = 1;
@@ -647,17 +648,45 @@ module shunt_rlc(t1, t2);
     integer res;
     real Vmax;
 
-    // 定义模拟过程。大致相当于数字电路的always块。一个模块只能有一个analog块
+    // 定义analog块
+    // analog块用于描述模拟电路，功能大致相当于数字电路的always块。一个模块只能有一个analog块
     analog begin
         I(t1, t2) <+ V(t1, t2) / R;
-        I(t1, t2) <+ idt(V(t1, t2)) / L;    // idt: 对时间积分(integral dt)
-        I(t1, t2) <+ ddt(V(t1, t2)) * C;    // ddt: 对时间微分(derivative dt)
-        // <+是贡献(contribution)算符，模拟信号只能用贡献算符赋值，不能用=赋值
+        I(t1, t2) <+ idt(V(t1, t2)) / L;
+        I(t1, t2) <+ ddt(V(t1, t2)) * C;
+        // <+是贡献(contribution)算符，模拟信号只能用贡献算符赋值，不能用等号赋值
         // 多个电流贡献相当于器件并联；多个电压贡献相当于器件串联。同一个节点不能同时有电压和电流贡献
     end
 endmodule
+```
 
-// Verilog-AMS示例：8bit DAC
+```verilog
+// 示例：运放模型。当增益小于1e12时让输出 = 输入×增益，否则用虚短求输出
+module opamp(VIP, VIN, VOUT);
+    input VIP, VIN;
+    output VOUT;
+    electrical VIP, VIN, VOUT;
+
+    parameter real gain = 1e6;
+    parameter real offset = 0;
+    real vi;
+
+    analog begin
+        vi = V(VIP, VIN) + offset;
+
+        if (gain < 1e12) begin
+            V(VOUT) <+ gain * vi;
+        end else begin
+            // 间接支路贡献。寻找满足条件的值（条件必须是信号 == 表达式）
+            // 例子中，仿真器会尝试求解令VIN=0的VOUT（此过程中不会驱动VIN）
+            V(VOUT): V(VIP, VIN) == 0;
+        end
+    end
+endmodule
+```
+
+```verilog
+// 示例：8bit DAC
 module dac_8bit(d, v);
     input [7:0] d;
     output v;
@@ -677,6 +706,7 @@ module dac_8bit(d, v);
 
         V(v) <+ transition(vout, 0, 1e-9);
     end
+endmodule
 ```
 
 ## 电流与电压
@@ -703,7 +733,7 @@ I(<t1>);    // 从t1流入模块的电流
 
 ## 参数与变量
 
-参数与verilog的parameter相同，用于描述模块性质，运行时不能更改；变量类似一般编程语言，可以在运行时更改（但是好像不能设置初始值，必须用analog模块的initial初始化）
+参数与verilog的parameter相同，用于描述模块性质，运行时不能更改；变量类似一般编程语言，可以在运行时更改
 
 ```verilog
 parameter real a = 1 from (0:inf);  // 取值范围(0, +inf)
@@ -716,58 +746,33 @@ real x = 1 from [-5:5] exclude 0;  // 取值范围[-5, 5]且不能取0
 integer y = 13 from (-75, 75) exclude [-5, 5] exclude 12;
 ```
 
-## analog块
-
-下例是一个运放模型，当增益小于1e12时让输出 = 输入×增益，否则用虚短求输出
-
-```verilog
-parameter real gain = 1e6;
-parameter real offset = 0;
-real vi;
-
-analog begin
-    vi = V(VIP, VIN) + offset;
-
-    if (gain < 1e12) begin
-        V(VOUT) <+ gain * vi;
-    end else begin
-        // 间接支路贡献。寻找满足条件的值（条件必须是信号 == 表达式）
-        // 例子中，仿真器会尝试求解令VIN=0的VOUT（此过程中不会驱动VIN）
-        V(VOUT): V(VIP, VIN) == 0;
-    end
-end
-```
-
 ## 事件
 
-可以检测事件来模拟一些特殊行为，比如在仿真开始时初始化变量、在上升沿进行采样。注意，下列事件都要放在analog块内
+可以检测事件来实现一些特殊行为，比如在仿真开始时初始化变量、在上升沿进行采样。事件都要放在analog块内
 
 ```verilog
 analog begin
+    // initial step事件，在仿真的第一步执行，一般用于变量初始化
     @(initial_step) begin
-        // 在仿真的第一步执行，一般用于变量初始化
         a = 0;
     end
 
+    // final step事件，在仿真最后一步执行，一般用来打印结果
     @(final_step) begin
-        // 仿真最后一步执行，一般用来打印结果
         $strobe("Bit error rate = %f", error/bits);
     end
 
-    direction = +1;    // +1表示上升沿、-1下降沿、0任意边沿
-    time_tol = 1;      // 两次过零时间间隔小于此不会触发
-    expr_tol = 1e-9;   // 如果过零之后小于这个值，不会触发
-    @(cross(V(CLK) - 0.9, direction, time_tol, expr_tol)) begin
-        // 过零时触发。后三个参数必须是常数，这里写成变量是为了方便理解，实际不能这么写
-        // time_tol和expr_tol的默认值挺靠谱的，除非噪声很大一般不用管
+    // cross事件，检测信号过零
+    // 第1个参数是信号。如果阈值不等于0，可以用V(CLK)-0.9等方式
+    // 第2个参数是方向，+1上升沿，-1下降沿，0任意边沿
+    // 剩下的参数除非噪声很大一般不用写
+    @(cross(V(CLK) - 0.9, +1)) begin
         V(VOUT) <+ V(VIN);
     end
 
-    start = 2e-5;
-    T = 1e-6;            // 触发周期
-    time_tol = 1e09;     // 时间偏差不能超过这么多
-    @(timer(start, T, time_tol)) begin
-        // 从start开始，每周期触发一次
+    // timer事件，每周期触发一次
+    // 第1个参数是第一次触发的时间，第2个是触发周期
+    @(timer(2e-5, 1e-6)) begin
         a = -a;
     end
 end
@@ -779,7 +784,7 @@ end
 
 **阶跃信号滤波**
 
-以下两种滤波器可以防止输出信号太快（比如，阶跃信号），导致仿真速度变慢，甚至无法收敛。所有输出可能突变的地方都该加上滤波器
+以下两种滤波器可以防止输出信号跳变导致仿真速度变慢，甚至无法收敛。所有输出可能突变的地方都该加上滤波器
 
 ```verilog
 // transition filter。用于（从数字信号）产生实际阶跃信号
@@ -803,15 +808,8 @@ V(VOUT) <+ laplace_nd(vin, {0, 1}, {1, -0.4, 0.2});
 
 前一种方法用零点和极点（Zero-Pole）表示传递函数；后一种用分子和分母（Nominator-Denominator）的系数表示：
 $$
-H(s) = \frac{
-    \Pi_k(1 - s / z_k)
-}{
-    \Pi_k(1 - s / p_k)
-} = \frac{
-    \sum_k(n_k s^k)
-}{
-    \sum_k(d_k s^k)
-}
+H(s) = \frac{\Pi_k(1 - s / z_k)}{\Pi_k(1 - s / p_k)}
+     = \frac{\sum_k(n_k s^k)}{\sum_k(d_k s^k)}
 $$
 例子中，两个方法的传递函数都是$H(s) = \frac{s}{1 - 0.4s + 0.2s^2}$，其零点为0，极点为$1 \pm 2j$
 
