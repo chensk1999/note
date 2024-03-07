@@ -159,8 +159,6 @@ git stash apply [stash] # 同上，但不删除
 git stash drop [stash]
 ```
 
-
-
 ## 远程仓库
 
 ```bash
@@ -250,7 +248,9 @@ git rebase master dev
 git rebase -i HEAD~3
 ```
 
-# 守护进程
+# 其他
+
+## 守护进程
 
 git daemon是git内置的极简服务器
 
@@ -273,7 +273,7 @@ git daemon --enable=receive-pack
 git config --global sendpack.sideband false
 ```
 
-# gitignore
+## gitignore
 
 `.gitignore`文件规定了不纳入git管理的文件模式。每行是一条规则，使用glob模式（一种简化的正则表达式，包括`*, ?, []`，`**`匹配任意中间目录）递归应用于整个工作区。特别地，以`/`开头防止递归，以`/`结尾指定目录，以`!`开头表示取反
 
@@ -301,3 +301,17 @@ doc/**/*.pdf
 sim/**
 !sim/makefile
 ```
+
+## 如何写Commit Message
+
+此指导原则适用于绝大多数项目。大团队可能有更严格的格式规范、要求加上Issue ID等元数据，但内容主体还是按照以下方式书写的
+
+- **内容**：总结+具体说明
+  - 总结应该简要说明该提交起到什么作用（不需要描述具体改了什么，这部分放在具体说明中解释）
+  - 具体说明应该包含：具体改动了哪些内容、是什么（有关代码起什么作用）、为什么（为何需要修改）、怎么做（做出了什么修改）
+- **句式**
+  - 英文：使用祈使语气，而不是陈述语气。总结以动词开头，使用第一人称现在时
+    - 一个简单判断标准是把它放进这句话：If applied, this commit will `[commit message]`
+    - 例如，Refactor subsystem X for readability是一个合格的总结；Fixed bug with Y就不是
+  - 中文：使用动宾短语作总结，不要用陈述句
+- **格式**：总结在50字符之内，总结与具体说明之间空一行

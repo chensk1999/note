@@ -11,9 +11,9 @@
 
 ## 右键菜单栏
 
-右键菜单，也叫做Context Menu，相关注册表项[参考](http://up.houheaven.com/Regedit/Reg_03.htm)
+右键菜单，也叫做Context Menu，相关注册表项参考[这里](http://up.houheaven.com/Regedit/Reg_03.htm)
 
-### 删除
+### 移除软件的右键菜单
 
 可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
 
@@ -31,7 +31,7 @@
 \HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
 ```
 
-### 增加
+### 添加自定义右键菜单
 
 1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
 2. 将command的值设为指令，如`notepad.exe %1`
