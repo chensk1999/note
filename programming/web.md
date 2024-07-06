@@ -17,9 +17,9 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 <html>            <!-- 根元素 -->
     <head>            <!-- head标签是元数据 -->
         <title>文档标题</title>
-        <meta charset="utf-8">
-        <base href="//www.runoob.com/images/" target="_blank">     <!-- 默认链接 -->
-        <link rel="stylesheet" type="text/css" href="mystyle.css"> <!-- 外部样式 -->
+        <meta charset="utf-8" />
+        <base href="//www.runoob.com/images/" target="_blank" />     <!-- 默认链接 -->
+        <link rel="stylesheet" type="text/css" href="mystyle.css" /> <!-- 外部样式 -->
     </head>
 
     <body>            <!-- body包含了可见的内容 -->
@@ -85,61 +85,6 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 </html>
 ```
 
-## 布局
-
-以CSS定位div元素布局为例
-
-```html
-<!DOCTYPE html>
-<html>
-    <head>
-        <title> example </title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="style.css">
-    </head>
-
-    <body>
-        <div id="header">这是页眉</div>
-        <div id="nav">这是导航</div>
-        <div id="section">这是正文</div>
-        <div id="footer">这是页脚</div>
-    </body>
-</html>
-```
-
-```css
-#header {
-    background-color:black;
-    color:white;
-    text-align:center;
-    padding:5px;
-}
-#nav {
-    line-height:30px;
-    background-color:#eeeeee;
-    height:300px;
-    width:100px;
-    float:left;
-    padding:5px;
-}
-#section {
-    width:350px;
-    float:left;
-    padding:10px;
-}
-#footer {
-    background-color:black;
-    color:white;
-    clear:both;
-    text-align:center;
-    padding:5px;
-}
-```
-
-效果如下：
-
-![](../images/html_layout.png)
-
 ## 实体引用
 
 实体引用（Character Entity Reference）相当于HTML的转义字符，格式是`&entity_name;`
@@ -169,17 +114,15 @@ XHTML是结合了XML和HTML的一种标记语言
 
 # CSS
 
-CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，如
+CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，“层叠”指多个规则可以叠加起来对同一个元素生效。
 
 ```css
-p   /*选择器*/
-{
-    color: red;  /*属性&值*/
-    text-align: center;
+p {
+    color: red;
 }
 ```
 
-“层叠”指多个规则可以叠加起来对同一个元素生效
+例子中，`p`是选择器，选定了这条规则的作用范围；`color: red`是属性以及值。应用这条规则之后，所有`<p>`元素的`color`属性都被改为红色
 
 ## CSS选择器
 
@@ -262,6 +205,111 @@ div ~ p {background-color: black;}
 ```
 
 当样式重复定义时，冲突属性取最后定义的
+
+## 尺寸
+
+HTML元素尺寸称作“盒子模型”，包括四部分
+
+- **Margin（外边距 / 边距）**：边框外的留空。这部分不算HTMl元素自身
+- **Border（边框）**：边框
+- **Padding（内边距 / 填充）**：边框内的留空。这部分算作HTML元素
+- **Content（内容）**：HTML元素内容
+
+## 布局
+
+### display属性
+
+这是实现页面布局的主要方法。各元素可以从上到下排列，或者从左到右排列。比如`<a>`默认从左到右排列，连续多个`<a>`元素在同一行；`<li>`元素默认从上到下排列，每个`<li>`元素另起一行
+
+- `inline`：从左到右
+- `block`：从上到下
+- `flex`：根据`flex-direction`、`align-items`等属性排列子元素
+- `grid`：根据`grid-template-columns`等属性排布子元素
+
+**flex布局**
+
+设置`display: flex;`的元素称作flex容器，它的属性决定了容器内子元素的排布
+
+```html
+<div class="box">
+    <div class="one">One</div>
+    <div class="two">Two</div>
+    <div class="three">Three</div>
+</div>
+```
+
+```css
+/* Flex容器 */
+.box {
+    display: flex;
+    flex-direction: row;  /* 主轴方向。row为排成一行，column为一列 */
+    flex-wrap: wrap;      /* 是否“换行”。默认不换行，wrap则换行 */
+    justify-content: center
+        /* 主轴方向如何排布，有stretch, flex-start, flex-end, center, space-around, space-between */
+    align-items: center;  /* 垂直主轴方向如何排布，可选值有stretch, flex-start, flex-end, center */
+    
+}
+
+/* 容器内的元素 */
+.one {
+    flex-basis: 100px;    /* 主轴方向尺寸 */
+    flex-grow: 1;         /* 拉伸元素时的权重 */
+    flex-shrink: 1;       /* 缩小元素时的权重 */
+}
+/* 缩写形式。三个参数是grow, shrink, basis */
+.two {
+    flex: 2 auto 100px;
+}
+```
+
+**grid布局**
+
+网格布局将页面划分为若干网格，定义这些区域的大小、位置等关系。和flex布局相比，flex布局是按照轴线方向摆放元素，grid则是在二维行列上摆放。网格较为复杂，但是更容易控制布局
+
+```html
+<div class="wrapper">
+    <div class="header">Example Page</div>
+    <div class="sidebar">Options</div>
+    <div class="content">Hello, World!</div>
+    <div class="footer">About</div>
+</div>
+```
+
+```css
+.wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* 2列，每列宽1fr */
+    grid-template-rows: 50px 1fr 50px;      /* 三行，高度分别是50px，1fr，50px */
+    grid-gap: 10px 5px;       /* 格子间距。可用grid-row-gap和grid-column-gap分别设置 */
+    grid-auto-flow: row;      /* 自动填充顺序 */
+    justify-items: center;    /* 水平对齐。start, end, center, stretch */
+    align-items: start;       /* 垂直对齐 */
+    justify-content: center;  /* 内容在容器里的水平对齐。除前几种外还有space-around, between, evenly */
+    grid-auto-rows: 1fr;      /* 生成新行时的行高 */
+}
+
+.header {
+    grid-row-start: 1;
+    grid-row-end: 2;     /* 占据第一行 */
+    grid-column: 1 / 3;  /* 第一、第二列 */
+    z-index: 0;
+}
+```
+
+`fr`（fraction）是按照权重分配的长度单位。如果两列的宽度分别是`1fr`和`2fr`，则后者宽度是前者两倍。`fr`可以与常规单位混用，也可以用`minmax(100px, 1fr)`这样的方式限定不小于`100px`、不大于`1fr`
+
+### float属性
+
+将一个元素设置成`float`之后，它就“浮动”起来，其他元素绕开它，类似Microsoft Word将图片设置成文字环绕
+
+- `left`：将元素浮动到左侧
+- `right`：将元素浮动到右侧
+- `none`：不浮动
+- `inherit`：继承父元素的浮动属性
+
+### position属性
+
+此属性将元素定位到某个特定位置
 
 # JavaScript
 
@@ -453,6 +501,9 @@ function func(a, b) {
 // 调用函数
 let x = func(3, 4);
 console.log(x);
+
+// Arrow Function (lambda表达式)
+(a, b) => a + b;
 ```
 
 ## 调用
@@ -501,33 +552,25 @@ bgChange(event) {
   e.target.style.backgroundColor = rndCol;
 }
 
-// 把这个函数绑定到全部Button
-const buttons = document.querySelectorAll('button');
-for (let i = 0; i < buttons.length; i++) {
-  buttons[i].onclick = bgChange;
-}
-```
-
-- EventListener
-
-相比于事件处理器属性，事件监听器允许给一个事件绑定多个行为，还能很方便地动态管理这些行为
-
-```javascript
-const btn = document.querySelector('button');
+// 把这个函数绑定到Button
+let btn = document.querySelector('button');
+// 用属性绑定。这个方法不常用
+btn.onclick = bgChange;
+// 用事件监听器绑定。可以绑定多个函数
 btn.addEventListener('click', bgChange);
 btn.removeEventListener('click', bgChange);
 ```
 
 **常用HTML事件**
 
-| 事件        | 含义                         |
-| ----------- | ---------------------------- |
-| onchange    | HTML 元素改变                |
-| onclick     | 用户点击 HTML 元素           |
-| onmouseover | 用户在一个HTML元素上移动鼠标 |
-| onmouseout  | 用户从一个HTML元素上移开鼠标 |
-| onkeydown   | 用户按下键盘按键             |
-| onload      | 浏览器已完成页面的加载       |
+| 事件      | 含义                         |
+| --------- | ---------------------------- |
+| change    | HTML 元素改变                |
+| click     | 用户点击 HTML 元素           |
+| mouseover | 用户在一个HTML元素上移动鼠标 |
+| mouseout  | 用户从一个HTML元素上移开鼠标 |
+| keydown   | 用户按下键盘按键             |
+| load      | 浏览器已完成页面的加载       |
 
 ## HTML DOM
 
@@ -539,17 +582,59 @@ document.getElementById("demo").innerHTML = "Hello World";
 
 此例子将首个id为demo的元素内容更改为Hello World
 
-**获取网页元素**
+### 访问网页元素
 
 ```javascript
+// 获取网页元素
 let element = document.querySelector("p.intro");
 const elements = document.querySelectorAll("p.intro");
+
+// 访问网页元素
+element.innerHTML = "Hello";     // 访问元素的内容
+element.name = "honey";          // 访问元素Property
+element.hasAttribute("name");    // 访问元素Attribute
+element.setAttribute("name", "bee");
+element.getAttribute("name");
+element.removeAttribute("name");
 ```
 
-**访问网页元素**
+访问网页元素有Property和Attribute两种方式。严格来说，Attribute和Property是不同的东西，Attribute属于HTML，Property属于DOM
+
+绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property，Attribute在老版本IE浏览器有很多奇怪行为
+
+一般建议使用Property，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
+
+### 添加和删除网页元素
+
+假设网页内容如下：
+
+```html
+<div id="div1">
+    <p id="p1">第1段</p>
+    <p id="p2">第2段</p>
+</div>
+```
+
+通过插入和删除DOM节点的方式添加和删除网页元素
 
 ```javascript
-element.innerHTML = "Hello";          // 访问元素的内容
-let ei = element.getAttribute("id");  // 访问元素的属性
-```
+var div1 = document.querySelector("#div1");
+var p1 = document.querySelector("#p1");
+var p2 = document.querySelector("#p2");
 
+// 添加网页元素
+var p0 = document.createElement("p");
+var p3 = document.createElement("p");
+p0.innerHTML = "paragraph 0";
+p3.innerHTML = "paragraph 3"
+div1.appendChild(p3);      // 插入为div1最后一个子节点
+div1.insertBefore(p0, p1); // 插入为p1前一个兄弟节点。注意，只有insertBefore，没有after
+
+// 删除网页元素
+div1.removeChild(p0);
+
+// 替换网页元素
+var p_new = document.createElement("p");
+p_new.innerHTML = "new paragraph";
+div1.replaceChild(p_new, p1)
+```

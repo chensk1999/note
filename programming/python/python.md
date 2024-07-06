@@ -785,15 +785,17 @@ class Node(object):
     def __iter__(self):
         for child in self.children:
             yield child
-            yield from child
 
 # 使用
 next(gen1)  # 0
 next(gen1)  # 1
-next(gen1)  # raise StopIteration
+next(gen1)  # StopIteration
 
 for item in gen2():
     print(item)
+
+n = Node(2)
+next(iter(n))
 ```
 
 ## 判断是否可迭代
@@ -822,17 +824,6 @@ from module import *    # 不建议使用，可能导致命名空间污染
 ## 构建层级包
 
 在包的每个文件夹都放一个`__init__.py`文件，就构建了分层模块构成的包（没有`__init__`就是命名空间包）。导入时`__init__.py`会先被执行，一般用它自动加载子模块
-
-```
-将函数存储在模块中
-将若干个函数储存在其他py文件中，用import语句导入
-导入方法                           引用方法
-import module                     module.function	
-from module import f1, f2, ...	  f1
-from module import function as f  f
-import module as m                m.function
-from module import *              function()    (防止函数重名)
-```
 
 # IO
 
@@ -971,54 +962,38 @@ from concurrent.futures import ThreadPoolExecutor
 
 ## argparse（命令行参数）
 
-### 建立分析器
-
 ```python
 import argparse
-parser = argparse.ArgumentParser()
-```
 
-### 添加参数
+# 创建解析器
+parser = argparse.ArgumentParser(
+    prog='ProgramName',
+    description='What the program does',
+    epilog='Text at the bottom of help')
 
-` ArgumentParser.add_argument(name or flags...[, action][, nargs][, const][, default][, type][, choices][, required][, help][, metavar][, dest])`
-
-* name or flags - 参数名，多个参数名，或参数名列表。以parser.prefix_chars（默认为横杠）开头的视作关键字参数，传参方式为`关键字 参数1 参数2 ...`否则为位置参数，传参时不需要参数名。多个参数名的必须是关键字参数
-
-* action - 参数值的处理方式。默认是直接置为参数的值
-  * `'store_const'`：当参数出现时置为const的值，例：`parser.add_argument('s', action='store_const', const=str)`，另外有两个特例`'store_true'`和`‘store_false'`
-  * `'append'`：存储一个列表，每次捕获到参数时将值添加到列表末尾，有特例`'append_const'`，效果相当于append加上store_const
-
-* nargs - 捕获多少个值，缺省时取决于action
-  * `'?', '+', '*'`：0个（设为默认值，用default指定）或者1个；至少一个，聚集到一个列表；任意个，聚集到列表
-  * `int`：指定个数，被聚集到一个列表（即使只有一个也是列表）
-  * `argparse.REMAINDER`：所有剩余的东西
-* type - `Callable[[str], Any]`，类型检查和类型转换
-* default - 当需要一个值却没有捕获到值时就设置为default，例：`parser.add_argument('bar', nargs='?', default='d')`，没有bar时就设为d
-
-```python
 # 添加参数
 # 添加顺序不影响结果，因此多于一个位置参数时很可能出现不正确的捕获结果
-parser.add_argument('pos', help='位置参数')
-parser.add_argument('--long', '-s', help='多个名字，必须都是关键字参数')
-parser.add_argument('-tr', help='True if exists', action='store_true')
+parser.add_argument(
+    'a0'                  # 位置参数
+    help='initial value'  # 提示信息
+    required=True,        # 是否必选参数
+    type=float            # 类型转换
+)
+parser.add_argument(
+    '--max_iter', '-m',   # 关键字参数。可以有多个名字
+    default=16,           # 默认值
+    nargs=1,              # 接收多少个参数，可以是int, ?,, *, +。指定之后传入参数存为列表
+)
+parser.add_argument(
+    '--verbose',
+    action='store-true'   # 开关参数。传入这个参数时为真，否则为假
+)
 
-# 组
-arg_group = parser.add_argument_group('title', 'description')
-arg_group.add_argument('-group')
-
-# 互斥组，同一组中的参数不能同时出现
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-arg1', nargs='?')
-group.add_argument('-arg2', nargs='?')
-```
-
-### 分析与结果
-
-```python
-args = parser.parse_args(['1', '-tr', '-arg1', '2'])
-
-args.arg1  # '2'
-args.long  # None
+# 解析参数
+# 假设在命令行输入：file.py 1 -m 20
+args = parser.parse_args()
+args.a0       # = 1
+args.max_iter # =20
 ```
 
 ## code（自定义python解释器）
