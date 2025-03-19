@@ -85,6 +85,61 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 </html>
 ```
 
+## 表单
+
+表单用于收集用户输入。它由一个`form`元素和其中嵌套的若干`input`标签构成。当用户按下`type="submit"`的按钮之后，浏览器向服务器发出请求，请求地址为`form.action`，方法为`form.method`，并以`input.name=input.value`键值对作为参数。例如：
+
+```html
+<form action="/login" method="POST">
+  <input type="email" name="email" required>
+  <input type="password" name="password" required>
+  <input type="submit" name="login_submit" value="Login">
+</form>
+```
+
+以上代码创建了一个带有邮箱输入框、密码输入框、提交按钮的表单。按下提交按钮之后，浏览器以POST方法发出请求，请求地址是`example.com/login`，参数为`email=example@email.com&password=123456&login_submit=Login`
+
+表单中一般还会包含说明文字。完整示例如下
+
+```html
+<form action="/" method="post">
+    <!-- 文本输入框 -->
+    <label for="name">用户名:</label>
+    <input type="text" id="name" name="name" required>
+    <br>
+
+    <!-- 密码输入框 -->
+    <label for="password">密码:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+
+    <!-- 单选按钮 -->
+    <label>性别:</label>
+    <input type="radio" id="male" name="gender" value="male" checked>
+    <label for="male">男</label>
+    <input type="radio" id="female" name="gender" value="female">
+    <label for="female">女</label>
+    <br>
+
+    <!-- 复选框 -->
+    <input type="checkbox" id="subscribe" name="subscribe" checked>
+    <label for="subscribe">订阅推送信息</label>
+    <br>
+
+    <!-- 下拉列表 -->
+    <label for="country">国家:</label>
+    <select id="country" name="country">
+        <option value="cn">CN</option>
+        <option value="usa">USA</option>
+        <option value="uk">UK</option>
+    </select>
+    <br>
+
+    <!-- 提交按钮 -->
+    <input type="submit" value="提交">
+</form>
+```
+
 ## 实体引用
 
 实体引用（Character Entity Reference）相当于HTML的转义字符，格式是`&entity_name;`
@@ -114,7 +169,7 @@ XHTML是结合了XML和HTML的一种标记语言
 
 # CSS
 
-CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，“层叠”指多个规则可以叠加起来对同一个元素生效。
+CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，“层叠”指多个规则可以叠加起来对同一个元素生效
 
 ```css
 p {
@@ -243,7 +298,7 @@ HTML元素尺寸称作“盒子模型”，包括四部分
 .box {
     display: flex;
     flex-direction: row;  /* 主轴方向。row为排成一行，column为一列 */
-    flex-wrap: wrap;      /* 是否“换行”。默认不换行，wrap则换行 */
+    flex-wrap: wrap;      /* 是否“换行”。nowrap不换行，wrap则换行 */
     justify-content: center
         /* 主轴方向如何排布，有stretch, flex-start, flex-end, center, space-around, space-between */
     align-items: center;  /* 垂直主轴方向如何排布，可选值有stretch, flex-start, flex-end, center */
