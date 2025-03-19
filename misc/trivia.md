@@ -242,5 +242,28 @@ printf("%s%s");  // 同上，但是字符串会打印下一个数指向的内存
 - Player消除：将对手`exist`值设为0
 - CNS操作：CNS存放人物代码，将对手CNS修改为空，或者改成其他角色，能阻止对手使用隔离技术
 
+# 柯里化
 
+柯里化（Currying）是将一个多参数函数变成嵌套的单参数函数。柯里化的好处是，有的情况下使用单一参数的闭包较为方便，有时甚至不得不使用单参数函数。一个简单的例子是：
 
+```javascript
+// 普通的求和函数
+function sum(a, b) {
+    return a + b;
+}
+
+// 柯里化的求和函数。调用它返回函数plus_a，再次调用plus_a得到结果
+function curry_sum(a) {
+    const plus_a = (b) => (a + b)
+    return plus_a
+}
+
+sum(1, 2)
+curry_sum(1)(2)
+```
+
+## 理论分析与记号
+
+给定函数$f: (x, y) \mapsto z$，构造函数$h_x: y \mapsto z$使得$h_x(y) = f(x, y)$，$h_x$就是$f$的一种柯里化表示。通俗的讲，$h_x$就是垂直$f(x, y)$图像x轴“切了一刀”
+
+这种柯里化表示标记为$h = (x \mapsto (y \mapsto z))$，定义箭头是右结合的，又写作$h = x \mapsto y \mapsto z$

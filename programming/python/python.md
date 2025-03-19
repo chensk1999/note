@@ -593,15 +593,29 @@ __doc__      # 对象或函数的描述信息
 __file__     # 文件的名字，其包含路径信息。
 ```
 
-## 描述器(Descriptor)
+## 描述器（Descriptor）
 
-描述器是一种实现了`__get__`，`__set__`，`__delete__`之中至少一个方法的对象，将某个类的某个属性绑定到一个描述器，则这个属性的获取、设置和删除行为将被描述器的这三个方法重载。仅定义了`__get__`方法的称作非数据描述器，否则称作数据描述器
+描述器是一种特殊对象，将类的属性绑定到描述器，则这个属性的获取、设置和删除行为将被描述器的`__get__, __set__, __delete__`方法重载。例如（注意：这个例子只是展示原理，实用的写法参照下一节的property装饰器）：
 
-尝试访问对象属性（例如，`point.x`）时，会调用`point.__getattribute__(point, 'x')`，先查找`point.__dict__`，然后是`type(point).__dict__`，然后依次查找它的基类
+```python
+import os
 
-而使用了描述器之后，其优先级顺序改变，`type(point).__dict__['x'].__get__(point, type(point))`的优先级更高（更具体地说，非数据描述器大于属性字典，属性字典大于数据描述器）
+class DirectorySize:
+    def __get__(self, obj, objtype=None):
+        return len(os.listdir(obj.dirname))
 
-### 描述器协议
+class Directory:
+
+    size = DirectorySize()              # Descriptor instance
+
+    def __init__(self, dirname):
+        self.dirname = dirname          # Regular instance attribute
+
+b = Directory('./books')
+b.size   # 调用__get__方法计算
+```
+
+描述器协议如下。其中`obj`是描述器绑定到的对象实例
 
 ```python
 descr.__get__(self, obj, type=None) -> value
@@ -609,44 +623,10 @@ descr.__set__(self, obj, value) -> None
 descr.__delete__(self, obj) -> None
 ```
 
-### 使用例
+描述器有很多用处，比如
 
-注意：一般不会用下面例子里的方法来绑定描述器。绝大多数时候都会用下一节的property装饰器
-
-```python
-# 整数类型检查的描述器
-class Integer:
-    def __init__(self, name):
-        self.name = name
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        else:
-            return getattr(obj, self.name)
-
-    def __set__(self, obj, value):
-        if not isinstance(value, int):
-            raise TypeError('Expected an int')
-        setattr(obj, self.name, value)
-
-    def __delete__(self, instance):
-        del instance.__dict__[self.name]
-
-class Point:
-    x = Integer('x')
-    y = Integer('y')    # 在类级别把两个属性与Interger描述器绑定
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-p = Point(3, 4)
-p.x = 5         # OK
-p.y = 1.2       # TypeError
-```
-
-在这个例子中，`Ineger`类没有储存x，y的数据，而是用`setattr`和`getattr`操作`obj.x`和`obj.y`。看上去，好像给`obj.x`赋值之前它是一个`Integer`对象，赋值完了就变成`int`对象了，其实不是这样的：因为绑定是类级别的，而访问的重载也是类级别的，所以赋值是通过`Point.x`访问了`p.x`
+1. 托管属性。依托于其他属性的东西，比如某个列表中的最大值
+2. 动态计算。偶尔才会用到的属性写成描述器，可以在需要用到的时候才计算
 
 ### property装饰器
 
@@ -666,7 +646,7 @@ def score(self):
     raise AttributeError('cannot delete attribute')
 ```
 
-尝试访问score属性时，实际上会通过这三个函数对`_score`进行操作。效果相当于给类“添加”了一个属性score。这么做能够实现更加复杂的赋值/取值行为，而且相比于显示地用方法来访问，接口显得更简洁。当然，可以直接访问_score绕开这些函数。不过用property装饰器的主要目的是对属性做出限制，随便的突破限制不是好事
+尝试访问score属性时，实际上会通过这三个函数对`_score`进行操作。效果相当于给类“添加”了一个属性score。property装饰器的是最简洁的描述器写法。当然，可以直接访问_score绕开这些函数，不过随便的突破限制不是好事
 
 用途举例：
 
@@ -878,16 +858,15 @@ raise ValueError('message')
 
 # 并发编程
 
-- 多进程：用多个进程同时进行任务
-- 多线程：在一个进程下启动多个线程
+并发编程通常有以下三种方式：
 
-一般而言，python的多进程适合计算密集型任务，多线程适合IO密集型任务
+- **多进程**：用多个进程同时进行任务。每个进程有独立的内存空间。**适合计算密集型任务**
+- **多线程**：在一个进程下启动多个线程，线程之间共享内存空间。由于python的全局解释器锁（GIL），不同线程无法同时执行。**适合可以并行执行、且受限于IO的任务**（其实没想明白有什么任务属于这一类）
+- **协程**：在一个进程内切换执行任务。**适合需要等待IO的任务**，比如等待用户输入、等待设备响应
 
 ## 多进程
 
-Unix/Linus系统可采用`os.fork()`，windows系统下使用`multiprocessing`等模块。因为进程的数量远远多于CPU的核心数，实质上是各个任务交替执行
-
-### multiprocessing模块
+Unix/Linus系统可采用`os.fork()`，Windows系统下使用`multiprocessing`模块
 
 ```python
 from multiprocessing import Process, Pool, Queue
@@ -912,16 +891,7 @@ queue.get
 
 注意：主进程的全部数据都是通过pickle序列化传入子进程，故很多时候multiprocessing失败是因为pickle失败了
 
-### subprocess模块
-
-函数
-run(指令)	运行指令，等待到其结束，返回一个CompletedProcess instance
-call(指令)	运行指令，等待到其结束，返回其return code
-用Popen类及其communicate方法可以对子进程进行输入
-
 ## 多线程
-
-Python的标准库提供了两个模块：`_thread`和`threading`，`threading`是高级模块，对`_thread`进行了封装。绝大多数情况下，只需要使用`threading`
 
 ```python
 import threading
@@ -933,15 +903,18 @@ def task(wait=1):
     sleep(wait)
     return 0
 
-th1 = Thread(target=task, name='wait', args=(10,))
-th1.start()     # 开始运行
-th1.is_alive()  # 查看是否在运行
-th1.join()      # 等待到运行结束为止
-
-th2 = Thread(target=task, name='wait', args=(10,))
-th2.run()       # 运行并且等待到运行结束。好像是在当前线程运行？
-
-threading.enumerate()   # 查看所有活动的Thread
+# 创建线程
+th1 = Thread(target=task, name='wait1', args=(10,))
+th2 = Thread(target=task, name='wait2', args=(10,))
+# 开始运行
+th1.start()
+th2.start()
+# 查看线程状态
+th1.is_alive()         # 是否在运行
+threading.enumerate()  # 所有活动的Thread
+# 等待线程结束
+th1.join()
+th2.join()
 ```
 
 多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误。这种情况要使用`threading.Lock`锁住变量，当一个线程锁住变量之后，其他线程将被暂停，等待到这把锁解开为止
@@ -950,13 +923,30 @@ python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多�
 
 ThreadLocal可以帮助参数在不同线程中传递
 
-## concurrent.futures模块
+好像不能直接获得返回值，要手动把结果存到某个容器里（比如OOP，把某个对象的方法设为target，结果存为该对象的属性）
 
-`concurrent.futures`提供了更高级的多进程&多线程api
+## 协程
+
+通常使用async和await关键字声明协程。使用`async`定义的函数称作协程函数，直接调用它并不会执行函数，而是返回一个协程对象。`await`语句则执行协程对象并等待它完成。注意：`await`语句只能在`async`函数中使用
 
 ```python
-from concurrent.futures import ThreadPoolExecutor
+import asyncio
+import time
+
+async def say_after(delay, what):
+    await asyncio.sleep(delay)
+    print(what)
+
+async def main():
+    print(f"started at {time.strftime('%X')}")
+    await say_after(1, 'hello')
+    await say_after(2, 'world')
+    print(f"finished at {time.strftime('%X')}")
+
+asyncio.run(main())
 ```
+
+上述例子中虽然使用了协程，但是两次等待没有并发进行。
 
 # 内建模块
 
@@ -1339,15 +1329,15 @@ sum(c)
 ## json（读写JSON文件）
 
 ```python
-import json    # json = JavaScript Object Notation
+import json
 
 # 读写文件
 obj = json.load(fp)
 json.dump(obj, fp, ensure_ascii=False, indent=2)
 
 # json字符串
-json_str = dumps(obj)
-obj = loads(json_str)
+json_str = json.dumps(obj)
+obj = json.loads(json_str)
 ```
 
 dump函数的ensure_ascii是python独有的，不是通用编码，所以在非python环境再读一个ascii的json字符串会出问题
@@ -1358,25 +1348,46 @@ dump函数的ensure_ascii是python独有的，不是通用编码，所以在非p
 
 ## logging（日志）
 
-| level    | usage                          |
-| -------- | ------------------------------ |
-| debug    | 调试信息                       |
-| info     | 一般信息，软件正常工作         |
-| warning  | 发生意外，但软件还是在正常工作 |
-| error    | 错误，软件不能正常执行         |
-| critical | 严重错误，软件不能继续运行     |
-
 ```python
 import logging
+
+# 日志配置
+# 其实是在配置root logger，所有记录器都会继承这些设置
+# 另一种做法是手动创建Formatter和Handler，配置给getLogger(__name__)
 logging.basicConfig(
+    # 日志等级。低于此等级的消息不输出
     level=logging.INFO,
-    filename='log',
-    format='%(asctime)s %(levelname)s:%(name)s: %(message)s'
+    # 消息格式（使用这些参数隐式创建一个Formatter并绑定到Handler）
+    format='%(asctime)s %(levelname)s-%(name)s: %(message)s',
+    datefmt='%m/%d/%Y %I:%M:%S %p',  # 格式同time.strftime
+    # 配置Handler（handler决定消息输出到哪里）
+    filename='runtime.log',  # 创建一个FileHandler
+    encoding='utf-8',
+    handlers=(logging.StreamHandler(), )
+      # 将这些handler绑定到root logger
+      # 若它们没有formatter，则将format参数指定的格式绑定上去
 )
 
-logger = logging.getlogger(logger_name)  # 建议用__name__
-logger.setLevel(logging.INFO)   # 只有大于这个等级的才输出
-logger.info('message')
+# 创建记录器。相同名字创建出来的是指向同一个logger的引用
+# logger以.作为分隔符划分层级，比如scan是scan.api的父级；此外，root是所有logger的父级
+# 子记录器会继承父级的等级、处理器
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# 记录日志消息
+logger.debug('this is debug message. It has %s', 'formatting')
+# 常用等级包括：
+# debug    调试信息
+# info     程序正常运行
+# warning  已经或即将发生意外，程序仍能正常运行
+# error    发生严重问题，程序某些功能不能正常执行
+# critical 严重错误，程序无法继续执行
+```
+
+其他常用Handler
+
+```python
+from logging.handlers import TimedRotatingFileHandler
 ```
 
 ## os（操作系统功能）
@@ -1499,6 +1510,18 @@ cursor.close()
 conn.close()
 ```
 
+## subprocess（运行其他程序）
+
+```python
+import subprocess
+
+cmd = ['echo', 'Hello']
+result = subprocess.run(cmd, capture_output=True, shell=True)
+print(result.stdout.decode('utf-8'))
+```
+
+更进阶的用法可以参照[`Popen`](https://docs.python.org/zh-cn/3.13/library/subprocess.html#subprocess.Popen)接口
+
 ## turtle（海龟画图）
 
 turtle是用于绘图的简单模块，和tk兼容。海龟绘图包含两个要素，绘图区域和画笔。结合tk使用时，对应的类是TurtleScreen和RawTurtle（别名RawPen），构造它们需要提供tk.Canvas。如果单独使用，使用以上两个类的子类Screen和Turtle，Screen是单实例的，而Turtle会在这个Screen实例上绘图，如果Screen实例不存在则会自动创建
@@ -1605,6 +1628,33 @@ with wave.open('test.wav', 'rb') as fp:
 with wave.open('mywav.wav', 'wb') as fp:
     # 三个相应的set方法
 ```
+
+## zipfile（读写zip文件）
+
+```python
+import zipfile
+
+# 访问zip文件。注意：第一层是整个文件的
+with zipfile.ZipFile('spam.zip', 'a') as myzip:
+    with myzip.open('eggs.txt', 'w') as myfile:
+        myfile.write(b'eggs')
+
+# Path对象。用法类似pathlib的Path对象，其实是包装过的ZipFile
+p = zipfile.Path('spam.zip')
+p.is_file('eggs.txt')
+```
+
+命令行使用
+
+```bash
+# 压缩（Create）
+python -m zipfile -c spam.zip "eggs.txt" "process/"
+# 解压（Extract）
+python -m zipfile -e spam.zip "target-dir/"
+# 其他：测试（Test, -t）、列出内容（List, -l）
+```
+
+
 
 # 有用的第三方库
 
@@ -1732,23 +1782,13 @@ for i in range(0, 10, 2):
 zip([1, 2, 3], ['a', 'b', 'c'])
     # 获得一个生成器，(1, 'a'), (2, 'b'), (3, 'c')。最短序列结束时，zip也结束
 transposed = list(zip(*matrix))  # 矩阵转置
+
+# 过滤元素。只留下函数返回值为True的元素
+filter(lambda x: x>0, range(-10, 10))
+
+# map。将函数作用于每一个元素上
+map(abs, range(-10, 10))
 ```
-
-#### 过滤元素
-
-`filter(function or None, iterable) -> iterable`
-
-Return an iterator yielding those items of iterable for which function(item) is true. If function is None, return the items that are true.
-
-#### map
-
-`map(func, *iterables) -> iterable`
-
-Make an iterator that computes the function using arguments from each of the iterables.  Stops when the shortest iterable is exhausted.
-
-### dir
-
-
 
 ## 变量作用域
 
@@ -1764,11 +1804,10 @@ locals()
 globals()
 ```
 
-## 文档字符串(docstring)
-
-### google风格
+## 文档字符串（docstring）
 
 ```python
+# Google风格的文档字符串
 """Example Google style docstrings
 
 Parameters:

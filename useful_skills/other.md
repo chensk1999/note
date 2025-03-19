@@ -121,13 +121,11 @@ else
 endif
 ```
 
-# 解压日语压缩包
+# 7-Zip
 
-用7zip命令行解压，可以用mcp参数指定[code page](https://en.wikipedia.org/wiki/Code_page#Microsoft_code_pages)，shift-jis的code page是932
+7-zip命令行界面：`7z.exe <command> <archive_name> [arguments]`
 
-语法：`7z.exe <command> <archive_name> [arguments]`
-
-常用指令：l (List), x (eXtract with full path)
+常用指令有`l` (List), `x` (eXtract with full path)；mcp参数可以指定[code page](https://en.wikipedia.org/wiki/Code_page#Microsoft_code_pages)，Shift-JIS代码页是932，GBK代码页为936
 
 使用例：
 
@@ -193,7 +191,7 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 
 几种常用许可证（顺序从宽到严）
 
-1. BSD、MIT：可以自由使用、复制、分发、修改。分发时必须包含版权提示。简洁，限制非常少。适合大部分中小规模的项目
+1. BSD、MIT：可以自由使用、复制、分发、修改，分发时必须包含版权提示。简洁，适合大部分中小规模的项目
 2. Apacache：作者保留专利，比较容易转向商用
 3. GPL：使用了GPL代码的项目都必须开源。适合传播开源福音
 
@@ -238,3 +236,17 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
   - 氨酚咖那敏片
 
 顺带一提，头孢、阿莫西林等抗生素也可用于治疗感冒，它们属于处方药
+
+# 字幕
+
+中文字幕每行不超过20字，英文字幕不超过40字符
+
+## 时间轴
+
+参考[Netflix指南](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394-Timed-Text-Style-Guide-Subtitle-Timing-Guidelines)。这个指南以0.5秒作为标准，两个吸引观众注意的事件（比如对话开始与字幕出现、前一句话字幕消失到后一句话字幕切入）要么同时发生，要么相隔0.5秒以上
+
+根据个人经验，影响力从大到小排序是`画面 > 字幕 > 语音`。因此具体规则是：
+
+- 字幕于音频开始的同时切入，于音频结束0.5秒（或者下一句话的开始）后消失
+- 两段字幕之间的间隔应要么等于2帧，要么大于0.5秒
+- 如果对话跨越镜头变化，字幕要么与镜头同时切换，要么错开至少0.5秒
