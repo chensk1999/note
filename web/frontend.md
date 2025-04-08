@@ -693,3 +693,32 @@ var p_new = document.createElement("p");
 p_new.innerHTML = "new paragraph";
 div1.replaceChild(p_new, p1)
 ```
+
+# 转义
+
+## URI
+
+### 分类
+
+- 未保留字符（字母、数字、下划线、句点等）：不需转义
+- 分界符（冒号，斜杠，问号，等号，`@`等）：作为分隔符时不需转义，作为路径或者参数的一部分时需要转义
+- 其他特殊字符（空格，百分号，中文等）：需要转义
+
+### 转义方法
+
+百分号编码，如空格的UTF-8编码为`0x20`，转义为`%20`；“我”的UTF-8编码为`0xe68891`，转义为`%e6%88%91`。常用以下两个javascript函数
+
+- `encodeURI`：转义其他特殊字符，常用于转义完整**URL**
+- `encodeURIComponent`：转义分界符和其他特殊字符，常用于**转义GET参数**，如
+
+```javascript
+let uri = 'example.com?file=' + encodeURIComponent('/asset/example.txt')
+```
+
+### 非标准转义方法
+
+**`application/x-www-form-urlencoded`类型**：由于历史原因，部分表单使用一种非常相似的编码方案，使用这种方案时会在请求头加上`Content-Type: application/x-www-form-urlencoded`。此方案它将空格转义为`+`，其他和百分号编码相同
+
+**escape**：用`%uxxxx`表示，其中`xxxx`是四位16进制数，表示字符的Unicode码位值
+
+## HTML
