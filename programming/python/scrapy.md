@@ -2,7 +2,7 @@
 
 ## Command line tool
 
-```
+```shell
 scrapy [command] <options> <args>
 
 global commands

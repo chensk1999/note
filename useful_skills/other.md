@@ -154,21 +154,7 @@ endif
 
 首先关闭系统代理；然后执行`git config --global --unset http.proxy`和`git config --global --unset https.proxy`
 
-# 知网下载pdf文档
-
-1. 复制下载链接
-3. 将url中的`dflag=cajdown`参数改为`dflag=pdfdown`。如果没有dflag参数，就自己加上
-3. 如果还是不能下载，尝试删掉其他不必要的参数
-
-例：
-原下载链接（caj文件）：  https://kns.cnki.net/KNS8/download?filename=XXX&tablename=YYY&dflag=cajdown
-下载pdf的链接：https://kns.cnki.net/KNS8/download?filename=XXX&dflag=pdfdown
-
-或者，更简单地，使用[油猴脚本](https://greasyfork.org/zh-CN/scripts/390733-%E7%9F%A5%E7%BD%91pdf%E4%B8%8B%E8%BD%BD%E5%8A%A9%E6%89%8B)
-
-2021年9月25日可用
-
-# 二进制文件和文本文件转换
+# 打印二进制文件hex值
 
 **hexdump**
 
@@ -185,7 +171,7 @@ xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
 xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 ```
 
-以上在是Unix指令。windows可以用WSL，或者git bash也可以
+以上是Unix指令。windows可以用WSL，或者git bash也可以
 
 # 开源许可证
 
@@ -211,42 +197,38 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 2. GPL：如果项目包含GPL代码，整个项目都必须用GPL许可证
 3. AGPL：使用AGPL代码的云服务也必须开源
 
-# 药物
+# 柯里化
 
-**药物分类**
+柯里化（Currying）是将一个多参数函数变成嵌套的单参数函数。柯里化的好处是，有的情况下使用单一参数的闭包较为方便，有时甚至不得不使用单参数函数。一个简单的例子是：
 
-- 非处方药（Over-the-Counter，OTC）：效果明确，副作用小的药物，可以自行购买服用
-  - 甲类：红色OTC标志，仅在药店出售
-  - 乙类：绿色OTC标志，可在一般商店出售，安全性更高
-- 处方药：需要医生的处方才能购买
+```javascript
+// 普通的求和函数
+function sum(a, b) {
+    return a + b;
+}
 
-**家庭常用OTC药物成分**
+// 柯里化的求和函数。调用它返回函数plus_a，再次调用plus_a得到结果
+function curry_sum(a) {
+    const plus_a = (b) => (a + b)
+    return plus_a
+}
 
-| 名称         | 药效                         | 备注       |
-| ------------ | ---------------------------- | ---------- |
-| 布洛芬       | 消炎止痛、退热               |            |
-| 对乙酰氨基酚 | 止痛、退热                   |            |
-| 氯苯那敏     | 治疗过敏性疾病、晕车、流鼻涕 | 抗组胺药物 |
+sum(1, 2)
+curry_sum(1)(2)
+```
 
-**常用OTC感冒药**
+## 理论分析与记号
 
-- 布洛芬
-- 复方药：以乙酰氨基酚、咖啡因、氯苯那敏作为主要有效成分。对乙酰氨基酚和氯苯那敏能够缓解发热、头痛、流鼻涕、鼻塞等症状，同时咖啡因削弱嗜睡的副作用
-  - 复方氨酚烷胺片
-  - 氨酚咖那敏片
+给定函数$f: (x, y) \mapsto z$，构造函数$h_x: y \mapsto z$使得$h_x(y) = f(x, y)$，$h_x$就是$f$的一种柯里化表示。通俗的讲，$h_x$就是垂直$f(x, y)$图像x轴“切了一刀”
 
-顺带一提，头孢、阿莫西林等抗生素也可用于治疗感冒，它们属于处方药
+这种柯里化表示标记为$h = (x \mapsto (y \mapsto z))$，定义箭头是右结合的，又写作$h = x \mapsto y \mapsto z$
 
-# 字幕
+# VMWare
 
-中文字幕每行不超过20字，英文字幕不超过40字符
+## 网络设置
 
-## 时间轴
+在安装 VMware 之后，宿主机上会出现几个相关的虚拟设备，可以在编辑 - 虚拟网络编辑器配置。虚拟机连接网络有三个方式，在虚拟机 - 设置 - 网络适配器配置
 
-参考[Netflix指南](https://partnerhelp.netflixstudios.com/hc/en-us/articles/360051554394-Timed-Text-Style-Guide-Subtitle-Timing-Guidelines)。这个指南以0.5秒作为标准，两个吸引观众注意的事件（比如对话开始与字幕出现、前一句话字幕消失到后一句话字幕切入）要么同时发生，要么相隔0.5秒以上
-
-根据个人经验，影响力从大到小排序是`画面 > 字幕 > 语音`。因此具体规则是：
-
-- 字幕于音频开始的同时切入，于音频结束0.5秒（或者下一句话的开始）后消失
-- 两段字幕之间的间隔应要么等于2帧，要么大于0.5秒
-- 如果对话跨越镜头变化，字幕要么与镜头同时切换，要么错开至少0.5秒
+- 桥接：虚拟机连接到虚拟交换机VMnet0，相当于一台独立的主机接入局域网
+- NAT：连接到虚拟网卡VMnet8，通过NAT与外部设备通信，外部设备无法访问虚拟机
+- 仅主机：连接到虚拟网卡VMnet1，不能与外部通信，只能和宿主机、其他连接到VMnet1的虚拟机通信

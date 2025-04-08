@@ -4,7 +4,7 @@ Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指�
 
 ## 文件与路径操作
 
-| Unix Shell   | cmd.exe    | Powershell    | 说明           |
+| Unix Shell   | cmd        | Powershell    | 说明           |
 | ------------ | ---------- | ------------- | -------------- |
 | ls, find     | dir        | Get-ChildItem | 列出文件和目录 |
 | cat          | type       | Get-Content   | 读取文件内容   |
@@ -16,7 +16,7 @@ Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指�
 | pwd          | cd         | Get-Location  | 获取工作路径   |
 | cd           | cd         | Set-Location  | 设置工作路径   |
 
-注：Powershell大多数命令都设置了别名，把Unix Shell或者cmd.exe的对应命令名称输进去一般也能运行
+注：Powershell大多数命令都设置了别名，用Unix Shell或者cmd.exe的命令名一般也能运行
 
 ## 其他
 
@@ -39,9 +39,7 @@ Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10�
 
 幸运的是，这些Unix Shell的指令基本一致，语法也只是分为两派，两个家族内部的语法高度相似
 
-## 语法
-
-### 指令
+## 指令
 
 ```bash
 # 简单指令
@@ -49,7 +47,75 @@ Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10�
 # 指令序列
 ```
 
-### 控制流
+## 变量
+
+bash变量没有类别，一切都是字符串
+
+### 自定义变量
+
+变量基本使用
+
+```bash
+a=1       # 定义变量。注意不能加空格
+b="str b" # 如果变量值有空格，需要用双引号括起来
+c="price is \$100"  # "$"等特殊符号需要反斜杠转义
+
+echo $a           # 访问变量。在变量名前面加上$
+echo "a = $a"     # 字符串中的变量也会自动格式化为变量的值
+echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
+```
+
+数组和关联数组
+
+```bash
+# 数组
+arr=(1 2 3)
+echo ${arr[0]}   # 数组索引
+echo ${arr[@]}   # 数组所有元素
+echo ${#arr[@]}  # 数组长度
+arr+=(4)  # 添加元素
+
+# 关联数组
+declare -A dict
+dict[apple]=red
+dict[banana]=yellow
+# 遍历字典
+for key in "${!my_dict[@]}"; do
+  echo "$key -> ${my_dict[$key]}"
+done
+```
+
+变量默认值
+
+```bash
+echo ${var:-0}    # 若变量不存在，输出默认值（此例子中为0）
+echo ${var:=0}    # 若变量不存在，输出默认值，并将变量设为默认值
+echo ${var:?undefined}    # 若变量不存在，报错
+```
+
+### 环境变量
+
+许多系统配置、应用配置存储在环境变量内，它们一般在脚本中定义，很少需要在shell中更改
+
+```shell
+env       # 打印所有环境变量
+set       # 打印所有环境变量、用户定义的变量
+export PATH=$PATH:/home/username/mysql/bin  # 环境变量赋值
+```
+
+环境变量一般在下列文件中定义（列出若干常见的，具体用哪个取决于系统版本）。打开shell时自动运行这些文件，因此在其中加入`export ENV_VAR=VALUE`这样的代码，就会在每次打开shell时载入环境变量。系统环境变量的文件也可能是用户登录时运行
+
+1. 系统环境变量：`/etc/environment`，`/etc/profile`，`/etc/bash.bashrc`
+2. 用户环境变量：`~/.profile`，`~/.bashrc`
+
+### 特殊变量
+
+- 上一个命令：退出码`$?`；最后一个参数`$_`
+- 当前shell：进程ID`$$`；名称`$0`；启动参数`$-`
+- 后台异步命令的进程ID`$!`
+- 脚本参数数量`$@`；脚本参数值`$#`
+
+## 控制流
 
 ```bash
 # 遍历当前目录所有文件
@@ -66,15 +132,21 @@ echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
 echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
-# cmd.exe
+# cmd
 
-cmd.exe也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
+cmd也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
 
-```powershell
-ping /?
-nslookup     # 查询域名的地址（DNS记录）
-ipconfig
+## 变量
+
+```cmd
+REM 定义、访问变量
+set a=1
+echo %a%
 ```
+
+
+
+
 
 # PowerShell
 
@@ -82,7 +154,7 @@ Powershell主要用于Windows 7及其后续版本，也可以运行于Linux和Ma
 
 ## 基础知识
 
-PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名一般格式是`verb-noun`。大部分系统cmdlet都有别名，比如，`echo "Hello"`中的echo是`Write-Output`指令的别名
+PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名一般格式是`verb-noun`。大部分系统cmdlet都有别名，比如，`Write-Output`指令具有别名`echo`
 
 使用参数时可以简化，能唯一识别即可，如，-common参数可以只输入-com（假设没有其他形参含有com），到这一步之后也可以用tab自动补全
 
@@ -139,7 +211,7 @@ Get-ChildItem | Select-Object FullName, Length  # 选择获取的列
 1 -shl 1    # 左移。右移是-shr
 ```
 
-**重定向运算符**
+**重定向**
 
 ```powershell
 Write-Output "Hello" > script.log   # 写入文件
@@ -148,6 +220,8 @@ Write-Warning "warn" *> script.log  # 将所有流（比如，Error和Warning）
 ```
 
 用`Out-File` cmdlet有更多参数
+
+**管道**
 
 ### 控制流
 

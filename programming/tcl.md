@@ -1,4 +1,4 @@
-Tcl是一种脚本语言，它无类型，全部东西都可被解释为字符串
+Tcl是一种脚本语言，它无类型，全部东西都可被解释为字符串。常用Tcl解释器有[TclKits](https://tclkits.rkeene.org/fossil/wiki/Downloads)，ActiveTcl，Linux的tcsh、tclsh
 
 # 基本语法
 

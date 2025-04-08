@@ -1226,10 +1226,10 @@ x = b.hexdigest()      #得到16进制字符串
 
 ### 最大/最小元素
 
-nlargest(n, iterable, key=None)
+`nlargest(n, iterable, key=None)`
 Find the n largest elements in a dataset. Equivalent to:  sorted(iterable, key=key, reverse=True)[:n]
 
-nsmallest(n, iterable, key=None)
+`nsmallest(n, iterable, key=None)`
 Find the n smallest elements in a dataset.
 
 弹出堆的前N个元素，复杂度NlogM，M为堆大小。查找最大/最小，用min/max较快；N比较小时用nlargest/nsmallest较快；N几乎和M一样大时，排序再切片比较快
@@ -1238,40 +1238,79 @@ Find the n smallest elements in a dataset.
 
 `from heapq import merge`
 
+## http.server - http服务器
+
+```shell
+# 打开简单的文件服务器。可以用127.0.0.1:8000访问
+# 注意：性能和安全性都不好，建议只在内网给可信用户提供服务
+# 若有更高需求，可以考虑使用Flask或Django
+python -m http.server 8000 --directory "/folder"
+```
+
+如果这个简单的服务器不能满足需求，可以进行二次开发。`http.server`使用handler类处理客户端发来的请求，可以继承已有handler类实现更多功能
+
+```python
+import http.server
+from http import HTTPStatus
+import os
+import re
+
+class PartialContentHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        # do_GET函数用于处理GET请求。当收到GET请求时调用此函数，请求参数是self.headers、self.path等
+        # 这个例子中，解析请求头的Range参数，设置响应头的Content-Range等参数，并发送数据给客户端
+        range_header = self.header.get('Range')
+        if (range_header is None) or (not self.path.endswith('.mp4')):
+            super().do_GET(self)  # 只处理MP4文件的范围请求，其余情况用父类处理
+
+        # 计算文件大小、起止位置
+        path = self.translate_path(self.path)
+        fsize = os.path.getsize(path)
+        try:
+            start = int(re.match(r'bytes=(\d+)-\d*', range_header)[1])
+        except:
+            start = 0
+        end = fsize - 1
+
+        # 发送响应
+        self.send_response(HTTPStatus.PARTIAL_CONTENT)
+        self.send_header('Content-type', 'video/mp4')
+        self.send_header('Content-Range', f'bytes {start}-{end}/{fsize}')
+        self.send_header('Accept-Ranges', 'bytes')
+        self.end_headers()
+        f = open(path, 'rb')
+        f.seek(start)
+        return f
+
+if __name__ == '__main__':
+    import socket
+    ip_addr = socket.gethostbyname(socket.gethostname())
+
+    # 启动服务器
+    server_address = (ip_addr, PORT)
+    httpd = http.server.HTTPServer(server_address, PartialContentHandler)
+    print(f'Serving HTTP on {ip_addr}:{PORT}')
+    httpd.serve_forever()
+```
+
 ## html
 
 ```python
 from html.parser import HTMLParser
 
 class MyParser(HTMLParser):
-    
     def handle_starttag(self, tag, attrs):
         print('start tag: ', tag, attrs)
-
     def handle_endtag(self, tag):
         print('end tag: ', tag)
 
-    def handle_startendtag(self, tag, attrs):
-        print('start end tag: ', tag, attrs)
-
-    def handle_data(self, data):
-        print('data: ', data)
-
-    def handle_comment(self, data):
-        print('comment: ', data)
-
-    def handle_entityref(self, name):
-        print('entityref: ', name)
-
-    def handle_charref(self, name):
-        print('charref: ', name)
+    # 其他还有handle_startendtag(tag, attrs), handle_data(data)
+    # handle_comment(data)， handle_entityref(name), handle_charref(name)等
 
 parser = MyParser()
 parser.feed('example.html')
-    # feed之后立即分析整个文档，每当遇到相应元素时，就会调用对应handle函数
+# feed之后立即分析整个文档，每当遇到相应元素时，就会调用对应handle函数
 ```
-
-可以用html打开一个http服务器：`python -m html.server 8081 --directory D:\folder`
 
 ## itertools（迭代器工具）
 
@@ -1333,18 +1372,18 @@ import json
 
 # 读写文件
 obj = json.load(fp)
-json.dump(obj, fp, ensure_ascii=False, indent=2)
+json.dump(obj, fp, ensure_ascii=False, indent=2)  # ensure_ascii不是通用转换方式，建议设为False
 
 # json字符串
 json_str = json.dumps(obj)
 obj = json.loads(json_str)
+
+# 类型转换
+json_str = json.dumps(obj, default=lambda obj: obj.__dict__)
+obj = json.loads(json_str, object_hook=max)
 ```
 
-dump函数的ensure_ascii是python独有的，不是通用编码，所以在非python环境再读一个ascii的json字符串会出问题
-
 把一个对象先dump再load后，不保证对象不变，比如说dict会变成list、dict的数值键都会变成字符串键，如果有同一个数的数值键和字符串键，其中一个会被覆盖掉
-
-可以通过加入参数default=函数（对于dump和dumps）或object_hook（load和loads），其中的函数能将创建的类转化成一个合法的类型（如dict），或者直接`json.dumps(obj.__dict__)`
 
 ## logging（日志）
 
@@ -1459,7 +1498,7 @@ obj = pickle.loads(pickle_bytes)
 ```python
 import re
 
-pattern = r'abc(\d{3})(\s)'     # 括号括起来部分成为group
+pattern = r'abc(\d{3})(\s)'     # 括号括起来部分称为group
 string = 'abc123 def, abc456 ghi'
 
 # 匹配字符串
@@ -1560,6 +1599,8 @@ screen.bye()    # Screen独有
 ```
 
 ## urllib（网络）
+
+第三方库[Requests](https://requests.readthedocs.io/en/latest/)在urllib基础上提供了更好用的api，较复杂应用可以考虑用Reauest代替urllib
 
 ### request
 
@@ -1826,9 +1867,9 @@ Raises:
 
 虚拟环境（Virtual Environment）是一个分离的python环境，可以在此环境安装第三方库而不影响其他python程序，比如给不同程序安装不同版本的库
 
-```bash
+```shell
 # 建立虚拟环境
-python -m venv <env_name>
+python -m venv env_name
 
 # 打开虚拟环境
 env_name\Scripts\activate.bat            # Windows
