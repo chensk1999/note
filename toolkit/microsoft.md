@@ -1,3 +1,40 @@
+# Windows 10
+
+## 关闭网络搜索
+
+使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
+
+## 右键菜单栏
+
+右键菜单，也叫做Context Menu，相关注册表项参考[这里](http://up.houheaven.com/Regedit/Reg_03.htm)
+
+### 移除软件的右键菜单
+
+可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
+
+```bash
+# 文件夹
+\HKEY_CLASSES_ROOT\Folder
+\HKEY_CLASSES_ROOT\Directory
+# 文件
+\HKEY_CLASSES_ROOT\*
+\HKEY_CLASSES_ROOT\AllFilesystemObjects
+# 桌面
+\HKEY_CLASSES_ROOT\DesktopBackground
+
+# 删的时候发现了，但是删完看不到效果的
+\HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
+```
+
+### 添加自定义右键菜单
+
+1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
+2. 将command的值设为指令，如`notepad.exe %1`
+
+`<somewhere>`具体是哪里：
+
+1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`
+
 # Word
 
 ## 多级列表与标题
@@ -14,8 +51,6 @@
 
 **更改样式的大纲级别**：选中要修改的样式 - 右键 - 修改 - 格式 - 段落 - 常规 - 大纲级别
 
-
-
 ## 页眉与页脚
 
 插入 - 页眉和页脚
@@ -26,17 +61,9 @@
 
 ## 公式
 
-**行宽**
-
-如果想要公式和普通的行一样宽，选中公式，右键，段落 - 取消“如果定义了文档网格，则对齐到文档网格”
-
-**编号**
-
-输入`公式#编号`然后回车。若想自动编号，使用插入 - 文本 - 文档部件 - 域 - AutoNum
-
-**空格**
-
-`\ensp`，`\emsp`
+- **行宽**：如果想要公式和普通的行一样宽，选中公式，右键，段落 - 取消“如果定义了文档网格，则对齐到文档网格”
+- **编号**：输入`公式#编号`然后回车。若想自动编号，使用插入 - 文本 - 文档部件 - 域 - AutoNum
+- **空格**：`\ensp`，`\emsp`
 
 ## 尾注
 

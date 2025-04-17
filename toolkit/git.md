@@ -315,3 +315,24 @@ sim/**
     - 例如，Refactor subsystem X for readability是一个合格的总结；Fixed bug with Y就不是
   - 中文：使用动宾短语作总结，不要用陈述句
 - **格式**：总结在50字符之内，总结与具体说明之间空一行
+
+# Github
+
+## SSH Authentication (Windows)
+
+若未特别说明，以下操作在git bash内完成
+
+1. 检查有没有SSH密钥：`C:\Users\<user>\.ssh\`文件夹内有没有密钥文件（一般是`id_rsa`和`id_rsa.pub`）
+2. 如果没有，在电脑上生成SSH密钥对
+3. `eval "$(ssh-agent -s)"`（应该会输出Agent pid）
+4. `ssh-add <私钥文件>`
+5. 添加到账户：[settings](https://github.com/settings/profile) - SSH and GPG keys - New SSH key - title是给自己看的，key是公钥文件的内容（以文本格式打开然后复制粘贴）
+6. 测试能否连接：`ssh -T git@github.com`，成功会输出 You've successfully authenticated。
+
+如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值好像使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
+
+## Timed out
+
+出现`Failed to connect to github.com port 443 after 20000 ms: Timed out`错误大概率是因为代理设置
+
+首先关闭系统代理；然后执行`git config --global --unset http.proxy`和`git config --global --unset https.proxy`

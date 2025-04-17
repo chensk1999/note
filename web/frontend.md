@@ -140,17 +140,6 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 </form>
 ```
 
-## 实体引用
-
-实体引用（Character Entity Reference）相当于HTML的转义字符，格式是`&entity_name;`
-
-| 实体引用        | 显示的字符        |
-| --------------- | ----------------- |
-| `&lt; &gt;`     | `< >`             |
-| `&amp;`         | `&`               |
-| `&apos; &quot;` | `' "`             |
-| `&#25105;`      | 我（unicode字符） |
-
 # XML
 
 XML（EXtensible Markup Language）是类似HTML的标记语言，但注重传输数据而非显示数据。XML没有预定义标签，标签名对大小写敏感，允许嵌套元素（但必须是严格的嵌套），每个XML文档有且仅有一个根元素
@@ -722,3 +711,7 @@ let uri = 'example.com?file=' + encodeURIComponent('/asset/example.txt')
 **escape**：用`%uxxxx`表示，其中`xxxx`是四位16进制数，表示字符的Unicode码位值
 
 ## HTML
+
+HTML使用实体引用（Character Entity Reference）转义，格式是`&entity_name;`，常用实体引用有`&lt; &gt; &quot; &amp`，分别是`<>"&`。未转义时，它们视作HTML标签的一部分，转义后视作普通文本。其他字符也可以转义，如`&apos;`是单引号，`&#25105;`是“我”
+
+- php：使用`htmlspecialchars`转义，默认不转义单引号，因此拼接带单引号字符串时可能产生XSS漏洞

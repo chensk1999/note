@@ -76,21 +76,15 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 
 数据定义语言（data define language, DDL）
 
-## 创建数据库
-
-```sql
-CREATE DATABASE school;  -- 创建
-USE school;              -- 使用
-DROP DATABASE school;    -- 删除
-```
-
-## 使用数据库
+## 定义数据库
 
 ```sql
 SHOW DATABASES;  -- 查询数据库列表
+CREATE DATABASE school;  -- 创建
 USE school;      -- 选择数据库
 SHOW TABLES;     -- 查询当前数据库所有表
 DESC students;   -- 查询表的结构，字段类型，主键，是否为空等属性
+DROP school;     -- 删除表
 ```
 
 ## 定义表
@@ -173,7 +167,8 @@ SELECT 1;
 
 ```sql
 -- 分页查询
-SELECT * FROM students LIMIT 50 OFFSET 20   -- 显示50条，从第20条开始显示
+SELECT * FROM students LIMIT 50 OFFSET 20;  -- 显示50条，从第20条开始显示
+SELECT * FROM students LIMIT 20, 50;        -- 相同作用
 
 -- 聚合查询。SQL提供了COUNT, SUM, AVG, MAX, MIN等聚合函数
 -- 如果没有匹配到任何内容（比如配合WHERE使用时），COUNT为0，其他几个为NULL
@@ -247,9 +242,8 @@ COMMIT;
 # 登录。-u参数为用户名，-p参数表示需要密码
 mysql -u root -p
 
-# 登录成功后会显示:
+# 登录成功后会显示SQL shell。在此输入SQL语句即可访问数据库
 mysql>
-# 在此输入SQL语句即可访问数据库
 ```
 
 ## Python Connector

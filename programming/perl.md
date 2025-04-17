@@ -4,7 +4,7 @@ Perl语言的中心思想是
 
 > There's More Than One Way To Do It.
 
-与Python的思想（There should be one – and preferably only one – obvious way to do it）正好相反。它给了很多灵活性，但是让语法冗余、不易读
+与Python的思想（There should be one, and preferably only one, obvious way to do it）正好相反。它给了很多灵活性，但是让语法冗余、不易读
 
 ```bash
 # 检查是否安装Perl

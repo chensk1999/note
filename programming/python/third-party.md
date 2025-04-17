@@ -51,6 +51,18 @@ uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目�
 
 # 第三方库
 
-## whisper
+## passlib - 密码散列
 
-语音识别
+算法列表：https://passlib.readthedocs.io/en/stable/lib/passlib.hash.html#module-passlib.hash
+
+```python
+from passlib.hash import pbkdf2_sha256
+
+hash = pbkdf2_sha256.hash("password")       # 计算hash
+if pbkdf2_sha256.verify("password", hash):  # 验证hash
+    print('success')
+```
+
+## whisper - 语音识别
+
+NA

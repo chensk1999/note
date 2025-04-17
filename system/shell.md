@@ -1,31 +1,5 @@
 Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指操作系统的命令行界面（Command-Line Interface，CLI）
 
-# 常用指令
-
-## 文件与路径操作
-
-| Unix Shell   | cmd        | Powershell    | 说明           |
-| ------------ | ---------- | ------------- | -------------- |
-| ls, find     | dir        | Get-ChildItem | 列出文件和目录 |
-| cat          | type       | Get-Content   | 读取文件内容   |
-| cp           | copy       | Copy-Item     | 复制           |
-| mv           | move       | Move-Item     | 移动           |
-| rm, rmdir    | del, rmdir | Remove-Item   | 删除           |
-| mv           | rename     | Rename-Item   | 重命名         |
-| touch, mkdir | mkdir      | New-Item      | 新建           |
-| pwd          | cd         | Get-Location  | 获取工作路径   |
-| cd           | cd         | Set-Location  | 设置工作路径   |
-
-注：Powershell大多数命令都设置了别名，用Unix Shell或者cmd.exe的命令名一般也能运行
-
-## 其他
-
-| Unix Shell | cmd.exe | Powershell   | 说明         |
-| ---------- | ------- | ------------ | ------------ |
-| man        | help    | Get-Help     | 打印文档     |
-| clear      | cls     | Clear-Host   | 清屏         |
-| echo       | echo    | Write-Output | 打印到标准流 |
-
 # Bash
 
 Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10安装了Linux子系统之后也可以使用Bash
@@ -164,15 +138,6 @@ PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名�
 
 ```命令2 (命令1)```也有同样效果
 
-## 常用指令
-
-```powershell
-# 输出到文件（以Get-Process为例）
-Get-Process | Out-File filename.txt
-Get-Process | Export-Csv filename.csv
-Get-Process | Export-Clixml filename.xml
-```
-
 ## 语法
 
 ### 变量
@@ -251,6 +216,15 @@ $sum4 = 0
 $arr.foreach({$sum4 += $PSItem})
 ```
 
+## 常用指令
+
+```powershell
+# 输出到文件（以Get-Process为例）
+Get-Process | Out-File filename.txt
+Get-Process | Export-Csv filename.csv
+Get-Process | Export-Clixml filename.xml
+```
+
 ## 其他
 
 ```powershell
@@ -279,3 +253,74 @@ Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
 Get-ExecutionPolicy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
 ```
+
+# 常用指令
+
+## 文件与目录
+
+| Unix Shell   | cmd        | Powershell    | 说明           |
+| ------------ | ---------- | ------------- | -------------- |
+| ls, find     | dir        | Get-ChildItem | 列出文件和目录 |
+| cat          | type       | Get-Content   | 读取文件内容   |
+| cp           | copy       | Copy-Item     | 复制           |
+| mv           | move       | Move-Item     | 移动           |
+| rm, rmdir    | del, rmdir | Remove-Item   | 删除           |
+| mv           | rename     | Rename-Item   | 重命名         |
+| touch, mkdir | mkdir      | New-Item      | 新建           |
+| pwd          | cd         | Get-Location  | 获取工作路径   |
+| cd           | cd         | Set-Location  | 设置工作路径   |
+
+注：Powershell大多数命令都设置了别名，用Unix Shell或者cmd.exe的命令名一般也能运行
+
+## 网络
+
+## curl - Web请求
+
+```shell
+curl example.com
+```
+
+[Curl指南](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)，[Curl Cookbook](https://catonmat.net/cookbooks/curl)
+
+## netstat - 网络状态
+
+查询网络状态，如当前建立的连接、路由表
+
+| 选项 | 作用                                                    |
+| ---- | ------------------------------------------------------- |
+| a    | 显示所有连接                                            |
+| b    | 显示各端口对应程序名。需要root权限                      |
+| n    | 显示IP地址而非域名/主机名。不加n好像会做反向DNS，很耗时 |
+| o    | 显示对应进程PID                                         |
+| p    | 指定协议，如`netstat -p "tcp"`                          |
+| r    | 显示路由表                                              |
+
+```shell
+netstat -ano        # 显示所有连接以及对应进程PID
+netstat -nop "tcp"  # 显示所有tcp连接，以及对应进程PID
+netstat -r          # 显示路由表
+netstat -no | findstr "8080"  # 查找指定端口的连接
+```
+
+## nslookup - DNS查询
+
+DNS查询。`nslookup 域名 [DNS服务器]`；也可以不带参数运行，则进入交互式界面
+
+## 打印二进制文件hex值
+
+**hexdump**
+
+```bash
+hexdump -v -e '30/1 "%02x" "\n"' example.png > example.txt
+# -v: 遇到两行相同的不把后面的行省略为*号
+# -e：输出格式。说明：读取30个1字节的数据，以%02x格式打印，然后打印一个换行符。此格式和xxd的plain格式相同
+```
+
+**xxd**
+
+```bash
+xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
+xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
+```
+
+以上是Unix指令。windows可以用WSL，或者git bash也可以
