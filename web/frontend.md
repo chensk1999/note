@@ -1,5 +1,3 @@
-# HTML，CSS与JavaScript
-
 HTML定义了网页的内容，CSS 描述了网页的布局，JavaScript描述网页的行为。较为成熟的开发模式是分别设计HTML、CSS和JavaScript，然后在HTML里面调用另外两者。简单的网页可以把全部东西塞进html里，但考虑可维护性，还是强烈不建议这么做
 
 # HTML
@@ -144,17 +142,51 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 
 XML（EXtensible Markup Language）是类似HTML的标记语言，但注重传输数据而非显示数据。XML没有预定义标签，标签名对大小写敏感，允许嵌套元素（但必须是严格的嵌套），每个XML文档有且仅有一个根元素
 
-## XML命名空间(XML Namespaces)
+XML的嵌套元素形成了树状结构，每个元素也称作一个节点（Node）
 
-`<前缀:标签名 xmlns:前缀="命名空间">`
-`<root xmlns:前缀="命名空间">`（在根元素中声明）
-一个命名空间被定义后，拥有相同前缀的元素都与该空间相关联
-命名空间通常使用对应的url
+## XPath
 
-## XHTML
+XPath（XML路径语言，XML Path Language）是用于描述XML中某部分位置的语言。以下面的XML为例
 
-XHTML是结合了XML和HTML的一种标记语言
-语法规则大体与XML相同，功能大体与HTML4相同
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<bookstore>
+    <book>
+      <title lang="en-gb">Harry Potter</title>
+      <price>29.99</price>
+    </book>
+    <book>
+      <title lang="en-us">Learning XML</title>
+      <price>39.95</price>
+    </book>
+</bookstore>
+```
+
+```powershell
+[xml]$xml = Get-Content bookstore.xml
+$bs = $xml.bookstore
+
+# 路径
+Select-Xml -Xml $bs -XPath "book"    # 相对路径
+Select-Xml -Xml $bs -XPath "/"       # 绝对路径
+Select-Xml -Xml $bs -XPath "//"      # 任意子路径
+Select-Xml -Xml $bs -XPath "//@lang" # 具有lang属性的节点
+Select-Xml -Xml $bs -XPath "book/*"  # 通配符
+Select-Xml -Xml $bs -XPath "//title/text()"  # 节点内的文本
+# 谓词（Predicates）
+Select-Xml -Xml $bs -XPath "book[last()-1]"      # indexing。下标从1开始
+Select-Xml -Xml $bs -XPath "book[position()<3]"  # 范围indexing
+Select-Xml -Xml $bs -XPath "//title[@lang]"          # 具有lang属性
+Select-Xml -Xml $bs -XPath "//title[@lang='en-us']"  # lang属性值为en-us
+Select-Xml -Xml $bs -XPath "book[price<30]"
+# 轴（Axes）。常用的XPath轴有：ancestor, descendant, parnet, child, namespace
+# preceding（当前节点的开始标签之前的所有节点）, following（当前节点的开始标签之前的所有节点）
+Select-Xml -Xml $bs -XPath "child::book"  # 子节点中的book节点
+
+# 补充说明：用PowerShell访问XML节点
+echo $bs.node
+$bs.node.OuterXML > title.txt
+```
 
 # CSS
 
@@ -221,11 +253,19 @@ div + p {background-color: gray;}
 div ~ p {background-color: black;}
 ```
 
-**其他**
+**伪类、伪元素**
 
-伪类（pseudo-class）选择器：选择特殊状态的元素，比如鼠标悬停、已访问的链接
+```css
+/*伪类（pseudo-class）选择器：选择特殊状态的元素*/
+a:visited {color: #FF0000;}
+a:hover {color: #00FF00;}
+p:first {color: blue;}
 
-伪元素（pseudo-element）选择器：选择元素的指定部分，比如首字母、元素之前或之后
+/*伪元素（pseudo-element）选择器：选择元素的指定部分*/
+p::first-line {font-variant: small-caps;}
+p::first-letter {font-size: 200%;}
+div::text {background: white;}
+```
 
 ## 使用样式表
 
@@ -429,7 +469,7 @@ let text = `Welcome ${firstName}, ${lastName}!`;
 **列表**
 
 ```javascript
-// 定义与访问。注意，用const声明列表
+// 定义与访问
 const cars = ["Saab", "Volvo", "BMW"];
 console.log(cars[0]);
 cars[100] = "Opel";  // 超出范围不会报错，但是3~99全部变成undefined
@@ -579,15 +619,21 @@ JavaScript以代码块的形式嵌入到html，一般定义在head中或者body�
 </body>
 ```
 
+还可以用`<a>`标签调用
+
+```html
+<a href="javascript:alert(1);">Don't Click</a>
+```
+
 ### 事件
 
-事件是用户的某种动作，比如鼠标点击、按键、调整页面大小等。将JavaScript代码绑定给HTML的事件处理器就能在事件发生时自动调用代码，如：
+事件是用户的某种动作，比如鼠标点击、按键、调整页面大小等。将JavaScript代码绑定给HTML的事件处理器就能在事件发生时自动调用代码，下面的例子定义了一个`button`，点击它时`onclick`属性将被当作JavaScript代码执行。注意，事件处理代码中的`this`指代触发事件的HTML元素
 
 ```html
 <button onclick="this.innerHTML = Date()"> 获取当前时间 </button>
 ```
 
-更常见的做法是不把onclick属性写死在html里面，而是用JavaScript把代码动态绑定到事件处理器。将页面内容与网页行为分离能大大降低开发和维护的难度
+### 事件监听器
 
 ```javascript
 // 定义事件处理函数
@@ -596,13 +642,13 @@ bgChange(event) {
   e.target.style.backgroundColor = rndCol;
 }
 
-// 把这个函数绑定到Button
+// 用事件监听器绑定
 let btn = document.querySelector('button');
-// 用属性绑定。这个方法不常用
-btn.onclick = bgChange;
-// 用事件监听器绑定。可以绑定多个函数
 btn.addEventListener('click', bgChange);
 btn.removeEventListener('click', bgChange);
+
+// 查看绑定的所有函数
+getEventListeners(btn)
 ```
 
 **常用HTML事件**
@@ -636,17 +682,12 @@ const elements = document.querySelectorAll("p.intro");
 // 访问网页元素
 element.innerHTML = "Hello";     // 访问元素的内容
 element.name = "honey";          // 访问元素Property
-element.hasAttribute("name");    // 访问元素Attribute
-element.setAttribute("name", "bee");
-element.getAttribute("name");
-element.removeAttribute("name");
+element.hasAttribute("name");    // 访问元素Attribute。还有setAttribute，getAttribute等
 ```
 
 访问网页元素有Property和Attribute两种方式。严格来说，Attribute和Property是不同的东西，Attribute属于HTML，Property属于DOM
 
-绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property，Attribute在老版本IE浏览器有很多奇怪行为
-
-一般建议使用Property，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
+绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property。一般**建议使用Property**，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
 
 ### 添加和删除网页元素
 
@@ -681,6 +722,59 @@ div1.removeChild(p0);
 var p_new = document.createElement("p");
 p_new.innerHTML = "new paragraph";
 div1.replaceChild(p_new, p1)
+```
+
+# JavaScript库
+
+快速判断网页使用了什么库：
+
+```javascript
+console.log({
+  React: !!window.React,         // React 检测
+  Vue: !!window.Vue,             // Vue 2
+  Vue3: !!window.Vue?.version,   // Vue 3+
+  Angular: !!window.ng,          // AngularJS/Angular
+  jQuery: !!window.jQuery,       // jQuery
+  lodash: !!window._,            // Lodash
+});
+```
+
+## jQuery
+
+jQuery库提供了方便的HTML元素操作，可以说是HTML DOM的上位替代，还提供了AJAX和许多有用的插件。在网页中加载jQuery，比如把它放到自己的服务器，或者使用CDN服务商的jQuery，就能使用jQuery
+
+```html
+<script src="/asset/jquery.min.js"></script>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+```
+
+jQuery的核心是jQuery对象和选择器。**jQuery对象**是DOM对象的包装，在DOM的基础上提供了更丰富的方法，**选择器**`$`则是通过DOM对象或者CSS选择器获取对应jQuery对象的函数
+
+```javascript
+// 使用选择器访问jQuery对象
+// 注意，选择器$是函数而非特殊符号。JavaScript允许用$作为变量名
+$("p:first");  // 返回首个<p>标签的jQuery对象
+$(document);   // 获取整个页面对应的jQuery对象
+
+// jQuery对象访问HTML内容
+let current = $("p:first").text();
+$("p:first").text(current + 1);
+
+// 使用jQuery事件定义页面行为
+$("p").click(function() {
+    $(this).hide();          // 点击<p>标签时将它隐藏
+});
+$(document).ready(function() {alert(1);});  // 页面加载完成时弹出警告
+$(function() {alert(1);});                  // 此写法效果相同
+
+// 动态加载页面
+$("#div1").load("/async.php")  // 访问此地址，并将获取的数据放进选中元素里
+
+$("button").click(function(){
+  $.get("demo_test.php",function(data,status){    // 用get函数访问服务器，并定义了回调函数
+    alert("数据: " + data + "\n状态: " + status);
+  });
+});
 ```
 
 # 转义

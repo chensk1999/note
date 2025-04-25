@@ -1,111 +1,5 @@
 Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指操作系统的命令行界面（Command-Line Interface，CLI）
 
-# Bash
-
-Bash是最常见的Unix Shell，它能运行于Linux系统和MacOS；Windows10安装了Linux子系统之后也可以使用Bash
-
-虽然Bash很常见，但Linux系统下运行的命令行界面不一定是Bash。`echo $SHELL`可以看见当前用的Shell，`cat /etc/shells`可以看已安装的Shell。常见的Shell有
-
-| 分类             | Shell                    |
-| ---------------- | ------------------------ |
-| Bourne Shell家族 | sh, bash, dash, ksh, zsh |
-| C Shell家族      | tcsh, csh                |
-
-幸运的是，这些Unix Shell的指令基本一致，语法也只是分为两派，两个家族内部的语法高度相似
-
-## 指令
-
-```bash
-# 简单指令
-# 管道（Pipeline）
-# 指令序列
-```
-
-## 变量
-
-bash变量没有类别，一切都是字符串
-
-### 自定义变量
-
-变量基本使用
-
-```bash
-a=1       # 定义变量。注意不能加空格
-b="str b" # 如果变量值有空格，需要用双引号括起来
-c="price is \$100"  # "$"等特殊符号需要反斜杠转义
-
-echo $a           # 访问变量。在变量名前面加上$
-echo "a = $a"     # 字符串中的变量也会自动格式化为变量的值
-echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
-```
-
-数组和关联数组
-
-```bash
-# 数组
-arr=(1 2 3)
-echo ${arr[0]}   # 数组索引
-echo ${arr[@]}   # 数组所有元素
-echo ${#arr[@]}  # 数组长度
-arr+=(4)  # 添加元素
-
-# 关联数组
-declare -A dict
-dict[apple]=red
-dict[banana]=yellow
-# 遍历字典
-for key in "${!my_dict[@]}"; do
-  echo "$key -> ${my_dict[$key]}"
-done
-```
-
-变量默认值
-
-```bash
-echo ${var:-0}    # 若变量不存在，输出默认值（此例子中为0）
-echo ${var:=0}    # 若变量不存在，输出默认值，并将变量设为默认值
-echo ${var:?undefined}    # 若变量不存在，报错
-```
-
-### 环境变量
-
-许多系统配置、应用配置存储在环境变量内，它们一般在脚本中定义，很少需要在shell中更改
-
-```shell
-env       # 打印所有环境变量
-set       # 打印所有环境变量、用户定义的变量
-export PATH=$PATH:/home/username/mysql/bin  # 环境变量赋值
-```
-
-环境变量一般在下列文件中定义（列出若干常见的，具体用哪个取决于系统版本）。打开shell时自动运行这些文件，因此在其中加入`export ENV_VAR=VALUE`这样的代码，就会在每次打开shell时载入环境变量。系统环境变量的文件也可能是用户登录时运行
-
-1. 系统环境变量：`/etc/environment`，`/etc/profile`，`/etc/bash.bashrc`
-2. 用户环境变量：`~/.profile`，`~/.bashrc`
-
-### 特殊变量
-
-- 上一个命令：退出码`$?`；最后一个参数`$_`
-- 当前shell：进程ID`$$`；名称`$0`；启动参数`$-`
-- 后台异步命令的进程ID`$!`
-- 脚本参数数量`$@`；脚本参数值`$#`
-
-## 控制流
-
-```bash
-# 遍历当前目录所有文件
-for f in *; do
-  echo "File -> $f"
-done
-
-# 正则表达式替换
-# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
-a='Hello, world'
-f='example.png'
-echo "${a/o/O}"       # 匹配第一个，得到HellO, world
-echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
-echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
-```
-
 # cmd
 
 cmd也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
@@ -117,10 +11,6 @@ REM 定义、访问变量
 set a=1
 echo %a%
 ```
-
-
-
-
 
 # PowerShell
 

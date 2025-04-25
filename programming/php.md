@@ -33,6 +33,10 @@ echo count($arr);
 # 关联数组。即字典
 $dict = array("Peter"=>"43", "Brian"=>"7");
 echo $age['Peter'];
+
+# 可变变量
+$var = 'name';
+$$var = 'Alice';  # 相当于$($var)，即$name。这行代码等同于$name = 'Alice'
 ```
 
 字符串

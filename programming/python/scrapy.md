@@ -1,291 +1,221 @@
-# Scrapy
 
-## Command line tool
+
+# 基础
 
 ```shell
-scrapy [command] <options> <args>
+scrapy startproject tutorial              # 创建项目
+cd tutorial
+scrapy genspider my_spider "example.com"  # 创建新的爬虫
+scrapy crawl my_spider                    # 开始爬虫
 
-global commands
-startproject <name> [dir]	创建新项目
-genspider <name> <domain>	在当前文件夹/当前项目的spider文件夹创建新爬虫
-shell <url>			在shell中打开url，打开的网页在response对象
-
-project-only commands
-crawl <spider>	用指定的spider爬取网页
-
--h	帮助
+scrapy shell "http://example.com"  # 交互式处理页面
+scrapy -h
 ```
+
+Scrapy的基本数据流如下（也可参考[完整架构](https://docs.scrapy.org/en/latest/topics/architecture.html)）。其中，Spider是必须实现的，其余东西是可选的
+
+```mermaid
+graph LR
+    subgraph logic ["逻辑"]
+        Spider([Spider])
+        SpiderMiddleware(Spider Middleware)
+        Spider <--Request, Response<br>and Item--> SpiderMiddleware
+    end
+
+    subgraph data ["数据"]
+        Pipeline(Item Pipeline) --> storage[(DB or file storage)]
+    end
+
+    subgraph req ["请求与响应"]
+        direction LR
+        Scheduler(Scheduler) --> DM(Downloader Middleware)
+        DM --> Downloader[/Downloader/] <--> Net[/Internet/]
+    end
+
+    SpiderMiddleware --Request--> Scheduler
+    SpiderMiddleware --Item--> Pipeline
+    Downloader --Response--> SpiderMiddleware
+```
+
+## 用python脚本开始爬虫
+
+https://docs.scrapy.org/en/latest/topics/practices.html#run-scrapy-from-a-script
+
+```python
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+
+class MySpider(scrapy.Spider):
+    # Your spider definition
+    ...
+
+
+process = CrawlerProcess(
+    settings={
+        "FEEDS": {
+            "items.json": {"format": "json"},
+        },
+    }
+)
+
+process.crawl(MySpider)
+process.start()  # the script will block here until the crawling is finished
+```
+
+
+
+# 爬虫控制
 
 ## Spider
 
+Spider类用于控制爬虫逻辑：从哪个页面开始爬、爬到之后如何解析数据、下一步要请求哪些URL
+
+```python
+import scrapy
+
+class MySpider(scrapy.Spider):
+    name = 'my_spider'                 # 名字。同一项目的spider不可重名
+    allowed_domains = 'example.com'    # 域名白名单，只爬这个域名的东西
+    start_urls = ['http://www.example.com']  # 初始URL，从这里开始爬
+    
+    def parse(self, response:scrapy.Response) -> Iterable[scrapy.Request, scrapy.Item, dict] :
+        # 默认回调函数。收到服务器响应后调用此函数处理；此函数处理后返回请求、数据
+        # 爬虫引擎将请求交给Scheduler、数据交给Item Pipeline进一步处理
+        # 对于简单的爬虫，也可以用回调函数处理数据，不交给Item Pipeline
+        pass
 ```
-class scrpy.spider.Spider
-属性
-name		独一无二的名字
-allowed_domains	若开启OffsiteMiddleware，不属于此list的域名将不会被爬
-start_urls		list
-其他属性
-custom_settings, crawler, settings, logger
-```
-
-### 方法
-
-```
-parse(self, response)		default callback. Must return an iterable of Request and/or dicts or Item objects.
-log(message[, level, component])	Wrapper that sends a log message through the Spider’s logger
-
-其他方法
-from_crawler, srart_requests, closed(reason)
-following links	response.follow(url, callback)	支持相对路径url
-
-用yield，可以产生多个返回值。回调函数必须返回Request, Item object, dicts 或其iterable
-```
-
-## Selector
-
-### 定义selector
-
-```
-Selector(response, text, type)
-response    HtmlResponse or XmlResponse object
-text        string. Using text and response together is undefined behavior
-type        if type==None, it will be inferred from response type. ('html' for text)
-            Otherwise it will be forced.
-            注：完整地说应该是scrapy.http.request.Request object
-            但是用scrapy.Request('url', callback)同样能定义
-response.selector也是其对应selector对象
-```
-
-### 使用selector
-
-```
-方法
-css	传入css表达式，返回装有对应节点的selector list
-xpath	传入xpath表达式，返回装有对应节点的selector list
-	response.xpath('$var', var="sth")可以在xpath表达式中使用变量
-re	传入正则表达式，返回匹配到内容的unicode字符串列表
-	注：there are shortcuts response.css, response.xpath ...
-extract		提取当前节点的内容
-extract_first		提取selector list中第一个元素内容。若为空列表，返回None（也可以传入参数default来指定此时返回的内容
-re_first		返回正则表达式匹配到的第一个字符串
-urljoin		连接当前url与相对路径
-register_namespace(prefix, url)
-remove_namespaces()
-```
-
-### SelectorList
-
-装有selector的列表。对其使用Selector的方法，相当于对其中每个元素分别使用
-
-## Item
-
-```
-Item is a class with dictionary-like API, which is intruduced to make the output more structured
-declaring item	key=scrapy.Field(**args)
-		(虽然形式上是定义了类属性，实际上只是提供了有那些允许的属性名称)
-
-可用args
-serializer	???用途不明
-input_processor
-output_processor
-
-attribute
-fields	一个包含field信息的dict
-
-Field
-完全相同于dict
-
-如果不想item的内容都被打印出来，可以重写__repr__
-e.g.
-def __repr__(self) :
-    attr = {想要打印的内容的dict}
-    return repr(attr)
-```
-
-## ItemLoader
-
-```
-方便地填充item
-from scrapy.loader import ItemLoader
-ItemLoader(item, selector, response)
-item	一个dict或item，用于填充内容
-selector	从selector提取数据
-response	从response产生一个selector. If selector argument is given, it will be ignored.
-
-方法
-add_xpath(field, xpath)
-add_css(field, css)
-add_value(filed, value)
-load_item()
-Input Processor	自己定义，名称为fieldName_in，default_input_processor
-Output Processor	自己定义，名称为fieldName_out，default_output_processor
-nested_xpath(xpath)	创建nested loader
-nested_css(css)	创建nested loader
-
-不常用方法
-get_collected_values(fieldName)
-get_output_value(fieldName)
-get_input_processor(fieldName)
-get_output_processor(fieldName)
-item()
-context()
-selector()
-```
-
-### 工作流程
-
-每次使用三个add方法之一，就向指定的field的Input Processor传相应的参数，Input Processor处理后的结果暂时存储在```ItemLoader```中的一个list；当使用load_item方法时，分别调用每个field的Output Processor，将处理后的结果存到Item中，返回该Item
-Input Processor 和Output Processor都应该接受一个iterator，返回值没有要求
-使用哪个Processor的优先级：```ItemLoader field-specific attributes > Field metadata > ItemLoader defaults```
-
-Loader Context
-一个叫做context，type为dict的属性，允许在任何时候任意地修改它
-当一个方法有参数loader_context时，会被自动传入
-
-Built-in processors
-
-```
-(in module scrapy.loader.processors)
-参数均是一个iterator
-Identity		什么都不做
-TakeFirst		返回第一个非空元素
-Join(seperator=u' ')	连接字符串
-Compose(*functions, **default_loader_context)
-		按顺序调用每个function（用第一个函数的返回值作为第二个函数的参数，以此类推）
-MapCompose(*functions, **default_loader_context)
-		对iterator中每个元素调用第一个function，产生新的iterator，再对新iterator中元素分别调用第二个iterator，以此类推
-```
-
-## ItemPipeline
-
-(item pipeline继承自Object类)
-必须有的方法
-
-```
-process_item(self, item, spider)	自动对每个pipeline component调用。返回1)dict, 2)item, 3)Twisted Deferred, 4)raise DropItem exception
-open_spider(self, spider)	当spider开始运行时调用
-close_spider(self, spider)	当spider关闭时调用
-from_crawler(cls, crawler)	If present, this classmethod is called to create a pipeline instance from a Crawler. It must return a new instance of the pipeline.
-
-Activating ItemPipeline component
-example:
-ITEM_PIPELINES = {
-    'myproject.pipelines.PricePipeline': 300,		#this value must be an int ranged from 0 to 1000
-    'myproject.pipelines.JsonWriterPipeline': 800,	#items go through from lower valued to higher valued classes
-}
-```
-
-## Feed Export
-
-（待补充）
 
 ## Request
 
+```python
+# 构造Request
+req = scrapy.http.Request(
+    url = 'example.com',
+    callback = MySpider.parse,
+    method = 'POST',
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0)'},
+    cookies = {'uuid': 'AH2oUVECM5VX7F7s0'},  # 也可以用List[dict]
+    body = b'[null, null, "zh-cn"]'
+)
 ```
-class scrapy.http.Request(url[, callback, method='GET', headers, body, cookies, meta, encoding='utf-8', priority=0, dont_filter=False, errback, flags])
 
-属性
-url	string, read only
-method	A string representing the HTTP method in the request (GET, POST, PUT, etc.)
-headers	dictionary-like
-body	string, read only
-meta	meta是一个dictionary, 可以通过response.meta访问，给callback函数传额外内容
-
-方法
-copy()
-replace([url, method, headers, body, cookies, meta, encoding, dont_filter, callback, errback])
-```
+Scrapy还提供了若干[Request子类](https://docs.scrapy.org/en/latest/topics/request-response.html#request-subclasses)，包括表单、JSON，用于POST请求
 
 ## Response
 
-```
-class scrapy.http.Response(url[, status=200, headers=None, body=b'', flags=None, request=None])
+```python
+# Response类的属性
+print(
+    response.url,     # 如：'http://www.example.com'
+    resposne.status,  # 如：200
+    response.headers, # 如：{b'server': [b'nginx'], b'Content-Type': [b'text/html;charset=UTF-8']}
+    response.body
+)
+# Response类的方法
+new_url = response.urljoin('robots.txt')  # 拼接绝对URL
+div = resposne.xpath('//div')             # XPath选择器。返回所有选中元素的SelectorList
+p = response.css('p::text')               # CSS选择器。返回所有选中元素的SelectorList
 
-属性
-url
-status	http状态码
-headers
-body
-request	The Request object that generated this response
-meta	=response.request.meta
-flags
+# SelectorList使用方法
+div.extract()       # 提取全部节点内容，返回List[str]
+div.re(r'id=\d*')   # 对全部节点做正则匹配，扁平化装进List[str]
 
-方法
-copy()
-replace([url, status, headers, body, request, flags, cls])
-urljoin(url)		接受相对地址，返回绝对地址。wrapper over urlparse.urljoin
- follow(url, callback=None, method='GET', headers=None, body=None, cookies=None, meta=None, encoding='utf-8', priority=0, dont_filter=False, errback=None)
-		接受相对地址，返回Request对象
-```
-
-## Logging in scrapy
-
-Spider有属性logger，能用它logging (e.g. self.logger.info('page 1 scraped'))
-
-# XPath
-
-使用路径表达式选取XML文档中的节点或节点集
-
-节点(Node)
-
-有七种类型的节点：元素、属性、文本、命名空间、处理指令、注释以及文档（根）节点
-
-基本值(Atomic value)
-无父或无子的节点
-
-节点关系
-Parent, Children, Sibling, Ancestor, Descendant
-
-路径表达式
-
-```
-/absolute_path  以/起始的路径表示绝对路径
-path/name       all children node called "name"
-path//name      all descendant node called "name"
-.               当前节点
-..              当前节点的父节点
-@               选取属性
-text()          该元素的文本内容
+# Selector使用方法
+p0 = p[0]
+p0.extract()      # 获取节点内容。HTML和XML文档会将百分号转义字符会被转换回普通字符，并返回str
+p0.re(r'id=\d*')  # 正则匹配搜索节点内容，返回List[str]
+p0.attrib         # 获取HTML attribute，返回dict
 ```
 
-谓语
-谓语用[]括起来，接在路径表达式中表示选取满足特定条件的节点
+## Link Extractor
 
-```
-数字         第i个子元素（从1开始）
-last()      最后一个，能进行运算，如last()-2
-position()  位置，以不等式来使用，如position()<3
-@attr       拥有attr属性的元素节点
-@attr="v"   attr属性的值为v的元素节点
-ele         元素的值满足某些要求，如price>35.00
-```
+从HTTP响应提取链接
 
-通配符
+```python
+from scrapy.linkextractors import LinkExtractor
 
-```
-*       任何元素节点
-@*      任何属性节点
-node()  任何节点
-|       放在两个路径表达式中间表示或
+extractor = LinkExtractor(
+    allow = r'menu*',              # 正则匹配，Union[str, List]
+    allow_domains = 'example.com',
+    deny_extensions = []           # 若不指定，默认为scrapy.linkextractors.IGNORED_EXTENSIONS
+    restrict_xpaths = '//div'      # 只提取这个XPath内的链接，Union[str, List]
+)
+
+links = extractor.extract_links(response)
 ```
 
-Xpath轴
+## Spider Middleware
 
-```
-定义相对于当前节点的节点集
-ancestor            所有先辈（父、祖父等）
-descendant          所有后代元素（子、孙等）
-ancestor-or-self    ancestor & 本身
-descendant-or-self  descendant & 本身
-parent              父节点
-child               子元素
-self                自身
-attribute           当前节点的所有属性
-preceding           当前节点的开始标签之前的所有节点
-following           当前节点的结束标签之后的所有节点
-namespace           当前节点的所有命名空间节点
-preceding-sibling   当前节点之前的所有同级节点
+Spider处理的所有数据（Request，Response，Item）都会先经过Spider Middleware，常用于过滤响应、处理异常
 
-轴名称::节点测试[谓语]
-例：child::*/child::price	当前节点的所有 price 孙节点
+https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+
+# 处理数据
+
+## Feed Export
+
+[Feed Export](https://docs.scrapy.org/en/latest/topics/feed-exports.html)直接将回调函数（一般是Spider的`parse`方法）返回的数据（`dict`或者`Item`对象）保存到一个文件
+
+```shell
+scrapy crawl my_spider -o "example.json"
 ```
+
+## Item Pipeline
+
+可以用[Item Pipeline](https://docs.scrapy.org/en/latest/topics/item-pipeline.html)处理抓到的数据，比如清理数据、存储数据。使用Item Pipeline需要以下代码
+
+```python
+# 定义Item类（一般放在items.py）。Item仅仅是一个数据容器
+class TutorialItem(scrapy.Item):
+    title = scrapy.Field()
+    body = scrapy.Field()
+
+# 回调函数将数据装进Item对象（一般在Spider类中）并返回
+def parse(self, response):
+    item = TutorialItem()
+    item['title'] = response.xpath('//title/text()').extract()
+    item['body'] = response.body
+    yield item
+
+# 另一种装Item的方式是利用ItemLoader（比上面的例子稍微方便了一丁点）
+def parse_loader(self, response):
+    loader = scrapy.loader.ItemLoader(TutorialItem(), response=response)
+    loader.add_xpath('title', '//title/text()')
+    loader.add_value('body', response.body)
+    yield loader.load_item()
+
+# 定义Item Pipeline（一般放在pipelines.py），回调函数返回的Item对象会自动交给它处理
+class Pipeline():
+    def process_item(self, item, spider):
+        with open(f'{item['title']}.html', 'wb') as fp:
+            fp.write(item['body'])
+        return item  # 必须返回item对象或raise DropItem
+```
+
+可以定义多个Item Pipeline，用流水线方式处理Item，根据`settings.py`配置的数字从小到大处理（数字取值为0~1000）
+
+```python
+ITEM_PIPELINES = {
+    "tutorial.pipelines.PreprocessPipeline": 100
+    "tutorial.pipelines.TutorialPipeline": 300,
+}
+```
+
+## 下载文件
+
+可以使用`scrapy.pipelines.file.FilesPipeline`和`scrapy.pipelines.images.ImagesPipeline`下载，向它们提供URL，就能用Scrapy的Downloader下载
+
+# 请求与响应
+
+## Scheduler
+
+https://docs.scrapy.org/en/latest/topics/scheduler.html
+
+## Downloader Middleware
+
+https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+
+# 其他
+
+[流量控制](https://docs.scrapy.org/en/latest/topics/autothrottle.html)

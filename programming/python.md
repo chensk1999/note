@@ -232,6 +232,24 @@ s3.clear()     # 清空集合
 | issubset             | 判断是否子集 |
 | issuperset           | 判断是否超集 |
 
+## 字节（bytes）
+
+```python
+# 定义字节
+bytes(3)   # 长度为3的空字节
+b'abc'
+
+# 其他对象转为字节
+'abc'.encode('utf-8')
+int.to_bytes(0x616263)
+bytes.fromhex('616263')
+
+# 字节转其他对象
+b'abc'.decode('ascii')
+int.from_bytes(b'abc')
+b'abc'.hex()
+```
+
 # 函数(function)
 
 ## 函数定义
@@ -358,7 +376,7 @@ x_times_fixed(2)   # 2*2 = 4
 
 
 
-## 装饰器(decorator)
+## 装饰器（decorator）
 
 ### 简单的装饰器
 
@@ -1693,74 +1711,6 @@ python -m zipfile -c spam.zip "eggs.txt" "process/"
 # 解压（Extract）
 python -m zipfile -e spam.zip "target-dir/"
 # 其他：测试（Test, -t）、列出内容（List, -l）
-```
-
-
-
-# 有用的第三方库
-
-## pydoc-markdown
-
-从docstring直接生成markdown文档
-
-```
-pydocmd simple modulename+ > doc.md
-```
-
-注意加号不可省略。生成多个模块的文档只需要同时给多个模块名字（用空格隔开）
-
-## sounddevice（录音和播放声音）
-
-```python
-import sounddevice as sd
-import numpy as np
-
-# 默认值设置
-fs = 44100
-sd.default.samplerate = fs  # 采样率(Hz)
-sd.default.channels = 1     # 声道
-duration = 5    # 持续时间(sec)
-
-# 录音
-myrecording = sd.rec(duration * fs, blocking=False)
-sd.wait()   # 等待到录音结束，或者用blocking = True
-# 录音得到一个np.ndarray，dtype = float，音量不知道怎么算的，振幅为1就已经挺大声了
-
-# 播放
-sd.play(myrecording, blocking=True)
-
-# Stream
-def func(indata, outdata, frames, time, status):
-    if status:
-        print(status)
-    outdata[:] = indata
-
-with sd.Stream(callback=func):
-    sd.sleep(duration*1000)
-
-# InputStream
-```
-
-回调函数详述
-
-sounddevice每隔一定时间会调用一次回调函数。如果没有回调函数，将会在阻塞模式（blocking mode）下运行，使用read write方法进行IO
-
-`callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, )`
-
-## openpyxl（操作excel表格）
-
-```python
-import openpyxl as xl
-
-# 打开表格
-wb = xl.load_workbook('example.xlsx')
-sheet = wb['Sheet1']
-
-# 读写表格内容
-i = sheet['A1'].value
-area = sheet['A1':'C2']
-area[1][1]  # B1 Cell
-sheet['A2'] = 2
 ```
 
 # 杂项

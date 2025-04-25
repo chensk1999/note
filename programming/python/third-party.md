@@ -66,3 +66,106 @@ if pbkdf2_sha256.verify("password", hash):  # 验证hash
 ## whisper - 语音识别
 
 NA
+
+## pydoc-markdown
+
+从docstring直接生成markdown文档
+
+```
+pydocmd simple modulename+ > doc.md
+```
+
+注意加号不可省略。生成多个模块的文档只需要同时给多个模块名字（用空格隔开）
+
+## sounddevice - 录音和播放声音
+
+```python
+import sounddevice as sd
+import numpy as np
+
+# 默认值设置
+fs = 44100
+sd.default.samplerate = fs  # 采样率(Hz)
+sd.default.channels = 1     # 声道
+duration = 5    # 持续时间(sec)
+
+# 录音
+myrecording = sd.rec(duration * fs, blocking=False)
+sd.wait()   # 等待到录音结束，或者用blocking = True
+# 录音得到一个np.ndarray，dtype = float，音量不知道怎么算的，振幅为1就已经挺大声了
+
+# 播放
+sd.play(myrecording, blocking=True)
+
+# Stream
+def func(indata, outdata, frames, time, status):
+    if status:
+        print(status)
+    outdata[:] = indata
+
+with sd.Stream(callback=func):
+    sd.sleep(duration*1000)
+
+# InputStream
+```
+
+回调函数详述
+
+sounddevice每隔一定时间会调用一次回调函数。如果没有回调函数，将会在阻塞模式（blocking mode）下运行，使用read write方法进行IO
+
+`callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, )`
+
+## openpyxl - 操作excel表格
+
+```python
+import openpyxl as xl
+
+# 打开表格
+wb = xl.load_workbook('example.xlsx')
+sheet = wb['Sheet1']
+
+# 读写表格内容
+i = sheet['A1'].value
+area = sheet['A1':'C2']
+area[1][1]  # B1 Cell
+sheet['A2'] = 2
+```
+
+## requests - 网络请求
+
+```python
+import requests
+
+# GET请求
+get_response = requests.get(
+    'example.com',
+    params={'page', '1'},                     # GET参数
+    headers={'User-Agent': 'Mozilla/5.0'}     # 请求头
+    cookies={'SESSIONID':'8A25432CEC745A1C'}  # Cookie
+)
+
+# POST请求
+post_response = requests.post(
+    'example.com',
+    headers={'Referer':'example.com/login'},  # 请求头
+    cookies={'SESSIONID':'8A25432CEC745A1C'}, # Cookie
+    data={'user':'admin', 'action':'logout'}  # 请求体
+)
+
+# 响应
+r = get_response
+r.status_code   # 状态码 
+r.headers       # 响应头, dict
+r.text          # 文本格式的响应体
+r.content       # 二进制格式的响应体
+r.json()        # 用json解码的响应体
+```
+
+
+
+```python
+# 使用代理
+cert = '../cert/burp-ca.crt'
+proxy = {'http':'127.0.0.1:8080', 'https':'127.0.0.1:8080'}
+requests.get('example.com', proxies=proxy, verify=cert)
+```

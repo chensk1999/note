@@ -1,0 +1,260 @@
+参考：[Linux 101](https://101.lug.ustc.edu.cn/)
+
+# Linux简介
+
+## 起源
+
+**省流**：Linux是Unix的精神续作，Linux内核+组件（组件有很多人在做，没有统一版本）构成Linux发行版。市面上有五花八门的Linux发行版，Ubuntu、CentOS、ArchLinux都是Linux发行版
+
+1969年，美国AT&T公司的贝尔实验室开发了UNIX操作系统，并在此后的 10 年里在学术机构和大型企业中得到了广泛的应用。在这段时间，许多计算机从业者开发了很多基于UNIX的变种，统称为“类UNIX操作系统”。然而后来AT&T公司决定改变商业策略，将代码闭源，并声明拥有类UNIX操作系统的著作权
+
+1983年9月27日，理查德·斯托曼（Richard Stallman）在麻省理工学院发起了GNU计划，它的目标是创建一套类似UNIX但完全自由的操作系统。数年后，林纳斯·托瓦兹（Linus Torvalds）在他的大学时期编写并发布了自己的操作系统，也就是后来所谓的 “Linux内核”
+
+Linux内核过于精简，并不是一个完整的操作系统。许多自由软件社区的开发人员和一些计算机商业公司便开始把各种组件添加到这个内核之上，这才构建成了一个完整的Linux操作系统。开源社区的诸多成员以及许多商业公司的去中心化的贡献，让Linux充满了多样性。基于Linux内核构造出来的操作系统，我们通常都将其称之为“Linux发行版”
+
+**补充（现代操作系统的功能）**：进程管理、内存管理、文件系统、网络通信、安全机制、用户界面、驱动程序
+
+## 用户界面
+
+用户操作计算机时，必须有一个“中介”将用户的鼠标动作、键盘输入“翻译”为对操作系统的指令，这一工具称作用户界面（User Interface），也叫做Shell，与操作系统内核（Kernel）相对。最早的Shell是通过键盘输入指令的**命令行界面**（Command-Line Interface，CLI），狭义的Shell专指命令行界面；后来又出现了以鼠标操作为主的**图形用户界面**（Graphical Shell，又称Graphical User Interface，GUI）
+
+图形界面的学习成本低，因此占据了主流。但是，命令行可以使用自动化脚本执行重复的任务、许多系统维护任务用命令行更方便，甚至只能用命令行完成、许多服务器为了节省资源不会安装图形界面
+
+Linux最常见的Shell是Bash，也有的发行版会使用zsh等Shell，可以用`echo $SHELL`查看当前Shell，`cat /etc/shells`查看已安装的Shell（绝大部分Shell语法相同，一般不必在意正在使用哪个Shell）。通常通过在终端（Terminal）中输入指令来操作Shell
+
+各章节都会解释相关Bash指令，Bash语法一节将详细解释Bash语法以及脚本编写
+
+# 文件、用户和权限
+
+## 文件系统
+
+Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（mount）在树上；计算机设备也抽象为文件的形式挂在树上。大部分发行版的文件结构遵循文件系统层次结构标准（FHS, Filesystem Hierarchy Standard）
+
+- `/dev`：设备文件，即被抽象为文件的计算机设备
+- `/etc`：系统配置文件
+- `/home`：用户文件
+- `/opt`：额外程序
+- `/srv`：网络服务
+- `/usr`：软件安装位置
+  - 其下目结构录与`/`相似，如`/usr/bin`和`/bin`作用类似
+  - `/usr/share`存放程序的数据文件
+
+## 用户与用户组
+
+- 超级用户：用户名为root，ID为0。大部分Linux发行版禁止使用root登录。拥有所有文件的权限，可管理所有进程
+- 普通用户：用户ID为500以上 / 1000以上，取决于版本。home目录是`/home/username`（每个普通用户拥有自己home目录的文件权限。登录后可以用`~`指代自己的home目录），只能操作自己启动的进程。可以通过`sudo`指令临时获得root权限
+- 系统用户：ID为1~499 / 100~999，不能登录，一般由系统服务使用。此类用户文件、指令操作权限都有严格限制，旨在防止服务受攻后获取过高权限
+
+此外，Linux还用用户组管理权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
+
+```bash
+whoami           # 查看当前用户名
+groups           # 查看当前用户组
+cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
+```
+
+## 文件权限
+
+在 Linux 中，每个文件和目录都有自己的权限。可以使用 `ls -l` 查看当前目录中文件的详细信息
+
+```bash
+$ ls -l
+total 8
+-rwxrw-r-- 1 root root   40 Feb  3 22:37 a_file
+drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
+```
+
+第一列的字符串从左到右意义分别是
+
+- 第一位：文件类型，`-`为文件，`d`为目录，`l`为符号链接
+- 第二~四位：文件所属用户的权限
+  - 第二位：`r`表示读权限，`-`表示没有
+  - 第三位：`w`表示写权限，`-`表示没有
+  - 第四位：`x`表示有执行权限，`-`表示没有。对于文件，拥有执行权限就可以作为程序代码执行；而对于目录来说，拥有执行权限就可以访问这个目录下的文件的内容
+  - 特别地，第四位为`s`表示SUID权限，其他用户执行此文件时会暂时获得文件所属用户的权限，比如更改密码的程序`/usr/bin/passwd`由root用户所属，普通用户运行此程序时可以暂时获得root权限，修改密码文件`/etc/shadow`，但用正常方法就无法篡改`/etc/shadow`
+- 第五~七位：文件所属用户组的权限
+- 第八~十位：其他人的权限
+
+第三、四列为文件所属用户和用户组。可以使用 `chmod` (**ch**ange file **mod**e bits) 修改权限，`chown` (**ch**ange file **own**er) 修改文件所有者
+
+## 文件操作指令
+
+```bash
+cat file.txt    # 显示文件内容
+less file.txt   # 分页显示，操作类似vim
+```
+
+其他常用命令：`cp`复制，`mv`移动，`rm`删除，`mkdir`创建目录，`touch`创建文件
+
+`find`指令可用于搜索文件，它的语法是`find [路径] [搜索条件]`。完整文档可参考[Linux Manual](https://man7.org/linux/man-pages/man1/find.1.html)，下面列出常用参数
+
+```bash
+find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
+find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
+find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
+
+# 特殊用途
+# -perm -u=s筛选出有SUID权限的文件，2>/dev/null消除错误信息（详见Bash语法中重定向一节）
+# 此命令筛选出执行时能暂时获得root权限的程序，可用于黑客攻击
+find / -perm -u=s -type f -ls 2>/dev/null
+```
+
+# Bash语法
+
+## 重定向与管道
+
+Bash通常从终端接受输入，并将输出打印到终端，而重定向运算符将输入和输出的位置更改到其他文件。需要注意的是，Linux的设计思想是将设备视作文件，终端就是这么被Bash当作若干个文件来读写的；重定向除了可以把输出写入文件，还可以传给其他应用、通过网络发送、直接丢弃，等等
+
+```bash
+grep "txt" < file1.txt > file2.txt  # 将file1.txt作为grep指令的输入，匹配后输出到file2.txt
+```
+
+### 重定向
+
+[GNU文档](https://www.gnu.org/software/bash/manual/html_node/Redirections.html)
+
+重定向其实是对文件描述符（File Descriptor）的操作。文件描述符是进程为文件分配的编号，效果类似于文件指针。`stdin`的描述符是0、`stdout`为1、`stderr`为2；3~9一般由用户定义。需要注意，不同描述符可以指向同一文件；不同进程的同一描述符可以指向不同文件
+
+**输入重定向**：`n< file`，将文件内容写入n号描述符
+
+```bash
+grep "txt" < file.txt   # 省略n时默认重定向到0，即stdin
+```
+
+**输出重定向**：`n> file`，本来要写入n号描述符的内容改为写入文件
+
+```bash
+ls >  file       # 省略n时取n=1，即stdout。将stdout写入文件
+ls 2> /dev/null  # 将stderr重定向到/dev/null（即丢弃掉）
+ls &> file       # 将stdout和stderr都重定向到file。另一种写法是>file 2>&1
+ls  >> file      # >>表示向文件末尾添加（>则会覆盖文件）
+```
+
+**复制文件描述符**：`n>&m`，本来写入n号描述符的改为写入m号描述符
+
+```bash
+ls 1>filelist 2>&1
+ls 2>&1 1>filelist
+```
+
+注意，顺序很重要。可以把重定向当作赋值形象理解：前一种情况，`$1 = filelist; $2 = $1;`，结果是`$1`和`$2`都被改为`filelist`文件，全部内容写入文件；后一种，`$2 = $1; $1 = filelist;`，结果是错误信息写入stdout，输出写入文件
+
+**打开与关闭文件**
+
+```bash
+3<>tmp.txt  # 打开tmp.txt，文件标识符为3
+<&3-        # 关闭3号文件标识符
+```
+
+
+
+重定向时经常使用一些特殊文件：
+
+| 路径        | 说明                   |
+| ----------- | ---------------------- |
+| `/dev/null` | 空文件，常用于丢弃输出 |
+
+### 管道
+
+管道符`|`将前一个命令的输出作为文件传给第二个命令
+
+```bash
+ls -l | grep ^d  # 将ls列出的文件信息传给grep筛选。此命令的效果是筛选出当前目录的全部文件夹
+```
+
+
+
+## 变量
+
+bash变量没有类别，一切都是字符串
+
+### 自定义变量
+
+变量基本使用
+
+```bash
+a=1       # 定义变量。注意不能加空格
+b="str b" # 如果变量值有空格，需要用双引号括起来
+c="price is \$100"  # "$"等特殊符号需要反斜杠转义
+
+echo $a           # 访问变量。在变量名前面加上$
+echo "a = $a"     # 字符串中的变量也会自动格式化为变量的值
+echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
+```
+
+数组和关联数组
+
+```bash
+# 数组
+arr=(1 2 3)
+echo ${arr[0]}   # 数组索引
+echo ${arr[@]}   # 数组所有元素
+echo ${#arr[@]}  # 数组长度
+arr+=(4)  # 添加元素
+
+# 关联数组
+declare -A dict
+dict[apple]=red
+dict[banana]=yellow
+# 遍历字典
+for key in "${!my_dict[@]}"; do
+  echo "$key -> ${my_dict[$key]}"
+done
+```
+
+变量默认值
+
+```bash
+echo ${var:-0}    # 若变量不存在，输出默认值（此例子中为0）
+echo ${var:=0}    # 若变量不存在，输出默认值，并将变量设为默认值
+echo ${var:?undefined}    # 若变量不存在，报错
+```
+
+### 环境变量
+
+每个用户登录系统后，Linux 都会为其建立一个默认的工作环境，将许多系统配置、应用配置存储在环境变量内。用户可以通过修改这些环境变量，来定制自己工作环境（但一般在脚本中定义，很少需要在shell中更改）
+
+```shell
+env       # 打印所有环境变量
+set       # 打印所有环境变量、用户定义的变量
+export PATH=$PATH:/home/username/mysql/bin  # 环境变量赋值
+```
+
+环境变量一般在下列文件中定义（列出若干常见的，具体用哪个取决于系统版本）。打开shell时自动运行这些文件，因此在其中加入`export ENV_VAR=VALUE`这样的代码，就会在每次打开shell时载入环境变量。系统环境变量的文件也可能是用户登录时运行
+
+1. 系统环境变量：`/etc/environment`，`/etc/profile`，`/etc/bash.bashrc`
+2. 用户环境变量：`~/.profile`，`~/.bashrc`
+
+### 特殊变量
+
+- 上一个命令：退出码`$?`；最后一个参数`$_`
+- 当前shell：进程ID`$$`；名称`$0`；启动参数`$-`
+- 后台异步命令的进程ID：`$!`
+- 脚本参数数量`$@`；脚本参数值`$#`
+
+## 控制流
+
+```bash
+# 遍历当前目录所有文件
+for f in *; do
+  echo "File -> $f"
+done
+
+# 正则表达式替换
+# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
+a='Hello, world'
+f='example.png'
+echo "${a/o/O}"       # 匹配第一个，得到HellO, world
+echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
+echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
+```
+
+# 其他指令
+
+[Explain Shell](https://www.explainshell.com/)解释指令的作用
+
+## openssl
+
+```bash
+```
+
