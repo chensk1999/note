@@ -34,6 +34,22 @@ default = true
 
 3. 用`--index`或`--default-index`参数临时指定镜像
 
+**依赖**
+
+在文件开头加上以下内容：
+
+```python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#   "requests<3",
+#   "rich",
+# ]
+# ///
+```
+
+使用`uv run script.py`时就会自动安装依赖（应该是在安装路径创建一个虚拟环境，把依赖装到那里了）
+
 **Project**
 
 uv一般使用Project来管理python运行环境。创建项目时，会创建`pyproject.toml, .python-version, uv.lock`等配置文件，还有对应的虚拟环境（默认为`.venv`）。安装或删除第三方库时，会将操作记录在配置文件中，并修改虚拟环境
@@ -47,9 +63,27 @@ uv add requests       # 在项目虚拟环境中安装模块(所有操作都在�
 uv run python         # 运行python
 ```
 
-uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目。也可以用`--project 目录`参数指定项目。`uv run`会用真实环境（而非虚拟环境）运行；`uv add`则无法安装模块（理论上来说，可以用`uv pip`指令安装模块到真实环境，不过都用上uv了就别画蛇添足）
+uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目。也可以用`--project 目录`指定Project
 
 # 第三方库
+
+
+
+## openpyxl - 操作excel表格
+
+```python
+import openpyxl as xl
+
+# 打开表格
+wb = xl.load_workbook('example.xlsx')
+sheet = wb['Sheet1']
+
+# 读写表格内容
+i = sheet['A1'].value
+area = sheet['A1':'C2']
+area[1][1]  # B1 Cell
+sheet['A2'] = 2
+```
 
 ## passlib - 密码散列
 
@@ -63,11 +97,7 @@ if pbkdf2_sha256.verify("password", hash):  # 验证hash
     print('success')
 ```
 
-## whisper - 语音识别
-
-NA
-
-## pydoc-markdown
+## pydoc-markdown - 生成文档
 
 从docstring直接生成markdown文档
 
@@ -76,6 +106,94 @@ pydocmd simple modulename+ > doc.md
 ```
 
 注意加号不可省略。生成多个模块的文档只需要同时给多个模块名字（用空格隔开）
+
+## PyQt - 图形界面
+
+```python
+import sys
+from PyQt5 import QtWidgets, QtGui
+
+class PromptText(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        # 设置提示框
+        QtWidgets.QToolTip.setFont(QtGui.QFont('SansSerif', 10))  # 设置提示框的字体
+        self.setToolTip('This is a <b>QWidget</b> widget')
+        self.setGeometry(300, 100, 600, 600)
+        self.setWindowIcon(QtGui.QIcon(t1.jpg))
+        self.setWindowTitle('Tooltips')
+
+        # 创建一个按钮并且设置其格式
+        self.btn = QtWidgets.QPushButton('Button', self)
+        self.btn.setToolTip('This is a <b>QPushButton</b> widget')  # 设置按钮提示框
+        self.btn.resize(100, 50)
+        self.btn.move(250, 500)
+        
+        # 绑定按钮的slot (Qt的signal触发slot)
+        self.btn.clicked.connect(self.func)
+        
+    def func(self):
+        # called when btn is clicked
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    pt = PromptText()
+    pt.show()
+    sys.exit(app.exec_())
+```
+
+## requests - 网络请求
+
+https://requests.readthedocs.io/en/latest/user/advanced/
+
+```python
+import requests
+
+# 简单请求
+response = requests.get(
+    'example.com',
+    params={'page', '1'},                     # GET参数
+    headers={'User-Agent': 'Mozilla/5.0'}     # 请求头
+    cookies={'SESSIONID':'8A25432CEC745A1C'}  # Cookie
+)
+
+# 响应
+r = get_response
+r.status_code   # 状态码 
+r.headers       # 响应头, dict
+r.text          # 文本格式的响应体
+r.content       # 二进制格式的响应体
+r.json()        # 用json解码的响应体
+```
+
+复杂的请求可以用Session对象处理。它可以重复使用header等配置，还能自动管理Cookie。调用`session.get`和`session.post`传递的参数在**本次请求**中，**附加**到Session参数——到下一次请求这些参数就失效，而且Session的其他属性还是会放进请求（也可以用如`sess.get('example.com', header=None)`的方式覆盖Session属性）
+
+```python
+with requests.Session() as s:
+    domain = 'example.com'
+    sess.headers.update({'User-Agent': 'Mozilla/5.0'})   # 请求头
+    sess.cookies.set('_SESSID', '1CvdAc0VkE13nc')        # Cookie
+    sess.proxies = {'http': '192.168.0.1:8080'}          # Proxy
+    cert = '../cert/burp-ca.crt'                         # CA证书
+    try:
+        # GET请求，并用BeautifulSoup分析响应
+        response = sess.get(f'{domain}/thread', params={'file': 'a.png'})
+        soup = BeautifulSoup(response.text, 'html.parser')
+        token = soup.find('input', {'name': '_token'})['value']
+        # POST请求
+        sess.post(f'{domain}/thread', header={'X-TOKEN': token}, data={'text':'example'})
+    except Exception as e:
+        print(str(traceback.format_exc()))
+```
+
+更复杂的请求可以用Session和Request对象一起处理
+
+```python
+req = Request('GET', 'example.com')
+sess = Session()
+sess.send(req.prepare())
+```
 
 ## sounddevice - 录音和播放声音
 
@@ -105,67 +223,19 @@ def func(indata, outdata, frames, time, status):
 
 with sd.Stream(callback=func):
     sd.sleep(duration*1000)
-
-# InputStream
 ```
 
-回调函数详述
+回调函数参数：`callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, status)`
 
 sounddevice每隔一定时间会调用一次回调函数。如果没有回调函数，将会在阻塞模式（blocking mode）下运行，使用read write方法进行IO
 
-`callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, )`
+## whisper - 语音识别
 
-## openpyxl - 操作excel表格
+https://github.com/openai/whisper
 
-```python
-import openpyxl as xl
-
-# 打开表格
-wb = xl.load_workbook('example.xlsx')
-sheet = wb['Sheet1']
-
-# 读写表格内容
-i = sheet['A1'].value
-area = sheet['A1':'C2']
-area[1][1]  # B1 Cell
-sheet['A2'] = 2
-```
-
-## requests - 网络请求
-
-```python
-import requests
-
-# GET请求
-get_response = requests.get(
-    'example.com',
-    params={'page', '1'},                     # GET参数
-    headers={'User-Agent': 'Mozilla/5.0'}     # 请求头
-    cookies={'SESSIONID':'8A25432CEC745A1C'}  # Cookie
-)
-
-# POST请求
-post_response = requests.post(
-    'example.com',
-    headers={'Referer':'example.com/login'},  # 请求头
-    cookies={'SESSIONID':'8A25432CEC745A1C'}, # Cookie
-    data={'user':'admin', 'action':'logout'}  # 请求体
-)
-
-# 响应
-r = get_response
-r.status_code   # 状态码 
-r.headers       # 响应头, dict
-r.text          # 文本格式的响应体
-r.content       # 二进制格式的响应体
-r.json()        # 用json解码的响应体
+```shell
+whisper --help
 ```
 
 
 
-```python
-# 使用代理
-cert = '../cert/burp-ca.crt'
-proxy = {'http':'127.0.0.1:8080', 'https':'127.0.0.1:8080'}
-requests.get('example.com', proxies=proxy, verify=cert)
-```

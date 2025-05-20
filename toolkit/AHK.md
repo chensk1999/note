@@ -14,7 +14,7 @@
 GLOB_VAR := 0
 
 lbl:
-    MsgBox, 这是自动执行段
+    MsgBox, 这是子程序
     return
 
 function(param, ByRef ref_param, optional:="") ; 普通参数、引用传参、默认参数
@@ -210,17 +210,17 @@ $A::
 ~b:: send, Do something without blocking keystroke
 ```
 
-| 符号 | 按键  | 备注                                                         |
-| ---- | ----- | ------------------------------------------------------------ |
-| #    | Win   | 如果发送的按键中包含L，等到Win键松开才会发送，以防止锁定电脑 |
-| !    | Alt   |                                                              |
-| ^    | Ctrl  |                                                              |
-| +    | Shift |                                                              |
-| &    |       | 两个按钮                                                     |
-| <, > |       | 成对按键左边/右边的一个，如`<+`表示左shift                   |
-| *    |       | 任意Modifier，如`*a`可以被Ctrl + a，Shift + a等组合触发      |
-| ~    |       | 不会阻挡原本的键盘事件                                       |
-| $    |       | 强制使用keybord hook，不会被send指令触发                     |
+| 符号   | 按键  | 备注                                                         |
+| ------ | ----- | ------------------------------------------------------------ |
+| `#`    | Win   | 如果发送的按键中包含L，等到Win键松开才会发送，以防止锁定电脑 |
+| `!`    | Alt   |                                                              |
+| `^`    | Ctrl  |                                                              |
+| `+`    | Shift |                                                              |
+| `&`    |       | 两个按钮                                                     |
+| `<, >` |       | 成对按键左边/右边的一个，如`<+`表示左shift                   |
+| `*`    |       | 任意Modifier，如`*a`可以被Ctrl + a，Shift + a等组合触发      |
+| `~`    |       | 不会阻挡原本的键盘事件                                       |
+| `$`    |       | 强制使用keybord hook，不会被send指令触发                     |
 
 ## Key Names（特殊按键）
 
@@ -295,8 +295,6 @@ RelativeTo：TargetType 要关联的区域。如果省略, 则默认为 Screen
 只再特定窗口作用的指令
 注：后一个不带窗口名称的#ifWinActive/ifWinExist是标志了contest sensitivity的结束
 ```
-
-
 
 # 其他指令
 

@@ -1520,19 +1520,14 @@ pattern = r'abc(\d{3})(\s)'     # 括号括起来部分称为group
 string = 'abc123 def, abc456 ghi'
 
 # 匹配字符串
-match = re.match(pattern, string)         # 从头开始匹配
-f_match = re.fullmatch(pattern, string)   # 全字符串匹配
-search = re.search(pattern, string)       # 搜索第一个结果
-findall = re.findall(pattern, string)     # 搜索全部非重叠结果，返回为一个list
-finditer = re.finditer(pattern, string)   # 同findall，但返回迭代器
+match = re.search(pattern, string)   # 搜索第一个结果，返回Match对象
+re.findall(pattern, string)          # 搜索全部非重叠结果，返回list[str]
 
 # 处理匹配结果
 # group
 match.group()        # 整个匹配字符串。此处是'abc123 '
-match.group(0)       # 同上
+match.group(0)       # 同上。也可用match[0]访问
 match.group(1)       # 第一组，此处为'123'
-match.group([1, 2])  # 第一、第二组的tuple，此处为('123', ' ')
-match[0]             # 下标访问，和match.group[i]效果相同
 # 其他
 match.groups()       # 返回所有组的tuple
 match.groupdict()    # 返回{组名:内容}，组命名方式是'(?P<name>\d)'
@@ -1577,7 +1572,7 @@ result = subprocess.run(cmd, capture_output=True, shell=True)
 print(result.stdout.decode('utf-8'))
 ```
 
-更进阶的用法可以参照[`Popen`](https://docs.python.org/zh-cn/3.13/library/subprocess.html#subprocess.Popen)接口
+完整用法可以参照[`Popen`](https://docs.python.org/zh-cn/3.13/library/subprocess.html#subprocess.Popen)接口
 
 ## turtle（海龟画图）
 

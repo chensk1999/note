@@ -406,44 +406,24 @@ JavaScript是弱类型的动态语言。动态指变量不与某个类型绑定�
 JS有7种基本类型 + 1种引用类型，引用类型又可以细分为许多种子类型：
 
 ```javascript
-// 基本类型
-let x;      // Undefined
-x = null;   // Null
-x = 1.5;    // Number
-x = 'Joe';  // String，单引号或者双引号均可
-x = true;   // Boolean
-x = BigInt("1234567890");   // BigInt
-const sym = Symbol("foo");  // Symbol
+// 定义变量。let声明局部变量，const声明常量（列表、对象建议用const定义）
+let x = 'name';
+const arr = ['a', 'b', 'c'];
+const obj = {name: 'Joe', sex: 'Male'};  // 注意：这是对象，不是字典
 
-// 引用类型
-const arr = [1, 2, 3];  // 数组
-const obj = {name:"John", age:14};  // 对象
-const dat = new Date();
-
-// 获取类型。注意typeof是个特殊运算符，不是函数
+// 获取变量类型。注意typeof是个特殊运算符，不是函数
 typeof arr;
 
 // 显式类型转换
 x = Number("3.2");   // 转化为数字
 x = parseInt(x);     // 转化为整数
-x = String("x");     // 字符串
+x = String("x");     // 转化为字符串
 ```
 
-**声明变量**
-
-声明变量有若干种方式。建议普通变量用`let`声明，常量和引用类型变量（列表、对象等）用`const`声明
-
-```javascript
-let b;  // let声明，作用域为当前block
-var c;  // var声明，作用域延伸到当前block之外
-const d = 0;  // const声明，不允许再次赋值
-```
-
-**字符串**
+#### 字符串
 
 ```javascript
 let text = 'some string';
-text.replace('pattern', 'repl')
 
 // 常用属性和方法
 text.length;       // 字符串长度
@@ -451,13 +431,12 @@ text.slice(0, 2);  // 截取片段。此例子返回前两个字符。可以用�
 text.charAt(0);    // 获取指定位置字符。也可以用str[0]
 text.trim();       // 去除头尾空白
 text.split(' ');   // 分割
+text.replace('pattern', 'repl');
 
-// 正则表达式
-// 格式：/表达式内容/[修饰]；常用修饰：i不区分大小写，g全局匹配，m多行匹配
+// 正则表达式。常用修饰：i不区分大小写，g全局匹配，m多行匹配
 let pattern = /regexp/gi;
 text.includes(pattern);  // 返回是否匹配到（布尔值）
 text.match(pattern);     // 返回包含了每个匹配的列表
-text.search(pattern);    // 返回匹配子串起始位置
 text.replace(/some/g, 'random');  // 替换
 
 // Template Literal 格式化字符串。使用反引号
@@ -466,49 +445,27 @@ let lastName = "Doe";
 let text = `Welcome ${firstName}, ${lastName}!`;
 ```
 
-**列表**
+#### 列表
 
 ```javascript
-// 定义与访问
-const cars = ["Saab", "Volvo", "BMW"];
-console.log(cars[0]);
-cars[100] = "Opel";  // 超出范围不会报错，但是3~99全部变成undefined
+const fruits = ["Banana", "Orange", "Apple", "Mango"];
 
 // 常用方法
-const fruits = ["Banana", "Orange", "Apple", "Mango"];
 fruits.pop();             // 弹出末尾元素
 fruits.push("Kiwi");      // 在末尾添加元素
 fruits.shift();           // 弹出首个元素
 fruits.unshift("Lemon");  // 在开头插入元素
 fruits.slice(0, 3);       // 截取第0~第3个元素
-fruits.splice(2, 0, "Lemon", "Kiwi");  // 在2号位置插入Lemon和Kiwi，然后删除0个元素
-fruits.concat(["Lemon", "Kiwi"]);      // 拼接列表
-fruits.sort(function(a, b){return a-b});
 fruits.indexOf("Apple");  // 寻找元素位置
+fruits.concat(["Lemon", "Kiwi"]);           // 拼接列表
+fruits.sort(function(a, b){return a-b});    // 排序
 
-// 使用高阶函数的方法。约定接受三个参数：func(value, index, array)
+// 高阶函数。约定func接受三个参数：func(value, index, array)
 fruits.map(func);     // 将func作用于每个元素，返回其返回值构成的列表
+fruits.forEach(func); // 和map一样，只不过没有返回值
 fruits.filter(func);  // 用func检查每个元素，返回通过检查（返回值为真）的元素构成的列表
 fruits.every(func);   // all(fruits.map(func))
 fruits.some(func);    // any(fruits.map(func))
-```
-
-**对象**
-
-```javascript
-// 定义对象
-const car = {
-    type:"Fiat",
-    model:"500",
-    color:"white",
-    create_description: function() {
-        return this.type + " " + this.model;
-    }
-};
-
-// 访问对象
-console.log(car.type);
-car["model"] = 404;
 ```
 
 ### 运算符
@@ -522,54 +479,29 @@ a !== b;   // 不绝对等于，值或类型不相等
 
 ### 控制流
 
+基本和C语言相同。下面列出不同点
+
 ```javascript
-// if分支
-if (time < 10) {
-    console.log("Good morning");
-} else if (time < 20) {
-    console.log("Good day");
-} else {
-    console.log("Good evening");
-}
-
-// switch分支
-// switch ... case ... default，同C
-
-// for循环
-const fruits = ["Banana", "Orange", "Apple", "Mango"];
-let text = "<ul>";
-for (let i=0; i<fruits.length; i++) {
-    text += "<li>" + fruits[i] + "</li>";
-}
-text += "</ul>";
-
 // for in循环
 const person = {fname:"John", lname:"Doe", age:25};
-for (let p in person) {
-  console.log(p + " " + person[p]);
+for (let key in person) {
+  console.log(key + " " + person[key]);
 }
 
-// while循环，do/while循环
-// 略
-
-// break和continue：跳出循环、跳过本次迭代
-// 还可以给代码块加标签，跳出指定的代码块
+// 可以给代码块加标签，，用break或continue跳出指定的代码块
 var x = false;
 label:
 {
-    // do something
     if (x) break label;
-    // do some other things
 }
 
 // 错误处理
-try {/*do something*/}
-catch(err) {/*发生错误之后执行这段*/}
-finally {/*不论有没有捕捉到错误都会运行*/}
-
-//抛出异常
-let exception = "Runtime Error";
-throw exception;  // 异常可以是字符串、数字、逻辑值或对象
+try {
+    obj = JSON.parse(json_str)
+} catch(err) {
+    if (err instanceof SyntaxError) console.log('JSON Syntax Error');
+    else throw err;  // 抛出的可以是字符串，对象，甚至别的什么东西
+}
 ```
 
 ### 函数
@@ -582,12 +514,81 @@ function func(a, b) {
     return a * b;
 }
 
-// 调用函数
-let x = func(3, 4);
-console.log(x);
-
-// Arrow Function (lambda表达式)
+// 匿名函数，Arrow Function
 (a, b) => a + b;
+const f = (a, b) {
+    return a + b;
+}
+```
+
+### 类与对象
+
+```javascript
+class TaskManager {
+  constructor(name) {    // 构造函数
+    this.name = name;
+    this.tasks = [];
+  }
+
+  addTask(taskName) {    // 方法
+    this.tasks.push(taskName);
+  }
+
+  static maxTasks() {   // 静态方法
+    return 100;
+  }
+
+  set name(newName) {   // Setter
+    if (newName.length < 3) {
+      throw new Error('名称至少需要3个字符');
+    }
+    this.name = newName;
+  }
+}
+
+// 使用类构造对象
+const manager = new TaskManager('我的任务');
+
+// 直接定义对象
+const car = {
+    type:"Fiat",
+    model:"500",
+    create_description: function() {
+        this.description = this.type + " " + this.model;
+    }
+};
+
+// 访问对象
+manager.addTask('学习JavaScript');
+manager['name'];
+car.create_description();
+```
+
+#### `this`关键字
+
+`this`关键字的值取决于上下文：
+
+- 函数被HTML事件监听器调用时，函数中的`this`是引发事件的网页元素
+- 函数被对象调用时，比如前文的`car.create_description`，`this`指对象本身
+- 其他时候，取决于运行环境
+
+```javascript
+const obj = {
+    name: 'example',
+    method: function() {
+        // 函数中，嵌套定义函数会“隔离”上下文，匿名函数则不会
+        function f1() { console.log(this.name); }
+        const f2 = () => console.log(this.name);
+        
+        f1();  // 嵌套函数隔开了上下文，this是不是obj，打印undefined
+        f2();  // 匿名函数没有隔开上下文，this == obj，打印'example'
+    },
+    on_event: function (e) => {console.log(this.name);}
+}
+
+// 事件监听器中，可用函数（匿名与否都可以）隔离上下文
+document.body.addEventListener('mouseover', obj.on_event);        // this接收事件的网页元素
+document.body.addEventListener('mouseout', (e)=>obj.on_event(e)); // this是obj
 ```
 
 ## 调用
@@ -650,6 +651,8 @@ btn.removeEventListener('click', bgChange);
 // 查看绑定的所有函数
 getEventListeners(btn)
 ```
+
+
 
 **常用HTML事件**
 
@@ -791,7 +794,7 @@ $("button").click(function(){
 
 百分号编码，如空格的UTF-8编码为`0x20`，转义为`%20`；“我”的UTF-8编码为`0xe68891`，转义为`%e6%88%91`。常用以下两个javascript函数
 
-- `encodeURI`：转义其他特殊字符，常用于转义完整**URL**
+- `encodeURI`：保留分界符，转义其他特殊字符，常用于**转义完整URL**
 - `encodeURIComponent`：转义分界符和其他特殊字符，常用于**转义GET参数**，如
 
 ```javascript
@@ -800,12 +803,47 @@ let uri = 'example.com?file=' + encodeURIComponent('/asset/example.txt')
 
 ### 非标准转义方法
 
-**`application/x-www-form-urlencoded`类型**：由于历史原因，部分表单使用一种非常相似的编码方案，使用这种方案时会在请求头加上`Content-Type: application/x-www-form-urlencoded`。此方案它将空格转义为`+`，其他和百分号编码相同
+**`application/x-www-form-urlencoded`类型**：由于历史原因，HTML表单使用一种非常相似的编码方案，使用这种方案时会在请求头加上`Content-Type: application/x-www-form-urlencoded`。此方案它将空格转义为`+`，其他和百分号编码相同
 
 **escape**：用`%uxxxx`表示，其中`xxxx`是四位16进制数，表示字符的Unicode码位值
 
 ## HTML
 
-HTML使用实体引用（Character Entity Reference）转义，格式是`&entity_name;`，常用实体引用有`&lt; &gt; &quot; &amp`，分别是`<>"&`。未转义时，它们视作HTML标签的一部分，转义后视作普通文本。其他字符也可以转义，如`&apos;`是单引号，`&#25105;`是“我”
+**字符实体引用**（Character Entity Reference）是HTML的转义序列，常用实体有`&lt; &gt; &quot; &amp`，分别表示小于号、大于号、双引号、`&`。原本字符是HTML标签的一部分，转义后视作普通文本。字符也可用Unicode转义，例如“我”的Unicode码位为25105，因此转义为`&#25105;`，称作**字符值引用**（Numeric Character Reference, NCR）
 
 - php：使用`htmlspecialchars`转义，默认不转义单引号，因此拼接带单引号字符串时可能产生XSS漏洞
+
+# TamperMonkey
+
+```javascript
+// @name         保存文件
+// @grant        GM_info
+// @grant        GM_download
+// @run-at       context-menu
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    const elements = document.querySelectorAll("img");
+    for (let i=0; i<elements.length; i++) {
+        let url = elements[i].getAttribute("src");
+        let name = elements[i].getAttribute("name");
+        console.log(url + " " + name);
+
+        // 把 url 转为 blobUrl
+        if (GM_info.scriptHandler === 'Greasemonkey') {
+          const res = fetch(url)
+          const blob = res.blob()
+          url = URL.createObjectURL(blob)
+        }
+
+        // 下载文件
+        let download_arg = {
+            url: url,
+            name: name + ".png"
+        };
+        const download = GM_download(download_arg);
+    }
+})();
+```

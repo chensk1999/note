@@ -1,3 +1,42 @@
+# Windows 10
+
+## 关闭网络搜索
+
+使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
+
+## 右键菜单栏
+
+右键菜单，也叫做Context Menu，相关注册表项参考[这里](http://up.houheaven.com/Regedit/Reg_03.htm)
+
+### 移除软件的右键菜单
+
+可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
+
+```bash
+# 文件夹
+\HKEY_CLASSES_ROOT\Folder
+\HKEY_CLASSES_ROOT\Directory
+# 文件
+\HKEY_CLASSES_ROOT\*
+\HKEY_CLASSES_ROOT\AllFilesystemObjects
+# 桌面
+\HKEY_CLASSES_ROOT\DesktopBackground
+
+# 删的时候发现了，但是删完看不到效果的
+\HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
+```
+
+### 添加自定义右键菜单
+
+1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
+2. 将command的值设为指令，如`notepad.exe %1`
+
+`<somewhere>`具体是哪里：
+
+1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`
+
+# Shell
+
 Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指操作系统的命令行界面（Command-Line Interface，CLI）
 
 # cmd
@@ -18,25 +57,39 @@ Powershell主要用于Windows 7及其后续版本，也可以运行于Linux和Ma
 
 ## 基础知识
 
-PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名一般格式是`verb-noun`。大部分系统cmdlet都有别名，比如，`Write-Output`指令具有别名`echo`
+与其他Shell相同，PowerShell采用`指令 参数`的方式调用命令。不过，它也可以像现代变成语言一样把指令当作表达式使用
+
+```powershell
+Get-ChildItem .          # 列出子目录、子文件
+$files = Get-ChildItem   # 将子目录、子文件存入变量$files
+    # $files的类型为 Array[DirectoryInfo | FileInfo]
+Select-Object FullName -InputObject (Get-ChildItem .)[0] # 甚至可以把指令结果当作变量
+```
+
+PowerShell不区分大小写。其指令称作cmdlet（Command-Let），命名一般格式是`verb-noun`。大部分系统cmdlet都有别名，用其他Shell的指令名一般也能运行，比如，`Write-Output`指令具有别名`echo`
 
 使用参数时可以简化，能唯一识别即可，如，-common参数可以只输入-com（假设没有其他形参含有com），到这一步之后也可以用tab自动补全
 
-**流水线(pipeline)**
+**重定向与流水线**
 
-```命令1 | 命令2```会将命令1的结果作为命令2的参数
+和Bash差不多，参见[Linux笔记](./linux.md#重定向与管道)的“重定向与管道”一节。两者区别在于Powershell更接近现代编程语言，把各种东西当作变量和对象处理
 
-```命令2 (命令1)```也有同样效果
+```powershell
+Get-ChildItem . 2>$null               # /dev/null -> $null
+Get-Process | Out-File "process.txt"
+```
 
 ## 语法
 
-### 变量
+### 变量类型
 
 ```powershell
-# 标量
+# 数值、字符串、布尔值
 $i = 1
+$s = "Hello, `$i = $i"  # 双引号中的$i会格式化，单引号不会；用反斜杠`转义
+$b = $true
 
-# 列表 （Array）
+# 列表 (Array)
 $arr = @(1, 2, 3, 4)    # @()可以省略
 # 访问列表元素
 $arr[0]
@@ -48,12 +101,20 @@ $arr.count
 $hash = @{a=1; b=2; c=3}
 echo $hash.a
 
-# 对象（Ojbect）
-# 大部分指令的返回值都是对象或者对象的列表
-$obj = Get-ChildItem
-$obj.fullname
-Get-ChildItem | Get-Member  # 查看所有属性与方法
-Get-ChildItem | Select-Object FullName, Length  # 选择获取的列
+# 对象 (Ojbect)
+# 大部分指令的返回值都是Object或者Array[Object]
+$files = Get-ChildItem -File
+$file = $files[0]
+$file | Get-Member -MemberType Property  # 查看属性名
+$file.GetType()    # 访问方法。此方法返回对象类别
+$file.FullName     # 访问属性
+
+# 定义对象
+$uri = [System.Uri]::new('https://example.com')  # 用类的new方法定义
+$my_obj = [PSCustomObject]@{                     # 用哈希表定义
+    "name" = "Alex"
+    "age" = 1
+}
 ```
 
 ### 运算符
@@ -65,18 +126,6 @@ Get-ChildItem | Select-Object FullName, Length  # 选择获取的列
 1 -band 3   # 位运算。类似有-bor, -bxor等
 1 -shl 1    # 左移。右移是-shr
 ```
-
-**重定向**
-
-```powershell
-Write-Output "Hello" > script.log   # 写入文件
-Write-Output "World" >> script.log  # 追加到文件
-Write-Warning "warn" *> script.log  # 将所有流（比如，Error和Warning）重定向到文件
-```
-
-用`Out-File` cmdlet有更多参数
-
-**管道**
 
 ### 控制流
 
@@ -106,29 +155,7 @@ $sum4 = 0
 $arr.foreach({$sum4 += $PSItem})
 ```
 
-## 常用指令
-
-```powershell
-# 输出到文件（以Get-Process为例）
-Get-Process | Out-File filename.txt
-Get-Process | Export-Csv filename.csv
-Get-Process | Export-Clixml filename.xml
-```
-
-## 其他
-
-```powershell
-# 格式化字符串
-$name = "whatever"
-$prefix = "a"
-$s = [string]::Format("{0}-{1}.png", $prefix, $name)
-$s2 = "{0}-{1}.png" -f $prefix, $name
-
-# 转义字符`（反引号）
-echo "`"Hello`""
-```
-
-### 执行策略
+## 执行策略
 
 Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
 
@@ -142,6 +169,14 @@ Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
 ```powershell
 Get-ExecutionPolicy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
+```
+
+## Profile
+
+Profile脚本在每次启动Powershell时执行
+
+```powershell
+$PROFILE | Select-Object *   # 查看PROFILE文件
 ```
 
 # 常用指令
@@ -161,6 +196,13 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身�
 | cd           | cd         | Set-Location  | 设置工作路径   |
 
 注：Powershell大多数命令都设置了别名，用Unix Shell或者cmd.exe的命令名一般也能运行
+
+```powershell
+# 输出到文件
+Get-Process | Out-File filename.txt
+Get-Process | Export-Csv filename.csv
+Get-Process | Export-Clixml filename.xml
+```
 
 ## 网络
 

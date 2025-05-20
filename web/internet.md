@@ -176,7 +176,30 @@ IP协议规定了使用路由表选择转发路径，但没有规定怎么建立
 
 应用层的主要作用是定义数据格式，以实现特定业务。比如HTTP协议规定了报文格式，以及收到报文后应如何处理。常见协议有HTTP（网页传输）、DNS（域名解析）、SMTP（邮件收发）、FTP（文件传输）等
 
-### DNS
+## HTTP
+
+POST请求
+
+```http
+POST / HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=---------------------------10242300956292313528205888
+Content-Length: 363
+
+-----------------------------10242300956292313528205888
+Content-Disposition: form-data; name="file[]"; filename="1.txt"
+Content-Type: text/plain
+
+Hello, 1
+-----------------------------10242300956292313528205888
+Content-Disposition: form-data; name="file[]"; filename="2.txt"
+Content-Type: text/plain
+
+Hello, 2
+-----------------------------10242300956292313528205888--
+```
+
+## DNS
 
 # 其他
 

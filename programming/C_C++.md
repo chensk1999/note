@@ -933,7 +933,7 @@ long ftell(FILE *stream)
 
 ## 简单源文件的编译&链接
 
-```
+```shell
 g++ -c main.cpp
 g++ -c func.cpp
 g++ main.o func.o -o release.exe
@@ -941,7 +941,7 @@ g++ main.o func.o -o release.exe
 
 ## 源文件与库的链接
 
-```
+```shell
 gcc main.cpp -I "header directory" -L "lib directory" -lname
 ```
 
@@ -949,7 +949,7 @@ gcc main.cpp -I "header directory" -L "lib directory" -lname
 
 ## make
 
-```
+```shell
 mingw32-make -f Makefile
 ```
 

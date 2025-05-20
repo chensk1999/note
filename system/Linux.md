@@ -4,13 +4,13 @@
 
 ## 起源
 
-**省流**：Linux是Unix的精神续作，Linux内核+组件（组件有很多人在做，没有统一版本）构成Linux发行版。市面上有五花八门的Linux发行版，Ubuntu、CentOS、ArchLinux都是Linux发行版
-
 1969年，美国AT&T公司的贝尔实验室开发了UNIX操作系统，并在此后的 10 年里在学术机构和大型企业中得到了广泛的应用。在这段时间，许多计算机从业者开发了很多基于UNIX的变种，统称为“类UNIX操作系统”。然而后来AT&T公司决定改变商业策略，将代码闭源，并声明拥有类UNIX操作系统的著作权
 
 1983年9月27日，理查德·斯托曼（Richard Stallman）在麻省理工学院发起了GNU计划，它的目标是创建一套类似UNIX但完全自由的操作系统。数年后，林纳斯·托瓦兹（Linus Torvalds）在他的大学时期编写并发布了自己的操作系统，也就是后来所谓的 “Linux内核”
 
 Linux内核过于精简，并不是一个完整的操作系统。许多自由软件社区的开发人员和一些计算机商业公司便开始把各种组件添加到这个内核之上，这才构建成了一个完整的Linux操作系统。开源社区的诸多成员以及许多商业公司的去中心化的贡献，让Linux充满了多样性。基于Linux内核构造出来的操作系统，我们通常都将其称之为“Linux发行版”
+
+**省流**：Linux是Unix的精神续作，Linux内核+组件（组件有很多人在做，没有统一版本）构成Linux发行版。市面上有五花八门的Linux发行版，Ubuntu、CentOS、ArchLinux等都是Linux发行版
 
 **补充（现代操作系统的功能）**：进程管理、内存管理、文件系统、网络通信、安全机制、用户界面、驱动程序
 
@@ -18,11 +18,13 @@ Linux内核过于精简，并不是一个完整的操作系统。许多自由软
 
 用户操作计算机时，必须有一个“中介”将用户的鼠标动作、键盘输入“翻译”为对操作系统的指令，这一工具称作用户界面（User Interface），也叫做Shell，与操作系统内核（Kernel）相对。最早的Shell是通过键盘输入指令的**命令行界面**（Command-Line Interface，CLI），狭义的Shell专指命令行界面；后来又出现了以鼠标操作为主的**图形用户界面**（Graphical Shell，又称Graphical User Interface，GUI）
 
-图形界面的学习成本低，因此占据了主流。但是，命令行可以使用自动化脚本执行重复的任务、许多系统维护任务用命令行更方便，甚至只能用命令行完成、许多服务器为了节省资源不会安装图形界面
+图形界面的学习成本低，因此占据了主流。但是，命令行可以使用自动化脚本执行重复任务、方便远程控制、节约资源，最重要的是许多系统维护工具只有命令行界面，没有图形界面（原因也很好理解，设计图形界面比命令行界面麻烦太多太多了）
 
 Linux最常见的Shell是Bash，也有的发行版会使用zsh等Shell，可以用`echo $SHELL`查看当前Shell，`cat /etc/shells`查看已安装的Shell（绝大部分Shell语法相同，一般不必在意正在使用哪个Shell）。通常通过在终端（Terminal）中输入指令来操作Shell
 
-各章节都会解释相关Bash指令，Bash语法一节将详细解释Bash语法以及脚本编写
+## 指令
+
+各章节都会解释相关Bash指令，Bash语法一节将详细解释Bash语法以及脚本编写。遇到不理解的指令可在[Explain Shell](https://www.explainshell.com/)网站查询
 
 # 文件、用户和权限
 
@@ -30,14 +32,36 @@ Linux最常见的Shell是Bash，也有的发行版会使用zsh等Shell，可以�
 
 Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（mount）在树上；计算机设备也抽象为文件的形式挂在树上。大部分发行版的文件结构遵循文件系统层次结构标准（FHS, Filesystem Hierarchy Standard）
 
-- `/dev`：设备文件，即被抽象为文件的计算机设备
-- `/etc`：系统配置文件
-- `/home`：用户文件
-- `/opt`：额外程序
-- `/srv`：网络服务
-- `/usr`：软件安装位置
-  - 其下目结构录与`/`相似，如`/usr/bin`和`/bin`作用类似
-  - `/usr/share`存放程序的数据文件
+**系统文件**
+
+| 目录    | 含义     | 说明                                 | 举例                      |
+| ------- | -------- | ------------------------------------ | ------------------------- |
+| `/bin`  | Binaries | 系统命令                             | `ls`，`cp`                |
+| `/etc`  | Etcetra  | 系统配置文件                         | 用户账号信息`/etc/passwd` |
+| `/dev`  | Device   | 设备文件，即被抽象为文件的计算机设备 | 硬盘`/dev/sda`            |
+| `/mnt`  | Mount    | 临时挂载的其他文件系统               | 光驱                      |
+| `/proc` | Process  | 进程的伪文件，是系统内存的映射       |                           |
+| `/lib`  | Library  | 各种程序使用的动态链接库             |                           |
+| `/boot` | Boot     | Linux系统启动时使用的核心文件        |                           |
+
+**其他**
+
+| 目录    | 含义                  | 说明                                               | 举例       |
+| ------- | --------------------- | -------------------------------------------------- | ---------- |
+| `/home` | Home                  | 用户主目录                                         |            |
+| `/usr`  | Unix System Resources | 各种程序、文档、头文件、库文件（应该是Unix的遗产） |            |
+| `/var`  | Variable              | 经常变动的文件                                     | `/var/www` |
+| `/srv`  | Service               | 网络服务文件                                       | `/srv/ftp` |
+| `/opt`  | Optional              | 可选软件安装目录，通常装第三方商业软件             |            |
+| `/tmp`  | Temp                  | 临时文件。其中文件用完就删，重启时会被清空         |            |
+
+文件目录中，有若干文件夹结构和根目录很类似，例如，`/usr`下面也有`/usr/bin`，`/usr/lib`等目录。安装程序时一般按用途装到这些位置：
+
+- `/bin`：操作系统命令
+- `/usr/bin`：使用包管理器安装的程序
+- `/usr/local/bin`：用户手动安装的程序
+
+完整安装位置和搜索顺序可以查看`$PATH`环境变量
 
 ## 用户与用户组
 
@@ -45,13 +69,7 @@ Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（
 - 普通用户：用户ID为500以上 / 1000以上，取决于版本。home目录是`/home/username`（每个普通用户拥有自己home目录的文件权限。登录后可以用`~`指代自己的home目录），只能操作自己启动的进程。可以通过`sudo`指令临时获得root权限
 - 系统用户：ID为1~499 / 100~999，不能登录，一般由系统服务使用。此类用户文件、指令操作权限都有严格限制，旨在防止服务受攻后获取过高权限
 
-此外，Linux还用用户组管理权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
-
-```bash
-whoami           # 查看当前用户名
-groups           # 查看当前用户组
-cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
-```
+此外，Linux还用用户组管理权限，用户组的成员享有某些权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
 
 ## 文件权限
 
@@ -71,7 +89,6 @@ drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
   - 第二位：`r`表示读权限，`-`表示没有
   - 第三位：`w`表示写权限，`-`表示没有
   - 第四位：`x`表示有执行权限，`-`表示没有。对于文件，拥有执行权限就可以作为程序代码执行；而对于目录来说，拥有执行权限就可以访问这个目录下的文件的内容
-  - 特别地，第四位为`s`表示SUID权限，其他用户执行此文件时会暂时获得文件所属用户的权限，比如更改密码的程序`/usr/bin/passwd`由root用户所属，普通用户运行此程序时可以暂时获得root权限，修改密码文件`/etc/shadow`，但用正常方法就无法篡改`/etc/shadow`
 - 第五~七位：文件所属用户组的权限
 - 第八~十位：其他人的权限
 
@@ -80,8 +97,14 @@ drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
 ## 文件操作指令
 
 ```bash
+# 文件
 cat file.txt    # 显示文件内容
 less file.txt   # 分页显示，操作类似vim
+
+# 目录
+cd ..   # change directory
+ls -li  # list
+pwd     # print working directory
 ```
 
 其他常用命令：`cp`复制，`mv`移动，`rm`删除，`mkdir`创建目录，`touch`创建文件
@@ -92,11 +115,19 @@ less file.txt   # 分页显示，操作类似vim
 find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
 find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
 find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
+```
 
-# 特殊用途
-# -perm -u=s筛选出有SUID权限的文件，2>/dev/null消除错误信息（详见Bash语法中重定向一节）
-# 此命令筛选出执行时能暂时获得root权限的程序，可用于黑客攻击
-find / -perm -u=s -type f -ls 2>/dev/null
+## 用户与权限指令
+
+```bash
+# 查看用户与权限
+id               # 查看当前用户名、uid、用户组和gid
+whoami           # 查看当前用户名
+groups           # 查看当前用户组
+cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
+
+# 查看当前用户能以root权限执行的指令
+
 ```
 
 # Bash语法
@@ -146,9 +177,7 @@ ls 2>&1 1>filelist
 <&3-        # 关闭3号文件标识符
 ```
 
-
-
-重定向时经常使用一些特殊文件：
+重定向时经常使用一些**特殊文件**：
 
 | 路径        | 说明                   |
 | ----------- | ---------------------- |
@@ -160,6 +189,14 @@ ls 2>&1 1>filelist
 
 ```bash
 ls -l | grep ^d  # 将ls列出的文件信息传给grep筛选。此命令的效果是筛选出当前目录的全部文件夹
+```
+
+还有一些类似的：
+
+```bash
+clear; ls                    # 结束符;，一行的若干命令相继执行
+cat filelist.txt && ls -l    # 组合符&&，若前一个命令成功，继续执行后一个
+mkdir foo || mkdir bar       # 组合符||，若第一个命令失败，则执行后一个
 ```
 
 
@@ -180,6 +217,7 @@ c="price is \$100"  # "$"等特殊符号需要反斜杠转义
 echo $a           # 访问变量。在变量名前面加上$
 echo "a = $a"     # 字符串中的变量也会自动格式化为变量的值
 echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
+echo '$a'         # 单引号不会格式化
 ```
 
 数组和关联数组
@@ -187,7 +225,7 @@ echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
 ```bash
 # 数组
 arr=(1 2 3)
-echo ${arr[0]}   # 数组索引
+echo ${arr[1]}   # 数组索引。注意：从1开始
 echo ${arr[@]}   # 数组所有元素
 echo ${#arr[@]}  # 数组长度
 arr+=(4)  # 添加元素
@@ -230,7 +268,7 @@ export PATH=$PATH:/home/username/mysql/bin  # 环境变量赋值
 - 上一个命令：退出码`$?`；最后一个参数`$_`
 - 当前shell：进程ID`$$`；名称`$0`；启动参数`$-`
 - 后台异步命令的进程ID：`$!`
-- 脚本参数数量`$@`；脚本参数值`$#`
+- 脚本参数：脚本文件名`$0`；第一至第九个参数`$1-$9`；脚本参数总数`$#`
 
 ## 控制流
 
@@ -249,12 +287,82 @@ echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
 echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
-# 其他指令
+# 其他
 
-[Explain Shell](https://www.explainshell.com/)解释指令的作用
+## 模式扩展
 
-## openssl
+向bash输入命令之后，首先将模式扩展（globbing，也叫filename expansion）的字符替换为实际存在的文件名，然后再执行命令。模式扩展是shell的特性，与命令无关
 
 ```bash
+ls ~         # ~ = 用户home目录，如/home/user
+ls ?.txt     # ? = 单个字符
+ls *.txt     # * = 任意个字符
+ls [ab].txt  # [] = 其中任意字符
+ls [^a].txt
+ls [a-z].txt
+ls [[:xdigit:]] # 字符类。例子是十六进制字符
+
+ls {a,b,c}.txt  # 扩展为大括号中的字符。和中括号不同的是，无论有没有对应文件都会扩展
+ls {a..z}.txt
+```
+
+各种模式中，除了大括号外，都会扩展为实际存在的文件名
+
+```bash
+echo a?.txt
+```
+
+假如当前目录存在`aa.txt`和`ab.txt`，则会打印`aa.txt ab.txt`；若没有符合的文件，则原样输出为`a?.txt`
+
+## 脚本
+
+第一行指定使用的解释器
+
+```bash
+#! /bin/bash
+#! /usr/bin/env bash
+```
+
+执行脚本：
+
+```bash
+. ./script.sh    # 用句点表示执行脚本。注意，必须是脚本路径，不能是文件名，否则bash找不到
+source script.sh # 句点的别名
+```
+
+
+
+# 其他指令
+
+## openssl - 密钥
+
+**passwd**：生成密码。下面例子使用SHA256算法、以`salt`为盐计算123456的哈希
+
+```bash
+openssl passwd -6 -salt salt 123456
+```
+
+**x509**：CA证书
+
+```bash
+# 格式转换
+openssl x509 -in cert.crt -inform pem -out cert.der -outform der
+# 计算哈希值
+openssl x509 -in cert.pem -inform PEM -subject_hash
+```
+
+## ssh - 远程登录
+
+```bash
+sudo systemctl start ssh.service   # 启动ssh服务
+ssh username@URL                   # 连接远程主机
+```
+
+## mysql
+
+```bash
+service mysql start
+sudo mariadb-secure-installation
+sudo mysql -u root
 ```
 

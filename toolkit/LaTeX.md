@@ -68,7 +68,8 @@ y^\prime        % 求导
 # 括号与空格
 
 ```latex
-\left{, \left[, \left{, \left   % 左括号。右括号同理
+\left{, \left[, \left{, \left(   % 左括号。右括号同理
+\big(, \bigg(                    % 更大的括号
 
 % 其他可以配合\left, \right使用的符号：
 \langle, \rangle    % 角括号
@@ -119,8 +120,8 @@ y^\prime        % 求导
 \varepsilon, \varpi     % 异体希腊字母
 \aleph, \beth, \gimel, \daleth  % 希伯来字母
 
-\mathbb                 % 黑板粗体
-\mathbf                 % 正粗体
+\mathbb                 % 黑板粗体，常用于实数域、复数域
+\mathbf                 % 正粗体，常用于矩阵方程
 \mathrm                 % 罗马体
 \mathfrak               % 哥特体
 \mathcal                % 手写体

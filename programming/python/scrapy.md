@@ -1,5 +1,3 @@
-
-
 # 基础
 
 ```shell
@@ -37,34 +35,6 @@ graph LR
     Downloader --Response--> SpiderMiddleware
 ```
 
-## 用python脚本开始爬虫
-
-https://docs.scrapy.org/en/latest/topics/practices.html#run-scrapy-from-a-script
-
-```python
-import scrapy
-from scrapy.crawler import CrawlerProcess
-
-
-class MySpider(scrapy.Spider):
-    # Your spider definition
-    ...
-
-
-process = CrawlerProcess(
-    settings={
-        "FEEDS": {
-            "items.json": {"format": "json"},
-        },
-    }
-)
-
-process.crawl(MySpider)
-process.start()  # the script will block here until the crawling is finished
-```
-
-
-
 # 爬虫控制
 
 ## Spider
@@ -100,7 +70,7 @@ req = scrapy.http.Request(
 )
 ```
 
-Scrapy还提供了若干[Request子类](https://docs.scrapy.org/en/latest/topics/request-response.html#request-subclasses)，包括表单、JSON，用于POST请求
+Scrapy还提供了若干[Request子类](https://docs.scrapy.org/en/latest/topics/request-response.html#request-subclasses)，包括表单、JSON，它们主要用于POST请求
 
 ## Response
 
@@ -219,3 +189,7 @@ https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 # 其他
 
 [流量控制](https://docs.scrapy.org/en/latest/topics/autothrottle.html)
+
+## 日志
+
+scrapy自带[logging模块支持](https://docs.scrapy.org/en/latest/topics/logging.html)，每个spider类都有自己的logger

