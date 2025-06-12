@@ -195,6 +195,15 @@ sess = Session()
 sess.send(req.prepare())
 ```
 
+忽略SSL
+
+```python
+requests.packages.urllib3.disable_warnings()
+requests.get('https://example.com', verify=False)
+```
+
+
+
 ## sounddevice - 录音和播放声音
 
 ```python
@@ -235,6 +244,7 @@ https://github.com/openai/whisper
 
 ```shell
 whisper --help
+whisper "src.mp4" --model base --language zh
 ```
 
 

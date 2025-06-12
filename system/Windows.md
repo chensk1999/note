@@ -1,49 +1,10 @@
-# Windows 10
-
-## 关闭网络搜索
-
-使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
-
-## 右键菜单栏
-
-右键菜单，也叫做Context Menu，相关注册表项参考[这里](http://up.houheaven.com/Regedit/Reg_03.htm)
-
-### 移除软件的右键菜单
-
-可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
-
-```bash
-# 文件夹
-\HKEY_CLASSES_ROOT\Folder
-\HKEY_CLASSES_ROOT\Directory
-# 文件
-\HKEY_CLASSES_ROOT\*
-\HKEY_CLASSES_ROOT\AllFilesystemObjects
-# 桌面
-\HKEY_CLASSES_ROOT\DesktopBackground
-
-# 删的时候发现了，但是删完看不到效果的
-\HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
-```
-
-### 添加自定义右键菜单
-
-1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
-2. 将command的值设为指令，如`notepad.exe %1`
-
-`<somewhere>`具体是哪里：
-
-1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`
-
 # Shell
 
 Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指操作系统的命令行界面（Command-Line Interface，CLI）
 
-# cmd
+## cmd
 
 cmd也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
-
-## 变量
 
 ```cmd
 REM 定义、访问变量
@@ -51,11 +12,11 @@ set a=1
 echo %a%
 ```
 
-# PowerShell
+## PowerShell
 
 Powershell主要用于Windows 7及其后续版本，也可以运行于Linux和MacOS
 
-## 基础知识
+### 基础知识
 
 与其他Shell相同，PowerShell采用`指令 参数`的方式调用命令。不过，它也可以像现代变成语言一样把指令当作表达式使用
 
@@ -79,9 +40,7 @@ Get-ChildItem . 2>$null               # /dev/null -> $null
 Get-Process | Out-File "process.txt"
 ```
 
-## 语法
-
-### 变量类型
+### 变量
 
 ```powershell
 # 数值、字符串、布尔值
@@ -116,6 +75,16 @@ $my_obj = [PSCustomObject]@{                     # 用哈希表定义
     "age" = 1
 }
 ```
+
+变量作用域
+
+```powershell
+$Global:ip_addr = "192.168.0.1"   # 全局变量，在当前Powershell会话全局可用
+$Script:port = "80"               # 脚本变量，当前脚本可用
+$Local:username = "admin"         # 本地变量，当前代码块中可用
+```
+
+
 
 ### 运算符
 
@@ -155,7 +124,7 @@ $sum4 = 0
 $arr.foreach({$sum4 += $PSItem})
 ```
 
-## 执行策略
+### 执行策略
 
 Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
 
@@ -171,7 +140,7 @@ Get-ExecutionPolicy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
 ```
 
-## Profile
+### Profile
 
 Profile脚本在每次启动Powershell时执行
 
@@ -256,3 +225,40 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 ```
 
 以上是Unix指令。windows可以用WSL，或者git bash也可以
+
+# Windows 10
+
+## 关闭网络搜索
+
+使用注册表编辑器，在`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Search`新建一个DWORD值，命名为`BingSearchEnabled`，并将数值设为0，重启
+
+## 右键菜单栏
+
+右键菜单，也叫做Context Menu，相关注册表项参考[这里](http://up.houheaven.com/Regedit/Reg_03.htm)
+
+### 移除软件的右键菜单
+
+可能的注册表位置（注：若不注明，一般放在该路径的`shell`，`background\shell`，`ShellEx\ContextMenuHandlers`等文件夹内）：
+
+```bash
+# 文件夹
+\HKEY_CLASSES_ROOT\Folder
+\HKEY_CLASSES_ROOT\Directory
+# 文件
+\HKEY_CLASSES_ROOT\*
+\HKEY_CLASSES_ROOT\AllFilesystemObjects
+# 桌面
+\HKEY_CLASSES_ROOT\DesktopBackground
+
+# 删的时候发现了，但是删完看不到效果的
+\HKEY_CLASSES_ROOT\YunShellExt.YunShellExtContextMenu
+```
+
+### 添加自定义右键菜单
+
+1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
+2. 将command的值设为指令，如`notepad.exe %1`
+
+`<somewhere>`具体是哪里：
+
+1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`

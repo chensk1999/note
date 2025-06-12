@@ -1,10 +1,10 @@
 # 基础
 
 ```shell
-scrapy startproject tutorial              # 创建项目
+scrapy startproject tutorial       # 创建项目
 cd tutorial
-scrapy genspider my_spider "example.com"  # 创建新的爬虫
-scrapy crawl my_spider                    # 开始爬虫
+scrapy genspider My "example.com"  # 创建新的爬虫
+scrapy crawl My                    # 开始爬虫
 
 scrapy shell "http://example.com"  # 交互式处理页面
 scrapy -h
@@ -35,6 +35,17 @@ graph LR
     Downloader --Response--> SpiderMiddleware
 ```
 
+除了从命令行启动之外，还可以[从python脚本启动](https://docs.scrapy.org/en/latest/topics/practices.html#run-from-script)
+
+```python
+from scrapy.crawler import CrawlerProcess
+from .spiders.My import MySpider
+
+process = CrawlerProcess()
+process.crawl(MySpider)
+process.start()
+```
+
 # 爬虫控制
 
 ## Spider
@@ -45,18 +56,27 @@ Spider类用于控制爬虫逻辑：从哪个页面开始爬、爬到之后如�
 import scrapy
 
 class MySpider(scrapy.Spider):
-    name = 'my_spider'                 # 名字。同一项目的spider不可重名
-    allowed_domains = 'example.com'    # 域名白名单，只爬这个域名的东西
-    start_urls = ['http://www.example.com']  # 初始URL，从这里开始爬
+    name = 'my_spider'                            # 名字。同一项目的spider不可重名
+    allowed_domains = 'quotes.toscrape.com'       # 域名白名单，只爬这个域名的东西
+    start_urls = ['https://quotes.toscrape.com']  # 初始URL，从这里开始爬
     
     def parse(self, response:scrapy.Response) -> Iterable[scrapy.Request, scrapy.Item, dict] :
-        # 默认回调函数。收到服务器响应后调用此函数处理；此函数处理后返回请求、数据
-        # 爬虫引擎将请求交给Scheduler、数据交给Item Pipeline进一步处理
-        # 对于简单的爬虫，也可以用回调函数处理数据，不交给Item Pipeline
-        pass
+        # 提取网页数据，装在字典中返回（也可以继承scrapy.Item定义自己的容器）
+        # 后续交给Item Pipeline处理，详见处理数据一节
+        for quote in response.css("div.quote"):
+            yield {
+                "text": quote.css("span.text::text").get(),
+                "author": quote.css("small.author::text").get(),
+                "tags": quote.css("div.tags a.tag::text").getall(),
+            }
+        # 提取超链接，构造请求。后续交给Scheduler处理，详见请求与响应一节
+        next_page = response.css("li.next a::attr(href)").get()
+        if next_page is not None:
+            next_page = response.urljoin(next_page)
+            yield scrapy.Request(next_page, callback=self.parse)
 ```
 
-## Request
+## Request与Response
 
 ```python
 # 构造Request
@@ -71,8 +91,6 @@ req = scrapy.http.Request(
 ```
 
 Scrapy还提供了若干[Request子类](https://docs.scrapy.org/en/latest/topics/request-response.html#request-subclasses)，包括表单、JSON，它们主要用于POST请求
-
-## Response
 
 ```python
 # Response类的属性
@@ -160,7 +178,7 @@ class Pipeline():
     def process_item(self, item, spider):
         with open(f'{item['title']}.html', 'wb') as fp:
             fp.write(item['body'])
-        return item  # 必须返回item对象或raise DropItem
+        return item  # 必须返回item对象或raise scrapy.exceptions.DropItem
 ```
 
 可以定义多个Item Pipeline，用流水线方式处理Item，根据`settings.py`配置的数字从小到大处理（数字取值为0~1000）

@@ -807,21 +807,33 @@ isinstance(g, Iterable)    # True
 
 # 模块与包
 
-## 导入模块/包
+每个python脚本都可以作为模块（module）被其他脚本导入；若干模块组合起来就构成一个包（package）
 
-最主要的方式是用import语句，也可以用importlib模块等方式进行更复杂的导入
+## 导入模块与包
+
+最主要的方式是用import语句，也可以用importlib模块等方式进行更复杂的导入。导入模块和包时，从`sys.path`以及脚本所在目录寻找
 
 ```python
 import module
 import module as m
 from module import func
 from module import func as f
-from module import *    # 不建议使用，可能导致命名空间污染
 ```
 
-## 构建层级包
+## 创建包
 
-在包的每个文件夹都放一个`__init__.py`文件，就构建了分层模块构成的包（没有`__init__`就是命名空间包）。导入时`__init__.py`会先被执行，一般用它自动加载子模块
+在每个文件夹都放一个`__init__.py`文件，就构成了包。导入时`__init__.py`会先被执行，一般用它自动加载子包
+
+包和普通脚本的区别在于导入。子包导入其他子包时可以用包名导入，也可以用相对路径导入。例如，包的结构是`pkg -> sub1, sub2`，从`sub1`导入`sub2`有以下两种方法
+
+```python
+from pkg import sub2
+from .. import sub2
+```
+
+使用`-m`参数，解释器会将包当作脚本执行，例如`python -m package`，会运行`package/__main__.py`，此时`__main__.py`被当作包的一部分，`__main__.py`中的`import .subpackage1`等导入语句会将`subpackage1`作为包的一部分导入
+
+但是，若不带`-m`参数，它就不被当作一个包，其中的相对路径导入语句失败。如果包不在模块搜索路径`sys.path`，绝对路径导入也会失效
 
 # IO
 
@@ -945,26 +957,36 @@ ThreadLocal可以帮助参数在不同线程中传递
 
 ## 协程
 
-通常使用async和await关键字声明协程。使用`async`定义的函数称作协程函数，直接调用它并不会执行函数，而是返回一个协程对象。`await`语句则执行协程对象并等待它完成。注意：`await`语句只能在`async`函数中使用
+通常使用`asyncio`模块配合`async`和`await`关键字实现。使用`async`定义的函数称作协程函数，直接调用它并不会执行函数，而是返回一个协程对象。`await`语句则执行协程对象并等待它完成。注意：`await`语句只能在`async`函数中使用
 
 ```python
 import asyncio
-import time
+import requests
 
-async def say_after(delay, what):
-    await asyncio.sleep(delay)
-    print(what)
+async def fetch_quote(page: int) -> bytes:
+    # 此函数从网络下载数据，耗时不固定，且网络差时可能要等很久
+    url = f'https://quotes.toscrape.com/page/{page}/'
+    return requests.get(url).text
 
+# 所有协程函数必须在一个async主函数中调用
 async def main():
-    print(f"started at {time.strftime('%X')}")
-    await say_after(1, 'hello')
-    await say_after(2, 'world')
-    print(f"finished at {time.strftime('%X')}")
+    # 基础使用。调用async函数返回一个协程对象，"await 协程对象"等待执行结果
+    text_1 = await fetch_quote(1)
 
+    # 同时等待多个协程对象
+    await asyncio.gather(fetch_quote(2), fetch_quote(3))
+
+    # 使用task对象
+    task = asyncio.create_task(fetch_quote(1))
+    task.cancel()
+    try:
+        text_4 = await task
+    except asyncio.CancelledError:
+        print('Cancelled')
+
+# 启动主函数
 asyncio.run(main())
 ```
-
-上述例子中虽然使用了协程，但是两次等待没有并发进行。
 
 # 内建模块
 

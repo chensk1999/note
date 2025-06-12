@@ -188,6 +188,38 @@ echo $bs.node
 $bs.node.OuterXML > title.txt
 ```
 
+## 文档类型定义
+
+文档类型定义（Document Type Definition，DTD）用于定义文档结构。它可以用来描述文档格式，或者方便保持文档结构一致。它可以包装在`DOCTYPE`声明中，也可以封装在外部文件中并通过`DOCTYPE`声明引用
+
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE note [
+    <!ELEMENT note (heading,body)>
+    <!ELEMENT heading (#PCDATA)>
+    <!ELEMENT body (#PCDATA)>
+]>
+<!-- 以上DTD声明文档中note元素包含heading和body两个子元素，且子元素数据类型都是#PCDATA -->
+<note>
+    <heading>Reminder</heading>
+    <body>Don't forget me this weekend</body>
+</note>
+```
+
+DTD也可以定义XML实体，即自定义的转义字符。下面例子使用了内部实体`int`和外部实体`ext`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ANY [
+    <!ENTITY int "entity-value" >
+    <!Entity ext SYSTEM "file://test.txt">
+]>
+<entity>
+    <internal>&int;</internal>
+    <external>&ext;</external>
+</entity>
+```
+
 # CSS
 
 CSS（层叠样式表，Cascading Style Sheets）定义了HTML样式。它由若干条规则构成，“层叠”指多个规则可以叠加起来对同一个元素生效
@@ -651,8 +683,6 @@ btn.removeEventListener('click', bgChange);
 // 查看绑定的所有函数
 getEventListeners(btn)
 ```
-
-
 
 **常用HTML事件**
 

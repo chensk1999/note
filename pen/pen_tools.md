@@ -4,6 +4,10 @@
 
 # 信息搜集
 
+## Burp Suite - 抓包
+
+[ProxyHttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/proxy/ProxyHttpRequestResponse.html)
+
 ## nmap - 端口扫描
 
 nmap（Network Mapper）是快速的网络扫描工具。它可以用作主机发现、端口扫描、服务识别、操作系统识别工具
@@ -92,9 +96,8 @@ whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 ## wpscan - WordPress站点扫描
 
 ```shell
+
 ```
-
-
 
 ## 测绘工具
 
@@ -118,23 +121,66 @@ searchsploit -x 41438     # 查看漏洞详情
 
 ## sqlmap - SQL注入工具
 
-[sqlmap用户手册](https://sqlmap.highlight.ink/)
+### 注入点
 
-payload：`/usr/share/sqlmap/data/xml/payloads`
+```bash
+sqlmap -u "example.com?id=1"             # GET参数
+sqlmap -u "example.com" --data="id=1"    # POST参数
+sqlmap -u "example.com" --cookie="SESSION=*"  # Cookie
 
-```shell
-# 基础使用
-sqlmap -u "example.com?id=1"           # GET参数注入
-sqlmap -u "example.com" --data="id=1"  # POST参数注入
-# 测试参数id，扫描级别为3（级别越大测试的注入点越多，例如Cookie和Header）
-# 风险为1（越高就执行越复杂的操作，如延时、文件写入）
+sqlmap -u "example.com?id=1&page=1" -p id     # 指定扫描的参数
+```
+
+GET和POST参数会被自动当作注入点；也可以用星号`*`指定注入位置，sqlmap会尝试将星号替换为payload。所有Request参数都可以注入，比如cookie，user-agent，其他header
+
+### Payload
+
+sqlmap的payload由以下几部分组合而成：`<prefix> <vector> <comment> <suffix>`，各部分由以下配置文件提供：
+
+```
+/usr/share/sqlmap/data/xml/
+    ├─boundaries.xml  --> prefix, suffix
+    └─payloads/       --> vector, comment
+```
+
+payload格式如下（为了方便理解，只包含大致结构，细节可参考`payloads/`中）
+
+```xml
+<test>
+    <title>布尔盲注</title>
+    <stype>6</stype>   <!-- 注入类型（1~6表示布尔盲注、报错注入、inline、堆叠、时间、Union）-->
+    <clause>0</clause> <!-- 此payload在什么位置生效，比如Where语句。0表示全部 -->
+    <where>1</where>   <!-- 如何添加前后缀 -->
+    <vector>AND [INFERENCE]</vector> <!-- 攻击向量 -->
+    <request>   <!-- 测试注入点是否可用 -->
+        <payload>AND [RANDNUM]=[RANDNUM]</payload>
+    </request>
+    <response>  <!-- 判断注入是否成功 -->
+        <comparison>AND [RANDNUM]=[RANDNUM1]</comparison>
+    </response>
+</test>
+```
+
+### Tamper
+
+可以用脚本预处理payload。自带脚本位于`/usr/share/sqlmap/tamper`
+
+```bash
+sqlmap -u "example.com?id=1" --tamper=if2case.py ---suffix="#"
+```
+
+### 其他
+
+**扫描级别和风险**：扫描级别越高，发送的请求越多；风险越高，破坏数据完整的可能性越高，如插入、删除、写文件
+
+```bash
 sqlmap -u "example.com" -p id --level=3 --risk=1
+```
 
-# Enumeration选项将数据保存到本地
-sqlmap -u "example.com?id=1" --all    # 保存所有数据到本地
+**技术**：sqlmap支持BEUSTQ六种注入技术（布尔盲注、报错注入、Union注入、堆叠查询、时间盲注、嵌套查询）
 
-# 使用脚本处理payload，自带脚本位于/usr/share/sqlmap/tamper
-sqlmap -u "example.com?id=1" --tamper if2case.py
+```bash
+sqlmap -u "example.com?id=1" --technique=U
 ```
 
 # 漏洞利用
@@ -277,7 +323,7 @@ CA证书是数字证书认证机构（Certificate Authority）颁发的电子证
 
 ### Windows
 
-
+双击证书文件，安装证书，将证书放入下列存储 - 受信任的根证书颁发机构（其他的“受信任”存储应该也行）
 
 ### Linux
 
@@ -376,18 +422,28 @@ guestInfo.svga.wddm.restrictModesToBootTopology="TRUE"
 
 [项目主页](https://vulhub.org/)
 
-1. 安装Docker：`curl -s https://get.docker.com/ | sh `
-2. 下载Vulhub：`git clone https://github.com/vulhub/vulhub.git`
-3. 选择环境：`cd flask/ssti`
-4. 启动靶场：`docker compose up -d`
-5. 访问靶场：用`docker ps`查看端口号、`ip addr show`查看主机ip访问
-6. 关闭靶场：`docker compose down`。为了避免被他人恶意利用，测试结束后一定记得关闭环境
+1. 安装Docker：`curl -s https://get.docker.com/ | sh`
+2. 启动Docker：`sudo service docker start`
+3. 下载Vulhub：`git clone https://github.com/vulhub/vulhub.git`
+4. 选择环境：`cd flask/ssti`
+5. 启动靶场：`docker compose up -d`
+6. 访问靶场：根据`README.md`的指示复现漏洞
+7. 关闭靶场：`docker compose down`。为了避免被他人恶意利用，测试结束后一定记得关闭环境
 
 过程中可能报以下错误：
 
-- **`docker: Got permission denied`**：没有docker权限，需要执行以下命令：`sudo groupadd docker`，`sudo usermod -aG docker $USER`，`newgrp docker`
+- **`docker: Got permission denied`**：没有docker权限，需要使用sudo或者添加用户组
+
+```bash
+sudo docker compose up
+
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
 - **`unexpected keyword argument 'ssl_version'`**：使用`docker compose up -d`指令启动。不要用官方教程的`docker-compose`，那是旧版本的
-- **加载超时**：docker官网被墙了，需要开代理或者换镜像站，设置方法是在`\etc\docker\daemon.json`中加入如下内容（代理或镜像选一个即可）然后重启
+- **加载超时**：docker官网被墙了，需要开代理或者换镜像站，设置方法是在`/etc/docker/daemon.json`中加入如下内容（代理或镜像选一个即可）然后重启
 
 ```json
 {
@@ -401,7 +457,7 @@ guestInfo.svga.wddm.restrictModesToBootTopology="TRUE"
 }
 ```
 
-### pikachu
+### web靶场
 
 1. 安装[小皮面板](https://www.xp.cn/product-download)（Linux），或者[phpStudy](https://www.xp.cn/php-study)（Windows）
 2. 用浏览器登录面板，然后在网站和数据库界面分别安装apache和mysql

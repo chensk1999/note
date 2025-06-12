@@ -125,6 +125,15 @@ id               # 查看当前用户名、uid、用户组和gid
 whoami           # 查看当前用户名
 groups           # 查看当前用户组
 cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
+cat /etc/group   # 查看用户组列表
+
+# 编辑用户组
+sudo groupadd $group_name
+sudo usermod -aG $group_name $USER   # 添加成员
+newgrp $group_name                   # 登录新加入的组
+
+# 更改权限
+sudo chmod -R 775 ~/dir   # 常用数字：7=rwx，5=r-x
 
 # 查看当前用户能以root权限执行的指令
 
@@ -198,8 +207,6 @@ clear; ls                    # 结束符;，一行的若干命令相继执行
 cat filelist.txt && ls -l    # 组合符&&，若前一个命令成功，继续执行后一个
 mkdir foo || mkdir bar       # 组合符||，若第一个命令失败，则执行后一个
 ```
-
-
 
 ## 变量
 
@@ -287,9 +294,9 @@ echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
 echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
-# 其他
+## 其他
 
-## 模式扩展
+### 模式扩展
 
 向bash输入命令之后，首先将模式扩展（globbing，也叫filename expansion）的字符替换为实际存在的文件名，然后再执行命令。模式扩展是shell的特性，与命令无关
 
@@ -314,7 +321,7 @@ echo a?.txt
 
 假如当前目录存在`aa.txt`和`ab.txt`，则会打印`aa.txt ab.txt`；若没有符合的文件，则原样输出为`a?.txt`
 
-## 脚本
+### 脚本
 
 第一行指定使用的解释器
 
@@ -330,9 +337,42 @@ echo a?.txt
 source script.sh # 句点的别名
 ```
 
+# 包管理器
 
+[参考](https://www.digitalocean.com/community/tutorials/package-management-basics-apt-yum-dnf-pkg)
+
+| 发行版         | 管理器    | 备注 |
+| -------------- | --------- | ---- |
+| Debian, Ubuntu | dpkg, apt |      |
+| CentOS         | rpm       |      |
+| CentOS 6, 7    | yum       |      |
+| CentOS 8       | dnf       |      |
+| FreeBSD        | pkg       |      |
+
+换源、镜像：修改`/etc/apt/sources.list`，并添加公钥文件
+
+`sudo wget https://archive.kali.org/archive-keyring.gpg -O /usr/share/keyrings/kali-archive-keyring.gpg`
 
 # 其他指令
+
+## systemctl - 系统服务
+
+`systemctl`指令与后台的`systemd`交互，管理系统服务。以`nginx`服务器为例
+
+```bash
+sudo systemctl start nginx    # 开启服务
+sudo systemctl stop nginx     # 终止服务
+sudo systemctl status nginx   # 查看服务状态
+
+sudo systemctl enable nginx      # 设置开机自动启动
+sudo systemctl disable nginx     # 取消开机自动启动
+sudo systemctl is-enabled nginx  # 检查是否启用自动启动
+
+systemctl list-units --type=service       # 当前运行的服务
+systemctl list-unit-files --type=service  # 所有服务及其启用状态
+```
+
+老版本可能需要使用`service`命令
 
 ## openssl - 密钥
 
@@ -350,19 +390,3 @@ openssl x509 -in cert.crt -inform pem -out cert.der -outform der
 # 计算哈希值
 openssl x509 -in cert.pem -inform PEM -subject_hash
 ```
-
-## ssh - 远程登录
-
-```bash
-sudo systemctl start ssh.service   # 启动ssh服务
-ssh username@URL                   # 连接远程主机
-```
-
-## mysql
-
-```bash
-service mysql start
-sudo mariadb-secure-installation
-sudo mysql -u root
-```
-

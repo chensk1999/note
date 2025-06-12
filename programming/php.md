@@ -2,18 +2,25 @@
 
 https://www.php.net/manual/zh/langref.php
 
-PHP是用于创建网站的服务器端脚本语言
+PHP是用于创建网站的服务器端脚本语言，它可以嵌入进HTML。服务器安装了PHP插件后访问此文件，插件会调用php代码执行业务逻辑、渲染网页
 
 ```php+HTML
 <!DOCTYPE html>
 <html>
-  <body>
-    <?php echo "Hello World!"; ?>
-  </body>
+    <head>
+        <title>Hello</title>
+    </head>
+    <body>
+        <?php echo "Hello World<br/>" ?>
+        <?= "Hello World again<br/>"; ?>
+        <? echo "Hello World<br/>" ?>
+        <!-- 第一个是普通php标签；第二个是echo标签；第三个是短标签 -->
+        <!-- 短标签需要php.ini配置启用short_open_tag -->
+    </body>
 </html>
 ```
 
-示例：
+以下代码以图书管理类`BookManager`为例展示了PHP基础语法
 
 ```php
 class BookManager {
@@ -260,10 +267,11 @@ var_dump(NULL);   # NULL，其他几个函数什么都打印不出来
 基础
 
 ```php
-# 读文本文件
+# 读写文件
 $content = file_get_contents('info.php');
+file_put_contents('info_copy.php', $content);
 
-# 写文件
+# 用文件指针操作文件
 $fp = fopen('test.txt', 'w');
 fwrite($fp, 'Hello, World');
 fclose($fp);
