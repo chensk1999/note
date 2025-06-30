@@ -21,6 +21,8 @@ uv是用Rust写的python环境管理工具，运行速度比pip快得多。安�
 
 **更换镜像**
 
+以下三种方法均可：
+
 1. 创建环境变量`UV_DEFAULT_INDEX`，变量值为镜像源地址
 2. 在配置文件中添加下面的内容
    - 用户配置文件：`%APPDATA\uv\uv.toml`（Windows）或`~/.config/uv/uv.toml`（Linux）
@@ -97,113 +99,6 @@ if pbkdf2_sha256.verify("password", hash):  # 验证hash
     print('success')
 ```
 
-## pydoc-markdown - 生成文档
-
-从docstring直接生成markdown文档
-
-```
-pydocmd simple modulename+ > doc.md
-```
-
-注意加号不可省略。生成多个模块的文档只需要同时给多个模块名字（用空格隔开）
-
-## PyQt - 图形界面
-
-```python
-import sys
-from PyQt5 import QtWidgets, QtGui
-
-class PromptText(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
-        # 设置提示框
-        QtWidgets.QToolTip.setFont(QtGui.QFont('SansSerif', 10))  # 设置提示框的字体
-        self.setToolTip('This is a <b>QWidget</b> widget')
-        self.setGeometry(300, 100, 600, 600)
-        self.setWindowIcon(QtGui.QIcon(t1.jpg))
-        self.setWindowTitle('Tooltips')
-
-        # 创建一个按钮并且设置其格式
-        self.btn = QtWidgets.QPushButton('Button', self)
-        self.btn.setToolTip('This is a <b>QPushButton</b> widget')  # 设置按钮提示框
-        self.btn.resize(100, 50)
-        self.btn.move(250, 500)
-        
-        # 绑定按钮的slot (Qt的signal触发slot)
-        self.btn.clicked.connect(self.func)
-        
-    def func(self):
-        # called when btn is clicked
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    pt = PromptText()
-    pt.show()
-    sys.exit(app.exec_())
-```
-
-## requests - 网络请求
-
-https://requests.readthedocs.io/en/latest/user/advanced/
-
-```python
-import requests
-
-# 简单请求
-response = requests.get(
-    'example.com',
-    params={'page', '1'},                     # GET参数
-    headers={'User-Agent': 'Mozilla/5.0'}     # 请求头
-    cookies={'SESSIONID':'8A25432CEC745A1C'}  # Cookie
-)
-
-# 响应
-r = get_response
-r.status_code   # 状态码 
-r.headers       # 响应头, dict
-r.text          # 文本格式的响应体
-r.content       # 二进制格式的响应体
-r.json()        # 用json解码的响应体
-```
-
-复杂的请求可以用Session对象处理。它可以重复使用header等配置，还能自动管理Cookie。调用`session.get`和`session.post`传递的参数在**本次请求**中，**附加**到Session参数——到下一次请求这些参数就失效，而且Session的其他属性还是会放进请求（也可以用如`sess.get('example.com', header=None)`的方式覆盖Session属性）
-
-```python
-with requests.Session() as s:
-    domain = 'example.com'
-    sess.headers.update({'User-Agent': 'Mozilla/5.0'})   # 请求头
-    sess.cookies.set('_SESSID', '1CvdAc0VkE13nc')        # Cookie
-    sess.proxies = {'http': '192.168.0.1:8080'}          # Proxy
-    cert = '../cert/burp-ca.crt'                         # CA证书
-    try:
-        # GET请求，并用BeautifulSoup分析响应
-        response = sess.get(f'{domain}/thread', params={'file': 'a.png'})
-        soup = BeautifulSoup(response.text, 'html.parser')
-        token = soup.find('input', {'name': '_token'})['value']
-        # POST请求
-        sess.post(f'{domain}/thread', header={'X-TOKEN': token}, data={'text':'example'})
-    except Exception as e:
-        print(str(traceback.format_exc()))
-```
-
-更复杂的请求可以用Session和Request对象一起处理
-
-```python
-req = Request('GET', 'example.com')
-sess = Session()
-sess.send(req.prepare())
-```
-
-忽略SSL
-
-```python
-requests.packages.urllib3.disable_warnings()
-requests.get('https://example.com', verify=False)
-```
-
-
-
 ## sounddevice - 录音和播放声音
 
 ```python
@@ -237,6 +132,46 @@ with sd.Stream(callback=func):
 回调函数参数：`callback(indata:ndarray, outdata:ndarray, frames:int, time:cdata, status)`
 
 sounddevice每隔一定时间会调用一次回调函数。如果没有回调函数，将会在阻塞模式（blocking mode）下运行，使用read write方法进行IO
+
+## tensorflow - 神经网络
+
+Sequential是若干线性堆叠的层构成的神经网络，其中每层输入输出都为一个张量
+
+```python
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 定义Sequential模型
+model = keras.Sequential()
+model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
+model.add(tf.keras.layers.Dense(128, activation='relu'))   # 128节点的全连接层
+model.add(tf.keras.layers.Dropout(0.2))
+model.add(tf.keras.layers.Dense(10, activation='softmax'))
+model.summary()    # 查看每层的输入输出形状、总参数数量
+
+# 加载训练数据集
+mnist = keras.datasets.mnist
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+# mnist是手写数字数据集
+# train_images是一个60000*28*28的numpy数组（60000张28*28的手写数字图片）
+# train_labels是长度60000的numpy数组，代表图片中的数字
+# test与train类似，不过只有10000张
+x_train, x_test = x_train / 255.0, x_test / 255.0  # 转为0~1浮点数
+
+# 指定训练配置：优化器、损失、指标
+model.compile(optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy'])
+
+# 训练与验证模型
+history = model.fit(train_images, train_labels, epochs=5)
+result = model.evaluate(test_images, test_labels, verbose=2)
+
+# 保存与加载模型
+model.save('my_model')    # 创建my_model的文件夹，并将模型架构、权重、训练配置存进去
+my_model = keras.models.load_model('my_model')
+```
 
 ## whisper - 语音识别
 

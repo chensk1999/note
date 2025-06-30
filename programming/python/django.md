@@ -33,7 +33,7 @@ graph LR
   View ---- Template(Template: 页面样式)
 ```
 
-另一种常见的设计模式是MVC（Model View Controller），它是MVT的前身。**Controller**接收用户的请求，并选择相应的Model去处理；**Model**根据Controller的调用操作数据库；最后**View**将数据显示给客户端用户
+另一种常见的设计模式是MVC（Model View Controller），它是MVT的前身。**Controller**接收用户的请求，并选择相应的Model去处理；**Model**操作数据库；最后**View**将数据显示给客户端用户
 
 ```mermaid
 graph LR

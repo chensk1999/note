@@ -12,11 +12,10 @@ vscode的设置都存储在settings.json中，每个键值对对应一项设置
 }
 ```
 
-部分文件位置：
+部分配置文件：
 
-设置：`%APPDATA%\Code\User\settings.json`（`%APPDATA% = C:\Users\current_user\AppData\Roaming`）
-
-扩展：`%USERPROFILE%\.vscode\extensions`（`%USERPROFILE% = C:\Users\current_user`）
+- 设置：`%APPDATA%\Code\User\settings.json`（`%APPDATA% = C:\Users\current_user\AppData\Roaming`）
+- 扩展：`%USERPROFILE%\.vscode\extensions`（`%USERPROFILE% = C:\Users\current_user`）
 
 ## language-specific settings
 
@@ -99,6 +98,8 @@ y^          # 复制这行剩余内容
 
 # Mermaid
 
+[Mermaid官网](https://mermaid.js.org/intro/)
+
 ## Flow Chart
 
 ```mermaid
@@ -122,28 +123,6 @@ graph LR
         F[/parallelogram/] --> G[\parallelogram alt\]
     end
     D --> SG
-```
-
-## State Diagram
-
-```mermaid
-stateDiagram-v2
-    %% 起止状态
-    [*] --> s1
-    s1 --> [*]
-
-    %% 先声明后连接。这样声明的节点可以包含空格等特殊字符
-    s2: state 2
-    [*] --> s2: 连接线上的<br>文字
-
-    %% 嵌套状态
-    sub: Sub System
-    state sub{
-        [*] --> s2.1
-        --  %% 再嵌套一层虚线框
-        s2.2
-    }
-    s2 --> sub
 ```
 
 # Word

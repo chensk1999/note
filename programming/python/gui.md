@@ -1,18 +1,14 @@
-# 基础知识
+# Tkinter
 
 参考：[Tk Docs](https://tkdocs.com/tutorial/index.html)，[Tkinter 8.5 Reference](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html)
 
-tkinter是跨平台gui工具包Tcl/Tk（更具体地说，Tcl是一种脚本语言，Tk是使用Tcl编写的gui框架，两者并称Tcl/Tk）的python接口（Tk interface）
+tkinter是跨平台gui工具包Tcl/Tk（更具体地说，Tcl是一种脚本语言，Tk是使用Tcl编写的gui框架，两者并称Tcl/Tk）的python接口（Tk interface）。Tcl/Tk在安装python时一起安装。如果没有tkinter，需要重新安装python，并且在安装时勾选Tcl/Tk
 
 ```bash
 python -m tkinter    # 检查是否安装tkinter，以及其版本
 ```
 
-Tcl/Tk在安装python时一起安装。如果没有tkinter，需要重新安装python，并且在安装时勾选Tcl/Tk
-
-## 例子
-
-Tk包含三个基本要素：控件、几何管理与事件处理
+Tk包含三个基本要素：**控件**、**几何管理**与**事件处理**
 
 ```python
 import tkinter as tk
@@ -35,9 +31,9 @@ btn.grid(column=0, row=1)
 root.mainloop()
 ```
 
-# 控件
+## 控件
 
-控件（widget）是gui的对象（比如，按钮、文本框、窗口）。控件呈树状，根节点为Tk实例。大部分控件都有`tkinter.widget`和`ttk.widget`两种，ttk比较新而且可以做的稍微好看一点点，除此之外区别不大
+控件（widget）是gui的对象（比如，按钮、文本框、窗口）。控件呈树状，根节点为Tk实例。大部分控件都有`tkinter.widget`和`ttk.widget`两种，ttk稍微好看一点点，除此之外区别不大
 
 **基本**
 
@@ -84,19 +80,14 @@ root.mainloop()
 | Message      | 显示多行文本，与label比较类似                                |
 | tkMessageBox | 应用程序的消息框                                             |
 
-## 配置控件
+### 配置控件
 
 ```python
-# 用关键字参数初始化控件
-btn1 = ttk.Button(root, text='Yes')
-
-# 用参数名索引设置控件
+btn1 = ttk.Button(root, text='Yes') # 初始化控件
 btn2 = ttk.Button(root)
-btn2['text'] = 'No'
-
-# 使用configure方法设置（参数名索引和configure方法也可以用来获取参数值）
+btn2['text'] = 'No'           # 用参数名索引访问控件参数
 btn3 = ttk.Button(root)
-btn3.configure(text='Cancel')
+btn3.configure(text='Cancel') # 使用configure方法访问控件参数
 ```
 
 部分常用且通用的属性：
@@ -105,7 +96,7 @@ btn3.configure(text='Cancel')
 lbl = ttk.Label(root)
 
 # 尺寸
-lbl['width'] = 350      # 350 pixels。'350'也是同样的效果
+lbl['width'] = 350      # 350 pixels
 lbl['height'] = '400'   # 400 cm。其他后缀还有i（inch）、p（print points）
 
 # 边框
@@ -153,9 +144,9 @@ s.configure('new.TLabel', foreground='maroon')
 label_new = ttk.Label(root, style='new.TLabel')
 ```
 
-## 控件用法
+### 控件用法
 
-比较复杂，此处不抄文档了，仅列出部分示例代码。具体可以参考[这里](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html)的7~46节
+仅记录部分示例代码。具体可以参考[文档](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html)的7~46节
 
 ### Canvas
 
@@ -191,11 +182,11 @@ file_menu.add_command(label='New', command=lambda: 0)
 root.bind('<Button-3>', lambda e: menu_bar.post(e.x, e.y))
 ```
 
-# 几何管理器
+## 几何管理器
 
 几何管理器控制各个控件的位置。所有控件都必须指定几何管理器，否则不会显示出来
 
-## pack
+### pack
 
 pack是最简单的几何管理器，适合用于元素比较少的界面
 
@@ -232,7 +223,7 @@ root.mainloop()
 └───┘└───┘
 ```
 
-## grid
+### grid
 
 grid是最常用的几何管理器
 
@@ -284,7 +275,7 @@ focus_force()
     注：用在窗口上能够取得窗口的focus
 ```
 
-## 其他
+### 其他
 
 ```python
 btn = ttk.Button(text='example')
@@ -293,7 +284,7 @@ btn.place(x=0, y=0)   # 可以任意放置的几何管理器。很少使用
 btn.forget()          # 把控件从当前mapping中移除。其几何管理器参数也会被删除
 ```
 
-# 事件处理
+## 事件处理
 
 将用户操作（事件）与控件绑定，就能对事件进行反应
 
@@ -304,9 +295,8 @@ from tkinter import ttk
 root = tk.Tk()
 label = ttk.Label(root, text='hello')
 label.pack()
-label.bind('<Button-1>', on_click)  # 当<Button-1>（鼠标左键点击）时，触发on_click函数
-label.bind('<Button-1>', on_click2, add=True)
-# 如果没有add=True，第二个绑定会覆盖掉前一个
+label.bind('<Button-1>', on_click)            # 鼠标左键点击时，触发on_click函数
+label.bind('<Button-1>', on_click2, add=True) # 添加事件。如果add=False，第二个绑定会覆盖掉前一个
 
 def on_click(event):
     print(f'Click on x={event.x}, y={event.y}')
@@ -317,7 +307,7 @@ def on_click2(event):
 root.mainloop()
 ```
 
-上面例子中，回调函数`on_click`只能接受event参数，并且返回值无法被接收，因此很难用。更常用的做法是用类的继承实现回调函数
+上面例子中，回调函数`on_click`只能接受event参数，并且返回值无法被接收。若需要额外参数或返回值，可以继承控件类
 
 ```python
 class IncrementalLabel(ttk.Label):
@@ -330,7 +320,7 @@ class IncrementalLabel(ttk.Label):
         self['text'] = str(n + 1)
 ```
 
-## 事件
+### 事件
 
 事件用事件序列（Event Sequence）表示，比如`<Control-KeyPress-k>`。一个序列中可以包含多个事件，当它们同时发生时触发，比如上例子中同时按下Ctrl和K才能触发事件
 
@@ -348,8 +338,6 @@ class IncrementalLabel(ttk.Label):
 
 **键盘事件**
 
-例子：
-
 - `e`表示按键E（注意，如果用了`E`，就需要Shift+E或者打开大写锁定才能触发）
 - `<Escape>`表示Esc键
 - `<Control-z>`表示Ctrl+Z
@@ -361,25 +349,11 @@ class IncrementalLabel(ttk.Label):
 | `<FocusIn>`, `<FocusOut>` | focus移动到控件 / 移出控件 |
 | `<Configure>`             | 控件大小改变 |
 
-详细列表可以参考[这里](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/key-names.html)。event对象具体用法参考[这里](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/event-handlers.html)
+键盘事件详细列表可参考[54.5. Key names](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/key-names.html)；`event`对象参考[54.6. Writing your handler: The Event class](https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/event-handlers.html)
 
-## 方法
+## 子模组
 
-```
-wait_variable(var)
-    wait until the variable is modified
-    参数必须是tkinter.Var
-wait_window(window=None)
-    wait until a WIDGET is destroyed
-    if no parameter is given self is used
-wait_visibility(window=None)
-    wait until the visibility of a WIDGET changes.(e.g. it appears).
-    if no parameter is given self is used
-```
-
-# 子模组
-
-## 文件选择
+### 文件选择
 
 ```python
 from tkinter import filedialog
@@ -394,13 +368,13 @@ filedialog.askdirectory()
 #均返回一个完整的文件路径或空字符串
 ```
 
-## 选色器
+### 选色器
 
 ```python
 from tkinter import colorchooser
 ```
 
-## 信息窗口
+### 信息窗口
 
 ```python
 from tkinter import messagebox
@@ -418,7 +392,9 @@ choice = messagebox.showinfo(
 print(choice)
 ```
 
-# 图像
+## 其他
+
+### 图像
 
 ```python
 from PIL import ImageTk, Image
@@ -431,9 +407,7 @@ tk_img = ImageTk.PhotoImage(Image.fromarray(cv_img))
 
 注意：一定要给`ImageTk`对象留一个索引，否则会被gc
 
-# 其他
-
-## Tk变量
+### Tk变量
 
 ```python
 import tkinter as tk
@@ -460,7 +434,7 @@ root.mainloop()
 
 类似地，有`StringVar`，`IntVar`，`DoubleVar`，`BooleanVar`四种类型
 
-## 杂项
+### 杂项
 
 ```python
 import tkinter
@@ -468,5 +442,79 @@ import tkinter
 root = tkinter.Tk()
 root.withdraw()           # 隐藏根菜单
 root.clipboard_get()      # 操作剪贴板
+```
+
+# PyQt
+
+## 一个简单例子
+
+```python
+import sys
+from PyQt5 import QtWidgets
+
+app = QtWidgets.QApplication(sys.argv)  #Qt要求有一个applicaton
+w = QtWidgets.QWidget()   #QWidget是一切控件的基础类
+w.setWindowTitle('Example')
+w.show()
+
+sys.exit(app.exec_())   #开始主循环
+```
+
+## 关闭事件以及QMessageBox
+
+```python
+from PyQt5.QtWidgets import QWidget, QMessageBox
+class CloseConfirmWidget(QWidget):
+    def closeEvent(self, event):
+        # 覆盖默认的closeEvent，当关闭时被调用
+        reply = QtWidgets.QMessageBox.question(
+                self, 'title', 'prompt',
+                QMessageBox.Yes | QMessageBox.No # 按钮的union
+                QMessageBox.No   # 默认按钮
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+        elif reply == QMessageBox.No:
+            event.ignore()
+```
+
+将设计文件转换为脚本
+
+```
+pyuic5 -o name.py name.ui
+```
+
+```python
+import sys
+from PyQt5 import QtWidgets, QtGui
+
+class PromptText(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        # 设置提示框
+        QtWidgets.QToolTip.setFont(QtGui.QFont('SansSerif', 10))  # 设置提示框的字体
+        self.setToolTip('This is a <b>QWidget</b> widget')
+        self.setGeometry(300, 100, 600, 600)
+        self.setWindowIcon(QtGui.QIcon(t1.jpg))
+        self.setWindowTitle('Tooltips')
+
+        # 创建一个按钮并且设置其格式
+        self.btn = QtWidgets.QPushButton('Button', self)
+        self.btn.setToolTip('This is a <b>QPushButton</b> widget')  # 设置按钮提示框
+        self.btn.resize(100, 50)
+        self.btn.move(250, 500)
+        
+        # 绑定按钮的slot (Qt的signal触发slot)
+        self.btn.clicked.connect(self.func)
+        
+    def func(self):
+        # called when btn is clicked
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    pt = PromptText()
+    pt.show()
+    sys.exit(app.exec_())
 ```
 

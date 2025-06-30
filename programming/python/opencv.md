@@ -16,23 +16,23 @@ def cv_imread(filename):
     cv_img = cv2.imdecode(np.fromfile(filename, dtype=np.uint8), -1)
     return cv_img
 
-#存储图片。由于jpg格式限制，灰度图会被还原成三通道
+# 存储图片。由于jpg格式限制，灰度图会被还原成三通道
 cv2.imwrite('test_grayscale.jpg', gray_img)
 
-#裁剪图片
+# 裁剪图片
 img_slice = img[20:150, -180:-50]
 
-#缩放图片。可以用interpolation=cv2.INTER_NEAREST，不进行插值
+# 缩放图片。可以用interpolation=cv2.INTER_NEAREST，不进行插值
 img_200x200 = cv2.resize(color_img, (width, height))
-#扩张图片。例中将图片上下扩张50像素
+# 扩张图片。例中将图片上下扩张50像素
 img_300x200 = cv2.copyMakeBorder(img_200x200, 50, 50, 0, 0,
                                  cv2.BORDER_CONSTANT,
                                  value=(0, 0, 0))
 
-#拼接图片（利用numpy的矩阵拼接）
+# 拼接图片（利用numpy的矩阵拼接）
 img_conc = np.concatenate((img1,img2), axis=0)
 
-#二值化
+# 二值化
 cv2.threshold(src=img, thresh=127, maxval=255, type=cv2.THRESH_BINARY)
 ```
 
@@ -67,7 +67,7 @@ triangles = np.array([
     [(200, 240), (145, 333), (255, 333)],
     [(60, 180), (20, 237), (100, 237)]])
 # 绘制多边形。参数：多边形列表，是否闭合，颜色，线宽
-cv2.polylines(img,[pts],True,(0,255,255), 2)
+cv2.polylines(img, [pts], True, (0,255,255), 2)
 # 填充多边形。参数：多边形列表，颜色
 cv2.fillPoly(canvas, triangles, (0, 255, 0))
 
