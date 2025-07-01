@@ -634,21 +634,15 @@ JavaScript以代码块的形式嵌入到html，一般定义在head中或者body�
     <!-- 使用外部脚本 -->
     <script src="myScript.js"></script>
 
-    <!-- 在head中写脚本 -->
+    <!-- 页面内嵌脚本 -->
     <script>
-        function funcInHead() {document.getElementById("demo").innerHTML="Head";}
+        function func() {document.getElementById("demo").innerHTML="Hello";}
     </script>
 </head>
 
 <body>
     <p id="demo">Javascript Demo</p>
-    <button type="button" onclick="funcInHead()"> Button1 </button>
-    <button type="button" onclick="funcInBody()"> Button2 </button>
-
-    <!-- 在body底部写脚本 -->
-    <script>
-        function funcInBody() {document.getElementById("demo").innerHTML="body";}
-    </script>
+    <button type="button" onclick="func()"> Button </button>
 </body>
 ```
 

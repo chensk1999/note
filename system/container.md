@@ -27,7 +27,7 @@ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker c
 # 安装。比较复杂，此处从略
 ```
 
-# 运行
+## 运行
 
 ```bash
 sudo systemctl start docker   # 启动Docker守护进程
@@ -44,7 +44,7 @@ docker stop $cid                # 停止容器
 docker rm $cid                  # 删除容器
 ```
 
-## Docker Compose
+### Docker Compose
 
 Compose是管理多个容器的工具
 
@@ -53,9 +53,7 @@ docker compose up -d   # 读取当前目录的compose.yml配置并启动容器
 docker compose down
 ```
 
-
-
-# 镜像
+## 镜像
 
 ```bash
 docker images             # 查看本地镜像
@@ -65,7 +63,7 @@ docker rmi ubuntu:13.10   # 删除镜像
 
 注意：Docker Hub被墙了，需要配置代理或者镜像
 
-## 构建镜像
+### 构建镜像
 
 可以使用Dockerfile构建镜像。Dockerfile文件包含了创建镜像使用的每一条指令
 
@@ -94,14 +92,14 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 docker build -t "my_image:dev" ./
 ```
 
-## 管理镜像
+### 管理镜像
 
 ```bash
 docker image ls
 docker image rm $REPO
 ```
 
-# 配置
+## 配置
 
 代理、镜像
 

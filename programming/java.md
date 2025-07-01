@@ -19,7 +19,7 @@ public class HelloWorld {
 ```java
 public class BankAccount {
 
-    // 类变量，所有示例共享此变量
+    // 类变量，所有实例共享此变量
     private static int totalAccounts = 0;
 
     // 实例变量，每个实例独有
@@ -46,7 +46,7 @@ public class BankAccount {
         balance -= amount;
     }
 
-    // 9. getter方法，用于访问私有属性
+    // getter方法，用于访问私有属性
     public String getAccountHolder() {
         return accountHolder;
     }

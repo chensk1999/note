@@ -50,17 +50,17 @@ TCP/IP协议族将网络通信按照功能，从上到下划分为应用层、�
 
 OSI模型是国际标准化组织提出的分层方案，它的划分如下表
 
-| 层号 | 名称                          | 作用 |
-| ---- | ----------------------------- | ---- |
-| 7    | 应用层（Application Layer）   |      |
-| 6    | 表示层（Presentation Layer）  |      |
-| 5    | 会话层（Session Layer）       |      |
-| 4    | 传输层（Transport Layer）     |      |
-| 3    | 网络层（Network Layer）       |      |
-| 2    | 数据链路层（Data Link Layer） |      |
-| 1    | 物理层（Physical Layer）      |      |
+| 层号 | 名称                          | 作用                         |
+| ---- | ----------------------------- | ---------------------------- |
+| 7    | 应用层（Application Layer）   | 为用户提供服务               |
+| 6    | 表示层（Presentation Layer）  | 数据处理（编码、加密解密等） |
+| 5    | 会话层（Session Layer）       | 管理应用程序间会话           |
+| 4    | 传输层（Transport Layer）     | 维护数据传输可靠性           |
+| 3    | 网络层（Network Layer）       | 不同网络间通信（路由和寻址） |
+| 2    | 数据链路层（Data Link Layer） | 帧编码和误差纠正             |
+| 1    | 物理层（Physical Layer）      | 传输比特流                   |
 
-OSI模型比TCP/IP参考模型分层更严格，功能更完善。因此需要分析协议 / 网络设备的作用时往往采用OSI模型。不过，严格和功能完善的代价是降低了灵活性，还增添了不必要的复杂度，因此绝大多数协议的还是根据TCP/IP参考模型设计
+OSI模型比TCP/IP参考模型分层更严格，功能更完善。因此需要分析协议 / 网络设备的作用时往往采用OSI模型。不过，严格和功能完善的代价是降低了灵活性，还增添了不必要的复杂度，因此实践中还是根据TCP/IP参考模型设计
 
 时刻注意，OSI模型和TCP/IP参考模型终究是两个东西，要避免混淆。我的分辨经验是：涉及链路层的论述往往是OSI模型，因为TCP/IP参考模型链路层比较混乱；只涉及传输层、网络层的论述不必费心分辨，因为OSI模型3、4层和TCP/IP参考模型的2、3层几乎完全对应；使用数字编号的可以通过结合各层作用分辨
 
@@ -122,7 +122,7 @@ IP地址由多个机构分层授权分配。按照层级从高到低，分别是
 
 #### 寻址
 
-IP地址分层授权机制告诉我们，从IP地址可以定位到主机的物理地址，此过程称作寻址。例如，地址`14.153.6.1`的分配过程是：IANA首先将`14.0.0.0/8`分配给亚太地区，亚太地区的RIR从中拆分出`14.144.0.0/12`分配给中国电信，中国电信从中进一步拆出`14.153.0.0/16`分给某个省……各环节IP地址分配给谁一般不是秘密，知道IP地址基本可以轻松定位到所在城市，技术和权限足够的话直接定位到一个房间也不困难
+IP地址分层授权机制告诉我们，从IP地址可以定位到主机的物理地址，此过程称作寻址。例如，地址`14.153.6.1`的分配过程是：IANA首先将`14.0.0.0/8`分配给亚太地区，亚太地区的RIR从中拆分出`14.144.0.0/12`分配给中国电信，中国电信从中进一步拆出`14.153.0.0/16`分给某个省……各环节IP地址分配给谁一般不是秘密，知道IP地址可以轻松定位到所在城市，权限足够的话直接定位到一个房间也不困难
 
 从寻址过程也不难发现，如果从头开始逐比特比较两个IP地址，匹配的位数越多，就说明两台主机物理地址越近：匹配8~12比特，说明它们都在亚太地区；匹配12~16位，它们都在中国；匹配16位以上，说明它们在同一个省
 
@@ -133,6 +133,10 @@ IP地址分层授权机制告诉我们，从IP地址可以定位到主机的物�
 选取传输路径的策略存储在路由设备中，称作路由表。例如，路由表记录了`目标地址: 14.153.0.0/16 下一跳: 14.78.1.1`，当此路由器收到一个目的地是`14.153.0.0/16`的数据包时，就将它转发到`14.78.1.1`
 
 IP协议规定了使用路由表选择转发路径，但没有规定怎么建立路由表。路由表的建立、维护还要依靠OSPF，BGP等协议
+
+## ICMP
+
+**ICMP（Internet Control Message Protocol，互联网控制报文协议）**：一种用于传输网络状态和错误消息的协议，常用于网络诊断和故障排除。例如，Ping 工具就使用了 ICMP 协议来测试网络连通性
 
 # 传输层
 
@@ -167,26 +171,43 @@ IP协议规定了使用路由表选择转发路径，但没有规定怎么建立
 
 ## HTTP
 
-POST请求
+https://developer.mozilla.org/en-US/docs/Web/HTTP
 
-```http
-POST / HTTP/1.1
-Host: example.com
-Content-Type: multipart/form-data; boundary=---------------------------10242300956292313528205888
-Content-Length: 363
+### Cookie
 
------------------------------10242300956292313528205888
-Content-Disposition: form-data; name="file[]"; filename="1.txt"
-Content-Type: text/plain
+[Cookie](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/Cookies)为HTTP协议添加了状态。首先由服务器响应头[设置Cookie](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Headers/Set-Cookie)，然后访问网页时浏览器会自动在请求头中加上Cookie
 
-Hello, 1
------------------------------10242300956292313528205888
-Content-Disposition: form-data; name="file[]"; filename="2.txt"
-Content-Type: text/plain
-
-Hello, 2
------------------------------10242300956292313528205888--
 ```
+// 响应头设置Cookie
+Set-Cookie: sessionId=38afes7a8; Max-Age=2592000; Domain=example.com; Path=/; Secure; HttpOnly; SameSite=Lax
+
+// 请求头带上Cookie
+Cookie: sessionId=38afes7a8
+```
+
+其中，`sessionId=38afes7a8`是Cookie键值对，剩余的是Cookie属性。和安全相关的Cookie属性有：
+
+- `Domain`和`Path`指定生效范围，当访问此范围URL时会自动带上本Cookie
+- `HttpOnly`阻止Javascript通过`document.cookie`访问Cookie，防止XSS攻击窃取Cookie
+- `SameSite`控制跨站访问是否发送Cookie，用于防御CSRF攻击
+  - `Strict`：任何跨站访问都不发送，包括重定向、点击链接跳转
+  - `Lax`：到目标网址的GET请求会发送Cookie
+- `Secure`指示浏览器仅通过https请求发送Cookie，防御中间人攻击
+
+### 同源策略
+
+浏览器的同源策略（Same-origin Policy）限制网页、脚本访问其他站点的网络资源。它不是HTTP协议的一部分，但现代浏览器均采用此策略
+
+协议、域名、端口都相同的网页称作同源；访问不同源的资源称作跨域。通常允许跨域写操作（重定向、表单等）；允许跨域资源嵌入，须通过`script, link, img, iframe`等标签嵌入；限制跨域读操作，比如用javascript访问跨域资源会被浏览器拦截
+
+跨域资源共享（Cross-origin resource sharing，**CORS**）允许特定情况下跨域加载资源。服务器设置响应头允许跨域操作
+
+```
+Access-Control-Allow-Origin: https://example.com
+Access-Control-Allow-Methods: GET, POST
+```
+
+其他方法：JSONP，postMessage，WebSocket
 
 ## DNS
 
@@ -202,7 +223,21 @@ https://zh.wikipedia.org/wiki/DNS%E8%AE%B0%E5%BD%95%E7%B1%BB%E5%9E%8B%E5%88%97%E
 | AAAA  | IPv6 |      |
 | CNAME | 别名 |      |
 
+## 电子邮件
 
+假设`alice@qq.com`发邮件给`bob@163.com`
+
+1. alice使用邮件程序将邮件发给`qq.com`
+2. 发送端服务器`qq.com`将邮件发给接收端服务器`163.com`
+3. bob访问`163.com`，获取邮件
+
+其中，1、2步使用**SMTP协议**，此协议由发送端主动推送报文；第3步使用**POP3**或**IMAP协议**，这两个协议由接收方请求服务器获得报文
+
+# 防火墙
+
+- 包过滤防火墙
+- 状态防火墙
+- 下一代防火墙
 
 # 其他
 

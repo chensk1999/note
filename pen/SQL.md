@@ -2,7 +2,7 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 
 # 数据库理论
 
-## 数据库管理系统（DBMS）
+## 数据库管理系统
 
 数据库管理系统（database management system, DBMS）是一种用来组织、储存、管理数据的系统。相比于直接把数据存在文件里，把数据交给数据库管理系统来管理有许多优势，比如
 
@@ -11,17 +11,17 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 3. 设计合理的数据库能够简化数据结构，避免冗余和数据一致性问题
 4. 数据访问/修改权限限制
 
-## 数据模型（data model）
+## 数据模型
 
-数据模型是描述数据之间逻辑关系的方法。当前绝大多数数据库都属于关系模型，称作关系数据库（Relational Database，RDB）。其他模型主要在一些特殊场景使用。许多人热衷于研究新的模型，想取代RDB的地位
+数据模型（data model）是描述数据之间逻辑关系的方法。当前绝大多数数据库都属于关系模型，称作关系数据库（Relational Database，RDB）。其他模型主要在一些特殊场景使用。许多人热衷于研究新的模型，想取代RDB的地位
 
 ## 关系模型
 
-关系数据库由若干二维表构成，每个表有唯一的名字，表的每一行称作记录（record），每一列称作字段（column），标识某项记录的字段称作键（key）。表中每一项都是不可分的，即不能在表中包含表
+关系数据库（Realtional Database，RDB）由若干二维表构成，每个表有唯一的名字，表的每一行称作记录（record），每一列称作字段（column），标识某项记录的字段称作键（key）。表中每一项都是不可分的，即不能在表中包含表
 
 另一种叫法（可能是比较教科书的叫法？），把一张表称作关系（relation），每行称作元组（tuple），元组的某个属性值叫做分量，每列称作属性（attribute），标识项称作码（key），属性取值范围叫做域（domain）
 
-### 键（key）
+### 键
 
 关系表要求不能有重复记录，应用中通常选择一个字段作为区分的标识符，称作**主键（primary key）**。变更主键会带来大量的问题，因此常创建一个与业务无关的键（id）作为主键，常用的创建方法有自增整数、全局唯一GUID。注意int类型大小限制了整数id的个数
 
@@ -39,7 +39,7 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 
 ### 索引
 
-索引是对某一列的值进行预排序的数据结构，使用索引后查找时不会搜索整张表而是直接定位，加快查询速度，但代价是插入、更新、删除时索引要变化，因此这些操作的速度下降。
+索引是对某一列的值进行预排序的数据结构，使用索引后查找时不会搜索整张表而是直接定位，加快查询速度，但代价是插入、更新、删除时索引要变化，因此这些操作的速度下降
 
 ## 数据库设计
 
@@ -47,22 +47,6 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 - **概念结构设计**：将应用需求抽象为直接反应现实世界、便与理解、便于修改的概念模型。常用E-R模型表示，用矩形表示实体，椭圆形表示属性，菱形表示联系，把每个实体与其属性连起来，每个联系与有关实体、属性连起来，连线旁标注类型(1:1, 1:n, m:n)。凡是不需要另外描述、只与一个实体联系的事物，都可以当作属性看待。为了简便，能当作属性的都应该当作属性
 - **逻辑结构设计**：从E-R图到关系模型
 - 物理结构设计、实施与维护……
-
-# 数据类型
-
-| 名称         | 类型           | 说明                                                         |
-| ------------ | -------------- | ------------------------------------------------------------ |
-| INT          | 整型           | 4字节整数类型，范围约+/-21亿                                 |
-| BIGINT       | 长整型         | 8字节整数类型，范围约+/-922亿亿                              |
-| REAL         | 浮点型         | 4字节浮点数，范围约+/-1038                                   |
-| DOUBLE       | 浮点型         | 8字节浮点数，范围约+/-10308                                  |
-| DECIMAL(M,N) | 高精度小数     | 由用户指定精度的小数，例如，DECIMAL(20,10)表示一共20位，其中小数10位，通常用于财务计算 |
-| CHAR(N)      | 定长字符串     | 存储指定长度的字符串，例如，CHAR(100)总是存储100个字符的字符串 |
-| VARCHAR(N)   | 变长字符串     | 存储可变长度的字符串，例如，VARCHAR(100)可以存储0~100个字符的字符串 |
-| BOOLEAN      | 布尔类型       | 存储True或者False                                            |
-| DATE         | 日期类型       | 存储日期，例如，2018-06-22                                   |
-| TIME         | 时间类型       | 存储时间，例如，12:20:59                                     |
-| DATETIME     | 日期和时间类型 | 存储日期+时间，例如，2018-06-22 12:20:59                     |
 
 # 访问数据库、表
 
@@ -75,37 +59,198 @@ SHOW DATABASES;  -- 查询数据库列表
 CREATE DATABASE school;  -- 创建
 USE school;      -- 选择数据库
 SHOW TABLES;     -- 查询当前数据库所有表
-DESC students;   -- 查询表的结构，字段类型，主键，是否为空等属性
+DESC student;   -- 查询表的结构，字段类型，主键，是否为空等属性
 DROP school;     -- 删除数据库
 ```
 
 ## 定义表
 
 ```sql
-CREATE TABLE students(
-    id INT UNSIGNED AUTO_INCREMENT,
+CREATE TABLE student(
+    id       INT UNSIGNED AUTO_INCREMENT,
     class_id INT UNSIGNED DEFAULT 1,
-    name VARCHAR(100) NOT NULL comment "姓名",
-    score INT UNSIGNED comment "分数",
+    name     VARCHAR(100) NOT NULL,
+    score    INT UNSIGNED,
     PRIMARY KEY (id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;  -- 设置存储引擎和编码
+);
 ```
 
 ## 修改表
 
 ```sql
-ALTER TABLE students ADD gender CHAR(1) NOT NULL AFTER name;  -- 添加字段
-ALTER TABLE students DROP gender;             -- 删除字段
-ALTER TABLE students CHANGE score points int; -- 修改字段名
-ALTER TABLE students RENAME pupil;            -- 修改表名
-DROP TABLE students;                          -- 删除表
+ALTER TABLE student ADD gender CHAR(1) NOT NULL AFTER name;  -- 添加字段
+ALTER TABLE student DROP gender;             -- 删除字段
+ALTER TABLE student CHANGE score points int; -- 修改字段名
+ALTER TABLE student RENAME pupil;            -- 修改表名
+DROP TABLE student;                          -- 删除表
 
 -- 修改约束
-ALTER TABLE students ADD CONSTRAINT unique_name UNIQUE(name);
-ALTER TABLE students DROP INDEX unique_name;
+ALTER TABLE student ADD CONSTRAINT unique_name UNIQUE(name);
+ALTER TABLE student DROP INDEX unique_name;
 ```
 
-# 修改数据
+# 访问数据
+
+## 查询
+
+数据查询语言（Data Query Language，DQL）
+
+
+```sql
+-- SELECT语句示例。从students表中筛选id=1的学生，查询其姓名和分数
+SELECT name, score FROM student WHERE id=1;
+
+-- 后面的子句都可以省略。全省略时可用来检查数据库连接
+SELECT 1;
+```
+
+完整`SELECT`语句。下面例子计算人数大于20人的班级的女学生的平均分
+
+```sql
+SELECT AVG(student.score), class.id -- 查询字段
+FROM                                -- 数据来源。可以是表名、笛卡尔积、JOIN等
+    student INNER JOIN class
+    ON student.class_id=class.id
+WHERE gender='F'            -- 查询条件
+GROUP BY class.id           -- 分组
+HAVING count(class.id)>20   -- 筛选条件
+UNION select 60, -1         -- 联合查询
+ORDER BY student.score;     -- 排序
+LIMIT 5, 1                  -- 分页查询
+INTO OUTFILE 'out.txt';     -- 保存结果到文件
+```
+
+执行时，每一步生成一张虚拟表`vt`作为下一步的输入。各语句执行顺序如下
+
+1. **From**：从选中的表生成虚拟表`vt1`，然后筛选出满足**On**语句的表`vt2`，并根据**Join**语句把上一步筛掉的行加回去生成`vt3`
+2. **Where**：筛选生成`vt4`
+3. **Group By**：计算聚合函数并整合为`vt5`。如果有**With Rollup**语句则再生成为`vt6`
+4. **Having**：对分组后的数据再筛选一次得到`vt7`
+5. **Select**：把需要的列筛出来得到`vt8`。如果有**Distinct**则筛选得到`vt9`
+6. **Order By**：排序并返回游标（关系数据表是无序的，因此使用另一种数据结构表达其顺序）
+7. **Limit**：返回需要的行数
+
+### Select - 查询字段
+
+可以是字段名、表达式
+
+```sql
+SELECT * FROM student;            -- 查询全部列
+SELECT name, score FROM student;  -- 查询name, score两列
+SELECT MAX(score) FROM stdent;    -- 查询最高分。常用聚合函数：COUNT, SUM, AVG, MAX, MIN
+SELECT DISTINCT class_id FROM student;  -- DISTINCT关键字对完全相同的行去重（选择多列时，需要每列都相同）
+```
+
+还可以给查询字段起别名
+
+```sql
+SELECT
+    id as sid,       -- 用as标识别名
+    name `sname`,    -- 反斜杠标识别名
+    gender sgender   -- 空格，同样也是表示别名
+FROM student as s;   -- 表名也可以起别名
+```
+
+### From - 数据来源
+
+```sql
+-- 单个表
+SELECT * FROM students;
+-- 笛卡尔积。即表1与表2每行两两拼起来，有c1+c2列，r1*r2行
+SELECT s.name, s.class_id, c.id FROM student as s, class as c;
+```
+
+`JOIN`语句拼接两个表。`ON`语句定义了拼接规则，下面例子中将`student.class_id`和`class.id`相同的行拼接起来。`JOIN`语句可以用关键词控制选择范围：`INNER JOIN`返回成功拼接的行；`LEFT JOIN`包括了左边表全部行，拼接失败的行右边部分是`NULLs`；`RIGHT JOIN`包括右边表全部行；`FULL JOIN`包含两边的全部行
+
+```sql
+SELECT student.name, class.name
+FROM student INNER JOIN class
+ON student.class_id = class.id;
+```
+
+### Where - 查询条件
+
+常用条件表达式有：
+
+| 表达式                    | 含义                                                   |
+| ------------------------- | ------------------------------------------------------ |
+| `>, <, =, >=, <=`         | 比较。注意相等只有一个等号                             |
+| `<>`                      | 不等于                                                 |
+| `LIKE 'a%', REGEXP 'reg'` | 字符串匹配、正则表达式                                 |
+| `BETWEEN 1 AND 2`         | 区间                                                   |
+| `IS NULL`                 | 是否`NULL`（注意：`NULL`和其他值比较结果始终为`NULL`） |
+| `<=>`                     | 两个值相等或者都为`NULL`                               |
+
+### Group By - 分组
+
+Group By语句对数据分组进行统计。下面第一个例子根据统计各班级人数；第二个例子统计各班级各性别人数
+
+```sql
+SELECT class_id, COUNT(*) num FROM student GROUP BY class_id;
+SELECT class_id, gender, COUNT(*) num FROM student GROUP BY class_id, gender;
+```
+
+### Having - 筛选
+
+Having子句可以筛选聚合、分组后的数据
+
+```sql
+SELECT class_id, AVG(score) FROM student
+GROUP BY class_id
+HAVING AVG(score)>80;
+```
+
+### Union - 联合查询
+
+相当于两张表上下拼起来。两个查询列数必须相同
+
+```sql
+SELECT name, score FROM student
+UNION SELECT '及格线', 60;
+```
+
+### Order By - 排序
+
+```sql
+-- 按照列名排序、按照第几列排序
+SELECT * FROM student ORDER BY name ASC, class_id DESC;
+SELECT * FROM student ORDER BY 1;
+-- 按照表达式排序
+SELECT * FROM student ORDER BY CHAR_LEN(name);
+```
+
+### Limit - 分页
+
+```sql
+SELECT * FROM student LIMIT 10 OFFSET 20;  -- 显示10条，从第21条开始显示
+SELECT * FROM student LIMIT 20, 10;        -- 相同作用
+
+-- MSSQL、Oracle写法
+SELECT * FROM student ORDER BY name FETCH FIRST 10 ROWS ONLY;
+SELECT * FROM student ORDER BY name OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
+
+SELECT TOP 10 * FROM students;            -- MSSQL旧版本写法
+SELECT * FROM students WHERE ROWNUM < 10; -- Oracle旧版本写法
+```
+
+### 嵌套查询
+
+可以在SELECT、INSERT等语句中嵌套SELECT语句，
+
+```sql
+-- 用括号括起子查询语句
+-- 如果子查询返回值只有一个，可以用比较运算符当作数值处理
+SELECT * FROM person WHERE age > (select age from persom where name='John Doe');
+
+-- 如果子查询返回值是n行1列，可以用any，all，in等运算符处理
+SELECT * FROM person WHERE country_id in (select id from country where population > 1e7);
+
+-- 如果子查询有多行多列，可以当作一个表来处理
+SELECT s.id
+FROM (select * from student)s;  # 注意，最后的s是给这个表起的别名。必须有别名才会被当作一个表
+```
+
+## 修改
 
 数据操作语言（data manipulation language, DML）
 
@@ -128,118 +273,16 @@ DELETE FROM students WHERE id=1;
 REPLACE INTO students (id, class_id, name, gender, score) VALUES (1, 1, '小明', 'F', 99);
 ```
 
-# 查询数据
-
-## SELECT
-
-SQL主要用`SELECT`指令查询。查询结果是一张表
-
-
-```sql
--- 基础查询
-SELECT *                               -- 要查询的列
-FROM students                          -- 表名
-WHERE score > 90 AND NOT class_id = 1  -- 查询条件
-ORDER BY score DESC, id;               -- 排序。例子中按分数降序，同分的按id排序
-
--- 后面三项都可以省略。全省略时可用来检查数据库连接
-SELECT 1;
-```
-
-常用条件表达式有：
-
-| 表达式            | 含义                                                   |
-| ----------------- | ------------------------------------------------------ |
-| `>, <, =, >=, <=` | 比较。注意相等只有一个等号                             |
-| `<>`              | 不等于                                                 |
-| `REGEXP 'reg'`    | 正则表达式                                             |
-| `BETWEEN`         | 区间                                                   |
-| `IS NULL`         | 是否`NULL`（注意：`NULL`和其他值比较结果始终为`NULL`） |
-| `<=>`             | 两个值相等或者都为`NULL`                               |
-
-## 复杂查询
-
-```sql
--- 分页查询
-SELECT * FROM students LIMIT 50 OFFSET 20;  -- 显示50条，从第20条开始显示
-SELECT * FROM students LIMIT 20, 50;        -- 相同作用
-
--- 聚合查询。SQL提供了COUNT, SUM, AVG, MAX, MIN等聚合函数
--- 如果没有匹配到任何内容（比如配合WHERE使用时），COUNT为0，其他几个为NULL
-SELECT AVG(score) average FROM students;  -- 查询平均分，结果是一行一列的表，列名设为average
-
--- 分组
-SELECT COUNT(*) num FROM students GROUP BY class_id;
-    -- 按照class_id分组，分别统计个数。返回class_id个数列、1行的表
-SELECT class_id, COUNT(*) num FROM students GROUP BY class_id;
-    -- 两列，第一列为class_id，第二列为count
-    -- 如果投影到非聚合函数的列，并且这一列在每一组中不全一样，会报错
-SELECT class_id, gender, COUNT(*) num FROM students GROUP BY class_id, gender;
-    -- 使用多个列进行分组，此例的结果将是班级数量*2（男女两个性别）列、3行的表
-
--- 别名
-SELECT
-    id as sid,       # 用as标识别名
-    name `sname`,    # 反斜杠标识别名
-    gender sgender   # 空格，同样也是表示别名
-FROM students as s;  # 表名也可以起别名
-
--- 笛卡尔查询
-SELECT * FROM students, classes;
-    -- 查询结果是两个表的直积，即表1与表2每行两两拼起来，有c1+c2列，r1*r2行
-    -- 如果两张表有重复的表头，查询结果就会有重复表头，可以设置别名来解决
-SELECT
-    s.id as sid,
-    s.name as sname,
-    c.id as cid,
-    c.name as cname
-FROM students as s, classes as c;
-
--- 连接查询
-SELECT students.id, students.name, class.name class_name
-FROM students
-INNER JOIN classes
-ON students.class_id = classes.id;
-/*
-以students作为主表，连接classes表，连接条件是classes.id = students.class_id的条目
-INNER JOIN表示只返回同时存在于两张表的数据；LEFT OUTER JOIN则返回全部右表存在的行，如
-只在右表存在，空余列填NULL；RIGHT OUTER JOIN反之，FULL OUTER JOIN返回全部的行
-*/
-
--- 并集。相当于两张表拼起来，有r1 + r2行。两个查询列数必须相同
-SELECT * FROM students WHERE class_id=1
-UNION
-SELECT * FROM students WHERE class_id=2;
-```
-
-## 嵌套查询
-
-可以在SELECT、INSERT等语句中嵌套SELECT语句，嵌套的子查询需要用括号括起来
-
-```sql
-# 如果子查询返回值只有一个，可以用比较运算符处理
-SELECT * FROM person
-WHERE age > (select age from persom where name='John Doe');
-
-# 如果子查询返回值是n行1列，可以用any，all，in等运算符处理
-SELECT * FROM person
-WHERE country_id in (select id from country where population > 1e7);
-
-# 如果子查询有多行多列，可以当作一个表来处理
-SELECT s.id
-FROM (select * from students)s;  # 注意，最后的s是给这个表起的别名。必须有别名才会被当作一个表
-```
-
 # 事务
 
-事务是SQL操作的单元，事务具有ACID这4个特性：
+事务（Transaction）是SQL操作的单元，事务具有ACID特性：
 
-- A：Atomic，原子性，事务要么全部执行，要么全部不执行
-- C：Consistent，一致性，事务完成后，所有数据的状态都是一致的，比如A账户只要减去了100，B账户则必定加上了100
-- I：Isolation，隔离性，如果有多个事务并发执行，每个事务作出的修改必须与其他事务隔离
-- D：Duration，持久性，即事务完成后，对数据库数据的修改被持久化存储
+- 原子性（**A**tomic）：事务要么全部执行，要么全部不执行
+- 一致性（**C**onsistent）：事务不会破坏数据完整性（如主键唯一、字段类型大小符合约束）
+- 隔离性（**I**solation）：如果有多个事务并发执行，每个事务作出的修改必须与其他事务隔离
+- 持久性（**D**uration）：即事务完成后，对数据库数据的修改被持久化存储
 
-单条SQL语句是隐式事务，也可以声明显示事务
+单条SQL语句是隐式事务，也可以显示声明事务
 
 ```sql
 BEGIN;
@@ -247,7 +290,7 @@ BEGIN;
 COMMIT;
 ```
 
-不同事务分隔有Read Uncommited, Read Commited, Repeatable Read, Serializable四个，前三个在并行执行时都有不同程度的问题，最后一个串行执行事务，不会遇到问题，但是性能大大下降
+注意：虽然SQL标准规定事务要有ACID特性，但并不是每个数据库都完全实现ACID。比如MySQL的DDL语句不满足原子性
 
 # 函数
 
@@ -275,8 +318,6 @@ CREATE USER 'your_name' IDENTIFIED BY 'password';
 GRANT all privileges ON db_name.* TO your_name@localhost IDENTIFIED BY 'password';
 SHOW GRANTS FOR your_name;
 ```
-
-
 
 ## Python Connector
 

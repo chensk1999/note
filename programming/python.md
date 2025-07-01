@@ -482,7 +482,7 @@ def spam(x, y, z=42):
 
 ```python
 class Example(object):
-    
+
     class_attr = 1   # 定义类属性
 
     def __init__(self, attr_):  # 初始化的魔术方法，创建实例时调用
@@ -1584,7 +1584,7 @@ cursor.close()
 conn.close()
 ```
 
-## subprocess（运行其他程序）
+## subprocess（多进程）
 
 ```python
 import subprocess
