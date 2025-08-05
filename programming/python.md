@@ -908,18 +908,9 @@ process = Process(target=f, args=(3.5, ))
 process.start()       # 开始子进程
 process.join()        # 等待子进程结束
 process.terminate()   # 终止进程
-
-pool = Pool(5)    # 最多放5个子进程的pool
-pool.apply_async       # 向池中添加一个进程
-pool.close()           # 关闭池子，同时开始进程
-pool.join()            # 等待到所有进程结束
-
-queue = Queue  # 用于子进程之间通信
-queue.put
-queue.get
 ```
 
-注意：主进程的全部数据都是通过pickle序列化传入子进程，故很多时候multiprocessing失败是因为pickle失败了
+需要开启多个子进程时可用`multiprocessing.Pool`；进程间通信可用`multiprocessing.Queue`
 
 ## 多线程
 
@@ -949,7 +940,7 @@ th2.join()
 
 多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误。这种情况要使用`threading.Lock`锁住变量，当一个线程锁住变量之后，其他线程将被暂停，等待到这把锁解开为止
 
-python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多核，想有效利用必须要多进程
+python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多核，想跑满CPU该用多进程
 
 ThreadLocal可以帮助参数在不同线程中传递
 
@@ -973,10 +964,10 @@ async def main():
     # 基础使用。调用async函数返回一个协程对象，"await 协程对象"等待执行结果
     text_1 = await fetch_quote(1)
 
-    # 同时等待多个协程对象
+    # 并行运行多个协程
     await asyncio.gather(fetch_quote(2), fetch_quote(3))
 
-    # 使用task对象
+    # 使用task对象进行更精细的管理，如取消任务
     task = asyncio.create_task(fetch_quote(1))
     task.cancel()
     try:
@@ -986,6 +977,26 @@ async def main():
 
 # 启动主函数
 asyncio.run(main())
+```
+
+异步生成器、异步上下文管理器可以用`async for`还有`async with`
+
+```python
+async def fetch_many_quotes(max_pages):
+    # 异步生成器，返回一个async_generator对象，无法直接迭代
+    for page in range(max_pages):
+        quote = await fetch_quote(page)
+        yield quote
+
+async def main():
+    async for quote in fetch_many_quotes(10):
+        # 等待异步生成器返回结果
+        print(quote)
+    
+    async with asyncio.TaskGroup as tg:
+        # 等待全部任务结束，然后关闭TaskGroup
+        tasks = [tg.create_task(fetch_quote(page)) for page in range(10)]
+            
 ```
 
 # 内建模块

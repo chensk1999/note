@@ -1,6 +1,4 @@
-SQL（结构化查询语言，Structured Query Language）是一种用来访问和操作数据库的语言，它是高级的非过程语言。SQL语言已经被ISO标准化，各种数据库程序对标准SQL有不同的扩展。SQL关键字不区分大小写，表名和列名有的数据库区分，有的不区分
-
-# 数据库理论
+# 关系数据库理论
 
 ## 数据库管理系统
 
@@ -11,9 +9,10 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 3. 设计合理的数据库能够简化数据结构，避免冗余和数据一致性问题
 4. 数据访问/修改权限限制
 
-## 数据模型
+数据库可以分为两类：
 
-数据模型（data model）是描述数据之间逻辑关系的方法。当前绝大多数数据库都属于关系模型，称作关系数据库（Relational Database，RDB）。其他模型主要在一些特殊场景使用。许多人热衷于研究新的模型，想取代RDB的地位
+- **关系数据库**（Relational Database，RDB）：将数据存储为表，每行存储一条记录，表中的列用于存储该记录的属性。RDB是目前最成熟、应用最广泛的数据库
+- **非关系数据库**（Non-SQL，NoSQL）：使用关系模型以外的结构存储数据。主要用于关系数据库性能不佳的场景，例如缓存、文件索引。在综合表现上，非关系数据库各有自己的短板，目前没有任何一个非关系数据库的表现在一般场景下能接近RDB
 
 ## 关系模型
 
@@ -41,18 +40,22 @@ SQL（结构化查询语言，Structured Query Language）是一种用来访问�
 
 索引是对某一列的值进行预排序的数据结构，使用索引后查找时不会搜索整张表而是直接定位，加快查询速度，但代价是插入、更新、删除时索引要变化，因此这些操作的速度下降
 
-## 数据库设计
+# SQL
 
-- **需求分析**：需求主要包括信息要求（存储哪些信息）、处理要求、安全性与完整性要求，分析流程是熟悉业务、明确需求、确定系统边界。此阶段主要成果是数据字典
-- **概念结构设计**：将应用需求抽象为直接反应现实世界、便与理解、便于修改的概念模型。常用E-R模型表示，用矩形表示实体，椭圆形表示属性，菱形表示联系，把每个实体与其属性连起来，每个联系与有关实体、属性连起来，连线旁标注类型(1:1, 1:n, m:n)。凡是不需要另外描述、只与一个实体联系的事物，都可以当作属性看待。为了简便，能当作属性的都应该当作属性
-- **逻辑结构设计**：从E-R图到关系模型
-- 物理结构设计、实施与维护……
+结构化查询语言（Structured Query Language，SQL）是用来管理关系数据库的语言。各个RDB软件使用的语言略有区别（有的并未完全实现ISO标准，或是对标准SQL加入了自己独有的扩展语法），但大部分功能仍可互通。不通用的语法本笔记中会特别注明
 
-# 访问数据库、表
+SQL分为四种语句：
 
-数据定义语言（data define language, DDL）
+- 数据定义语言（data define language, DDL）
+- 数据查询语言（Data Query Language，DQL）
+- 数据操作语言（data manipulation language, DML）
+- 事务控制语言（Transaction Control Language，TCL）
 
-## 定义数据库
+分别对应后文定义数据库、查询数据、修改数据、事务控制四节
+
+## 定义数据库、表
+
+### 定义数据库
 
 ```sql
 SHOW DATABASES;  -- 查询数据库列表
@@ -63,7 +66,7 @@ DESC student;   -- 查询表的结构，字段类型，主键，是否为空等�
 DROP school;     -- 删除数据库
 ```
 
-## 定义表
+### 定义表
 
 ```sql
 CREATE TABLE student(
@@ -75,7 +78,7 @@ CREATE TABLE student(
 );
 ```
 
-## 修改表
+### 修改表
 
 ```sql
 ALTER TABLE student ADD gender CHAR(1) NOT NULL AFTER name;  -- 添加字段
@@ -89,11 +92,7 @@ ALTER TABLE student ADD CONSTRAINT unique_name UNIQUE(name);
 ALTER TABLE student DROP INDEX unique_name;
 ```
 
-# 访问数据
-
-## 查询
-
-数据查询语言（Data Query Language，DQL）
+## 查询数据
 
 
 ```sql
@@ -250,9 +249,7 @@ SELECT s.id
 FROM (select * from student)s;  # 注意，最后的s是给这个表起的别名。必须有别名才会被当作一个表
 ```
 
-## 修改
-
-数据操作语言（data manipulation language, DML）
+## 修改数据
 
 ```sql
 -- 插入
@@ -273,7 +270,7 @@ DELETE FROM students WHERE id=1;
 REPLACE INTO students (id, class_id, name, gender, score) VALUES (1, 1, '小明', 'F', 99);
 ```
 
-# 事务
+## 事务控制
 
 事务（Transaction）是SQL操作的单元，事务具有ACID特性：
 
@@ -291,10 +288,6 @@ COMMIT;
 ```
 
 注意：虽然SQL标准规定事务要有ACID特性，但并不是每个数据库都完全实现ACID。比如MySQL的DDL语句不满足原子性
-
-# 函数
-
-[MySQL函数 | 菜鸟教程](https://www.runoob.com/mysql/mysql-functions.html)
 
 # SQL数据库
 
