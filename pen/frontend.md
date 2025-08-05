@@ -701,31 +701,27 @@ document.getElementById("demo").innerHTML = "Hello World";
 
 ### 访问网页元素
 
-```javascript
-// 获取网页元素
-let element = document.querySelector("p.intro");
-const elements = document.querySelectorAll("p.intro");
-
-// 访问网页元素
-element.innerHTML = "Hello";     // 访问元素的内容
-element.name = "honey";          // 访问元素Property
-element.hasAttribute("name");    // 访问元素Attribute。还有setAttribute，getAttribute等
-```
-
-访问网页元素有Property和Attribute两种方式。严格来说，Attribute和Property是不同的东西，Attribute属于HTML，Property属于DOM
-
-绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property。一般**建议使用Property**，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
-
-### 添加和删除网页元素
-
-假设网页内容如下：
-
 ```html
 <div id="div1">
     <p id="p1">第1段</p>
     <p id="p2">第2段</p>
 </div>
 ```
+
+```javascript
+// 获取网页元素
+let element = document.querySelector("div > p");
+const elements = document.querySelectorAll("div > p");
+
+// 访问网页元素
+element.innerHTML = "Hello"; // 访问元素的内容
+element.id = "honey";        // 访问元素Property
+element.hasAttribute("id");  // 访问元素Attribute。还有setAttribute，getAttribute等
+```
+
+访问网页元素有Property和Attribute两种方式。严格来说，Attribute和Property是不同的东西，Attribute属于HTML，Property属于DOM
+
+绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property。一般**建议使用Property**，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
 
 通过插入和删除DOM节点的方式添加和删除网页元素
 
@@ -751,9 +747,16 @@ p_new.innerHTML = "new paragraph";
 div1.replaceChild(p_new, p1)
 ```
 
-# JavaScript库
+## 框架
 
-快速判断网页使用了什么库：
+Javascript原生的DOM API用起来不太方便。不同浏览器对Javascript的支持不同，修改HTML元素（包括内容、样式、行为）需要大量代码，并且页面行为复杂时可维护性非常糟糕。前端框架通过封装原生DOM，提供更易用的接口以及控制模式来解决此问题
+
+框架发展大致经过两个阶段
+
+- 加强版DOM：以jQuery为代表，它提供了简洁的DOM API
+- 状态管理架构：此类架构舍弃了手动编辑DOM，使用组件化 + 状态管理的方式控制页面的外观与行为。此类框架的代表有AngularJS、React、Vue.js
+
+快速判断网页使用了什么框架 / 库：
 
 ```javascript
 console.log({
@@ -766,78 +769,51 @@ console.log({
 });
 ```
 
-## jQuery
+注：库和框架的区别：库是工具，可以自由调用；框架是半成品，必须遵守已有模式并把剩下部分补全。两者并非泾渭分明，本节并未严格区分
 
-jQuery库提供了方便的HTML元素操作，可以说是HTML DOM的上位替代，还提供了AJAX和许多有用的插件。在网页中加载jQuery，比如把它放到自己的服务器，或者使用CDN服务商的jQuery，就能使用jQuery
+### jQuery
 
-```html
-<script src="/asset/jquery.min.js"></script>
-<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-```
-
-jQuery的核心是jQuery对象和选择器。**jQuery对象**是DOM对象的包装，在DOM的基础上提供了更丰富的方法，**选择器**`$`则是通过DOM对象或者CSS选择器获取对应jQuery对象的函数
+jQuery于2006年发布，它解决了跨浏览器兼容问题，并提供了方便的DOM API，还提供了AJAX和许多有用的插件。其核心是jQuery对象和选择器。jQuery对象是DOM对象的包装，在DOM的基础上提供了更丰富的方法，选择器`$`则是通过DOM对象或者CSS选择器获取对应jQuery对象的函数
 
 ```javascript
-// 使用选择器访问jQuery对象
-// 注意，选择器$是函数而非特殊符号。JavaScript允许用$作为变量名
+// 使用选择器访问jQuery对象。注意，选择器$是函数而非特殊符号。JavaScript允许用$作为变量名
 $("p:first");  // 返回首个<p>标签的jQuery对象
-$(document);   // 获取整个页面对应的jQuery对象
-
-// jQuery对象访问HTML内容
-let current = $("p:first").text();
-$("p:first").text(current + 1);
-
-// 使用jQuery事件定义页面行为
-$("p").click(function() {
-    $(this).hide();          // 点击<p>标签时将它隐藏
-});
-$(document).ready(function() {alert(1);});  // 页面加载完成时弹出警告
-$(function() {alert(1);});                  // 此写法效果相同
-
-// 动态加载页面
-$("#div1").load("/async.php")  // 访问此地址，并将获取的数据放进选中元素里
-
-$("button").click(function(){
-  $.get("demo_test.php",function(data,status){    // 用get函数访问服务器，并定义了回调函数
-    alert("数据: " + data + "\n状态: " + status);
-  });
-});
 ```
 
-# 转义
+### Vue
 
-## URI
 
-### 分类
+
+# 其他
+
+## 转义
+
+### URI
 
 - 未保留字符（字母、数字、下划线、句点等）：不需转义
 - 分界符（冒号，斜杠，问号，等号，`@`等）：作为分隔符时不需转义，作为路径或者参数的一部分时需要转义
 - 其他特殊字符（空格，百分号，中文等）：需要转义
 
-### 转义方法
-
-百分号编码，如空格的UTF-8编码为`0x20`，转义为`%20`；“我”的UTF-8编码为`0xe68891`，转义为`%e6%88%91`。常用以下两个javascript函数
-
-- `encodeURI`：保留分界符，转义其他特殊字符，常用于**转义完整URL**
-- `encodeURIComponent`：转义分界符和其他特殊字符，常用于**转义GET参数**，如
+使用**百分号编码转义**，如空格的UTF-8编码为`0x20`，转义为`%20`；“我”的UTF-8编码为`0xe68891`，转义为`%e6%88%91`。常用以下两个javascript函数
 
 ```javascript
-let uri = 'example.com?file=' + encodeURIComponent('/asset/example.txt')
+let url = encodeURI('https://example.com/下载');      // 保留分界符，转义其他特殊字符，常用于转义URL
+let param = encodeURIComponent('/asset/example.txt'); // 转义分界符和其他特殊字符，常用于转义GET参数
+let full_uri = url + '?file=' + param;
 ```
 
-### 非标准转义方法
+**非标准转义**
 
-**`application/x-www-form-urlencoded`类型**：由于历史原因，HTML表单使用一种非常相似的编码方案，使用这种方案时会在请求头加上`Content-Type: application/x-www-form-urlencoded`。此方案它将空格转义为`+`，其他和百分号编码相同
+- **`application/x-www-form-urlencoded`类型**：由于历史原因，HTML表单使用一种非常相似的编码方案，使用这种方案时会在请求头加上`Content-Type: application/x-www-form-urlencoded`。此方案它将空格转义为`+`，其他和百分号编码相同
+- **escape**：用`%uxxxx`表示，其中`xxxx`是四位16进制数，表示字符的Unicode码位值
 
-**escape**：用`%uxxxx`表示，其中`xxxx`是四位16进制数，表示字符的Unicode码位值
-
-## HTML
+### HTML
 
 **字符实体引用**（Character Entity Reference）是HTML的转义序列，常用实体有`&lt; &gt; &quot; &amp`，分别表示小于号、大于号、双引号、`&`。原本字符是HTML标签的一部分，转义后视作普通文本。字符也可用Unicode转义，例如“我”的Unicode码位为25105，因此转义为`&#25105;`，称作**字符值引用**（Numeric Character Reference, NCR）
 
-- php：使用`htmlspecialchars`转义，默认不转义单引号，因此拼接带单引号字符串时可能产生XSS漏洞
+php的HTML转义函数`htmlspecialchars`默认不转义单引号，因此拼接带单引号字符串时可能产生XSS漏洞
 
-# TamperMonkey
+## TamperMonkey
 
 ```javascript
 // @name         保存文件
@@ -871,3 +847,12 @@ let uri = 'example.com?file=' + encodeURIComponent('/asset/example.txt')
     }
 })();
 ```
+
+## Javascript压缩与混淆
+
+目前主流的前端开发技术大多都会利用 Webpack、Rollup 等工具进行打包
+
+[javascript-obfuscator](https://github.com/javascript-obfuscator/javascript-obfuscator)
+
+
+

@@ -7,7 +7,7 @@ Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指�
 cmd也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
 
 ```cmd
-REM 定义、访问变量
+# 定义、访问变量
 set a=1
 echo %a%
 ```
@@ -84,8 +84,6 @@ $Script:port = "80"               # 脚本变量，当前脚本可用
 $Local:username = "admin"         # 本地变量，当前代码块中可用
 ```
 
-
-
 ### 运算符
 
 加减乘除之类的都正常。注意，除法是浮点除法
@@ -150,22 +148,6 @@ $PROFILE | Select-Object *   # 查看PROFILE文件
 
 # 常用指令
 
-## 文件与目录
-
-| Unix Shell   | cmd        | Powershell    | 说明           |
-| ------------ | ---------- | ------------- | -------------- |
-| ls, find     | dir        | Get-ChildItem | 列出文件和目录 |
-| cat          | type       | Get-Content   | 读取文件内容   |
-| cp           | copy       | Copy-Item     | 复制           |
-| mv           | move       | Move-Item     | 移动           |
-| rm, rmdir    | del, rmdir | Remove-Item   | 删除           |
-| mv           | rename     | Rename-Item   | 重命名         |
-| touch, mkdir | mkdir      | New-Item      | 新建           |
-| pwd          | cd         | Get-Location  | 获取工作路径   |
-| cd           | cd         | Set-Location  | 设置工作路径   |
-
-注：Powershell大多数命令都设置了别名，用Unix Shell或者cmd.exe的命令名一般也能运行
-
 ```powershell
 # 输出到文件
 Get-Process | Out-File filename.txt
@@ -173,19 +155,44 @@ Get-Process | Export-Csv filename.csv
 Get-Process | Export-Clixml filename.xml
 ```
 
-## 网络
+# 网络
 
-## curl - Web请求
+## 综合
+
+ipconfig
+
+netsh
+
+## 应用层
 
 ```shell
-curl example.com
+# Web请求
+curl -Uri example.com
+wget -Uri example.com  # 在linux上，curl和wget分别用于访问和下载；windows中它们都是同一指令的别名
 ```
 
 [Curl指南](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)，[Curl Cookbook](https://catonmat.net/cookbooks/curl)
 
-## netstat - 网络状态
+```shell
+# DNS查询
+nslookup www.baidu.com
+nslookup www.google.com "8.8.8.8"  # 使用指定DNS服务器
+```
+
+## 传输层
+
+### netstat - 网络状态
 
 查询网络状态，如当前建立的连接、路由表
+
+```shell
+netstat -ano        # 显示所有连接以及对应进程PID
+netstat -nop "tcp"  # 显示所有tcp连接，以及对应进程PID
+netstat -r          # 显示路由表
+netstat -no | findstr "8080"  # 查找指定端口的连接
+```
+
+选项列表如下：
 
 | 选项 | 作用                                                    |
 | ---- | ------------------------------------------------------- |
@@ -196,35 +203,22 @@ curl example.com
 | p    | 指定协议，如`netstat -p "tcp"`                          |
 | r    | 显示路由表                                              |
 
+## 网络层
+
 ```shell
-netstat -ano        # 显示所有连接以及对应进程PID
-netstat -nop "tcp"  # 显示所有tcp连接，以及对应进程PID
-netstat -r          # 显示路由表
-netstat -no | findstr "8080"  # 查找指定端口的连接
+# ARP缓存
+arp -a   # 显示arp记录
+arp -d   # 清空arp记录
+
+# ping
+ping www.baidu.com
+
+# 路由表
+route print
+
+# 追踪路由转发
+tracert www.baidu.com
 ```
-
-## nslookup - DNS查询
-
-DNS查询。`nslookup 域名 [DNS服务器]`；也可以不带参数运行，则进入交互式界面
-
-## 打印二进制文件hex值
-
-**hexdump**
-
-```bash
-hexdump -v -e '30/1 "%02x" "\n"' example.png > example.txt
-# -v: 遇到两行相同的不把后面的行省略为*号
-# -e：输出格式。说明：读取30个1字节的数据，以%02x格式打印，然后打印一个换行符。此格式和xxd的plain格式相同
-```
-
-**xxd**
-
-```bash
-xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
-xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
-```
-
-以上是Unix指令。windows可以用WSL，或者git bash也可以
 
 # Windows 10
 
@@ -256,9 +250,8 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 
 ### 添加自定义右键菜单
 
-1. 创建项`<somewhere>\shell\<prompt>\command`，其中`<somewhere>`具体路径见后文，`<prompt>`为菜单中显示的文字
+1. 创建项`<somewhere>\shell\<prompt>\command`
+   - 特定文件类别的菜单：`<somewhere>`位于`HKEY_CLASSES_ROOT\SystemFileAssociations\.zip`
+   - `<prompt>`为菜单中显示的文字
+   
 2. 将command的值设为指令，如`notepad.exe %1`
-
-`<somewhere>`具体是哪里：
-
-1. 特定文件类别的菜单：`HKEY_CLASSES_ROOT\SystemFileAssociations\<.ext>`，其中`<.ext>`为文件扩展名，比如`.zip`

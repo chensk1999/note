@@ -2,12 +2,12 @@
 
 渗透测试和渗透攻击的第一步是收集目标信息，俗称踩点。信息收集得越全面，就越容易找到防御薄弱点。最重要的信息是**域名与IP地址**、**端口与服务**
 
-例如，假设搜集了一家名叫Polygon的企业（公司名、域名、IP地址等信息均为虚构，与现实中的企业、网站无关），搜集过程如下：
+例如，假设搜集一家名叫Polygon的企业（所有信息均为虚构，与现实中的企业、网站无关）的网络资产，搜集过程如下：
 
 ```mermaid
 graph LR
     begin([开始收集])
-    
+
     %% 域名、IP
     begin -->|收集域名、IP地址| d1(service.polygon.com) & d2("
         passport.polygon.com
@@ -16,7 +16,7 @@ graph LR
         183.2.172.17
         ……
     ")
-    
+
     %% 端口、服务
     d1 -->|探测端口| ssh(22) & http(443)
     ssh -->|识别服务| ssh_detail(OpenSSH 9.9)
@@ -28,7 +28,7 @@ graph LR
         ……
     ")
     d2 -..->|探测端口、识别服务| d2service(……)
-    
+
     %% 梳理资产
     fin([梳理资产])
     ssh_detail & http_detail & d2service --> fin
@@ -51,8 +51,8 @@ graph LR
   - **子域名**：组织通常以主域名为中心，扩展多个功能性子域名（如`api.example.com`、`admin.example.com`）。可通过DNS记录、爆破等方式寻找子域名
   - **ICP备案、Whois查询**：我国网站均需要备案，可通过ICP备案信息查询同一机构的其他网站；whois查询可以查到域名注册者信息，也有相似效果
   - **C段、旁站**：一个组织常将多个服务部署在同一网段（如`/24`网段，俗称C段）；部署在云服务器上的网站，有可能多个站点共享一个IP地址，称旁站
-  - **特征指纹**：同一机构的资产可能具有相同图标（`favicon.ico`），可能有相同关键字（如公司名、企业邮箱地址）
-  - **SSL证书**：可分析SSL证书的Subject Alternative Name（SAN）字段
+  - **特征指纹**：同一机构的资产可能具有相同图标（`favicon.ico`），相同关键字（如公司名、企业邮箱地址）
+  - **SSL证书**：可分析SSL证书的Subject Alternative Name（SAN）字段。一般在浏览器地址栏左边的锁状图标可以看网站证书
   - **相似域名**：企业可能注册多个拼写相近、品牌相关的域名，如百度除了`baidu.com`外还注册了`baidu.com.cn`（但相近域名大多未投入使用，价值不高）
 - **关联性**：同一机构的网络资产之间即使不相似，也很可能有关联
   - **页面链接**：站点内页面可能包含其他资产的超链接，可以收集页面中的超链接并分析其指向的域名和路径
@@ -62,11 +62,11 @@ graph LR
 
 ### 工具
 
-- **网络空间测绘工具**：俗称”黑暗搜索引擎“，可以搜索目标的开放端口、指纹等许多网络资产信息。信息搜集阶段，可以用它查询子域名、ICP备案等
+- **网络空间测绘工具**：可以搜索目标的子域名、ICP备案、开放端口、指纹等网络资产信息
   - 国内：[鹰图平台](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)
   - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
-- **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等
-- **提取链接**：`JSFinder`，`FindSomething`
+- **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等。可参考[Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
+- **源代码分析**：`JSFinder`脚本、`FindSomething`插件分析网页HTML、JavaScript源代码寻找信息
 - **子域名爆破**
 
 ### CDN绕过
@@ -90,20 +90,14 @@ graph LR
 
 访问各端口，通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等），例如服务器返回Apache的默认404页面就可以推断服务器使用Apache；部分资源路径包含`wp-content`，可以推断服务器使用Word Press。这种方法叫做**指纹识别**
 
-**手工识别**
-
-- 操作系统
-  - 大小写敏感：Windows一般不区分大小写；Windows WSL和Windows 10以上版本可以配置区分大小写；Linux区分；MacOS默认不区分，但可以配置
-  - Ping数据包：Windows的TTL默认128，Linux取决于版本，但经常是64
-- 服务器
-- 数据库
-- 编程语言
-
-**指纹识别工具**：nmap的服务识别就是一种指纹识别；wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)等工具可用于识别网页服务器的指纹
+- **手工识别**：内容太多，且实用性较差，从略
+- **指纹识别工具**：nmap的服务识别就是一种指纹识别；wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)等工具可用于识别网页服务器的指纹
 
 ## 辅助信息
 
 网络上很可能有许多不在目标服务器上，却能帮助进行渗透的信息，比如员工上传到百度文库的内部资料、微信公众号文章透露了人员组成等。这类信息存在与否、有多大作用都是未知数，但不能完全忽略这些信息
+
+识别服务器的防护手段也可以帮助后续测试。WAF识别与绕过：[Awesome-WAF](https://github.com/0xInfection/Awesome-WAF)
 
 ## 梳理资产
 
@@ -113,26 +107,22 @@ graph LR
 
 ## SQL注入
 
-### 基础
+### 寻找注入点
 
-1. **寻找注入点**：在文本后面加入单引号、双引号、括号、双括号，若有报错则可能存在SQL注入。所有和数据库有关的地方都可能出现注入，包括但不限于GET参数、POST参数、HTTP头、URL
+寻找注入点可以用**时间盲注**，因为它注入成功时必定能看到网站响应时间变化。其他注入语句即使注入成功了，也可能看不到回显
 
-2. **闭合语句**：构造合法语句。例如，`id=1`能正常查询，加上单引号`id=1'`报错，尝试后发现`id=1')#`又能正常查询了,可以推测，服务器的查询语句应该类似`SELECT * FROM users WHERE id=('$id')`。`')`闭合了开括号、单引号，`#`注释了后面“多余”的`')`，下一步就可以在注释之前插入payload。闭合语句需要结合经验尝试单引号、双引号、反引号、括号等
-   
-3. **构造注入语句**：最基础的注入语句是Union注入，即通过联合查询获取额外信息
+当常见payload都试过之后，要**果断放弃**。SQL注入的大前提是服务器将攻击者控制的字符串直接拼接到SQl语句中。若后端代码使用了参数化查询，或者对用户输入强验证，就不存在SQL注入的可能性
+
+不要忘记，所有和数据库有关的地方都可能出现注入，包括但不限于GET参数、POST参数、HTTP头、URL
+
+### Union注入
+
+在`WHERE`语句后拼接`UNION`等语句，查出“额外”的东西
 
 ```sql
 SELECT * FROM users WHERE id='1' ORDER BY 4;          -- 判断数据列数
 SELECT * FROM users WHERE id='1' UNION SELECT 1,2,3;  -- UNION查询
 ```
-
-4. **获取数据**：一般是先获取表名、各个表的字段名，然后爆破数据。具体方法因数据库而异，可参考Web漏洞利用部分
-
-SQL注入的大前提是服务器将攻击者控制的字符串直接拼接到SQl语句中。若后端代码使用了参数化查询，或者对用户输入强验证，就不存在SQL注入的可能性。测试时看似正常 / 异常的回显，可能是1. 有注入，代码以奇怪的方式跑起来了；2. 有注入，SQL出错，但服务器隐藏了报错信息；3. 没有注入
-
-比如注入`search='--+`，网页显示无结果，可能是payload没有正确闭合导致SQL报错，也可能是没有注入；比如`id=1 or 1=1`有结果，可能是数字注入点，SQL类型自动转换把payload转换为数字1，也可能是服务器做输入校验的时候丢弃了数字以外的部分，还可能是其他的怪东西
-
-看到“预料之外”的返回时，不要先入为主觉得注入成功了 / 失败了，要积极考虑其他可能性，想办法构造新的payload验证 / 排除这些可能性
 
 ### 盲注
 
@@ -231,7 +221,7 @@ UPDATE users SET pwd='pswd' WHERE name='admin' -- '
 
   - **文件头Magic Number**：读取文件前几个字节判断文件格式，如JPEG文件应以`FF D8 FF`开头，PNG为`89 50 4E 47`，GIF为`GIF89a`
 
-- **存储隔离**：放在静态资源目录，禁止解析
+- **存储隔离**：放在静态资源目录或者OSS（Ojbect Storage Service，对象存储服务），禁止解析
 
 - **图像处理**：进行图像处理后重新保存
 
@@ -288,7 +278,7 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 - **转义**：将特殊符号都转义为HTML实体
 - **输入校验**：只允许符合格式的数据
-- **`HttpOnly`**、**CSP**：给Cookie设置`HttpOnly`标志、设置内容安全策略（CSP）头，攻击者即使实现XSS也更难实施恶意操作
+- **`HttpOnly`**、**CSP**：设置Cookie的`HttpOnly`标志、设置内容安全策略（CSP）头，攻击者即使实现XSS也更难实施恶意操作
 
 ## 跨站请求伪造（CSRF）
 
@@ -363,7 +353,9 @@ Cookie的`SameSite`属性有三种模式：
 
 ## XML外部实体（XXE）
 
-XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件系统中的文件、互联网文件等。若XML解析器配置不当，可能引发LFI、RFI、SSRF等漏洞
+XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件系统中的文件、互联网文件等。若XML解析器配置不当，可能在解析XML对象时引发LFI、RFI、SSRF等漏洞
+
+可以上传XML的地方（如，使用XML的api、上传svg文件、上传Excel文件）都可能出现XXE漏洞
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -403,8 +395,6 @@ https://wiki.wgpsec.org/knowledge/web/sql_injection.html
 ```sql
 -- and, or：用&&和||代替
 ```
-
-
 
 #### 符号
 
@@ -504,6 +494,7 @@ SELECT count(*),concat('payload', floor(rand()*2))x from member group by x
 ```sql
 SELECT banner FROM v$version;
 SELECT user FROM DUAL;
+SELECT table_name FROM user_tables;
 ```
 
 #### MSSQL
@@ -522,6 +513,24 @@ SELECT current_database(), current_user;
 SELECT * FROM pg_tables;
 SELECT pg_sleep(5);
 ```
+
+#### SQLite
+
+```sql
+SELECT sqlite_version()
+```
+
+SQLite的元数据存在`sqlite_master`表中，此表的`type`列是`table`或`index`，`name`和`tbl_name`列是表名，`sql`列是建表语句
+
+下列语句可以创建文件，并向其中写入数据
+
+```sql
+ATTACH DATABASE '/var/www/html/webshell.php' AS ws;
+CREATE TABLE ws.ws_table (content text);
+INSERT INTO ws.ws_table (content) VALUES ('<?php phpinfo(); ?>');
+```
+
+
 
 ### 其他技巧
 

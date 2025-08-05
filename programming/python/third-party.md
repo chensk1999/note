@@ -178,9 +178,8 @@ my_model = keras.models.load_model('my_model')
 https://github.com/openai/whisper
 
 ```shell
-whisper --help
-whisper "src.mp4" --model base --language zh
+python -m whisper --help
+python -m whisper "src.mp4" --language zh
 ```
 
-
-
+首次使用时需要下载模型，会自动下载并放在`%USERPROFILE%/.cache/whisper`

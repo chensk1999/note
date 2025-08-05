@@ -8,7 +8,7 @@
 
 1983年9月27日，理查德·斯托曼（Richard Stallman）在麻省理工学院发起了GNU计划，它的目标是创建一套类似UNIX但完全自由的操作系统。数年后，林纳斯·托瓦兹（Linus Torvalds）在他的大学时期编写并发布了自己的操作系统，也就是后来所谓的 “Linux内核”
 
-Linux内核过于精简，并不是一个完整的操作系统。许多自由软件社区的开发人员和一些计算机商业公司便开始把各种组件添加到这个内核之上，这才构建成了一个完整的Linux操作系统。开源社区的诸多成员以及许多商业公司的去中心化的贡献，让Linux充满了多样性。基于Linux内核构造出来的操作系统，我们通常都将其称之为“Linux发行版”
+Linux内核过于精简，并不是一个完整的操作系统。许多自由软件社区的开发人员和一些计算机商业公司便开始把各种组件添加到这个内核之上，这才构建成了一个完整的Linux操作系统。开源社区的诸多成员以及许多商业公司的去中心化的贡献，让Linux充满了多样性。基于Linux内核构造出来的操作系统称为“Linux发行版”
 
 **省流**：Linux是Unix的精神续作，Linux内核+组件（组件有很多人在做，没有统一版本）构成Linux发行版。市面上有五花八门的Linux发行版，Ubuntu、CentOS、ArchLinux等都是Linux发行版
 
@@ -22,122 +22,7 @@ Linux内核过于精简，并不是一个完整的操作系统。许多自由软
 
 Linux最常见的Shell是Bash，也有的发行版会使用zsh等Shell，可以用`echo $SHELL`查看当前Shell，`cat /etc/shells`查看已安装的Shell（绝大部分Shell语法相同，一般不必在意正在使用哪个Shell）。通常通过在终端（Terminal）中输入指令来操作Shell
 
-## 指令
-
-各章节都会解释相关Bash指令，Bash语法一节将详细解释Bash语法以及脚本编写。遇到不理解的指令可在[Explain Shell](https://www.explainshell.com/)网站查询
-
-# 文件、用户和权限
-
-## 文件系统
-
-Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（mount）在树上；计算机设备也抽象为文件的形式挂在树上。大部分发行版的文件结构遵循文件系统层次结构标准（FHS, Filesystem Hierarchy Standard）
-
-**系统文件**
-
-| 目录    | 含义     | 说明                                 | 举例                      |
-| ------- | -------- | ------------------------------------ | ------------------------- |
-| `/bin`  | Binaries | 系统命令                             | `ls`，`cp`                |
-| `/etc`  | Etcetra  | 系统配置文件                         | 用户账号信息`/etc/passwd` |
-| `/dev`  | Device   | 设备文件，即被抽象为文件的计算机设备 | 硬盘`/dev/sda`            |
-| `/mnt`  | Mount    | 临时挂载的其他文件系统               | 光驱                      |
-| `/proc` | Process  | 进程的伪文件，是系统内存的映射       |                           |
-| `/lib`  | Library  | 各种程序使用的动态链接库             |                           |
-| `/boot` | Boot     | Linux系统启动时使用的核心文件        |                           |
-
-**其他**
-
-| 目录    | 含义                  | 说明                                               | 举例       |
-| ------- | --------------------- | -------------------------------------------------- | ---------- |
-| `/home` | Home                  | 用户主目录                                         |            |
-| `/usr`  | Unix System Resources | 各种程序、文档、头文件、库文件（应该是Unix的遗产） |            |
-| `/var`  | Variable              | 经常变动的文件                                     | `/var/www` |
-| `/srv`  | Service               | 网络服务文件                                       | `/srv/ftp` |
-| `/opt`  | Optional              | 可选软件安装目录，通常装第三方商业软件             |            |
-| `/tmp`  | Temp                  | 临时文件。其中文件用完就删，重启时会被清空         |            |
-
-文件目录中，有若干文件夹结构和根目录很类似，例如，`/usr`下面也有`/usr/bin`，`/usr/lib`等目录。安装程序时一般按用途装到这些位置：
-
-- `/bin`：操作系统命令
-- `/usr/bin`：使用包管理器安装的程序
-- `/usr/local/bin`：用户手动安装的程序
-
-完整安装位置和搜索顺序可以查看`$PATH`环境变量
-
-## 用户与用户组
-
-- 超级用户：用户名为root，ID为0。大部分Linux发行版禁止使用root登录。拥有所有文件的权限，可管理所有进程
-- 普通用户：用户ID为500以上 / 1000以上，取决于版本。home目录是`/home/username`（每个普通用户拥有自己home目录的文件权限。登录后可以用`~`指代自己的home目录），只能操作自己启动的进程。可以通过`sudo`指令临时获得root权限
-- 系统用户：ID为1~499 / 100~999，不能登录，一般由系统服务使用。此类用户文件、指令操作权限都有严格限制，旨在防止服务受攻后获取过高权限
-
-此外，Linux还用用户组管理权限，用户组的成员享有某些权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
-
-## 文件权限
-
-在 Linux 中，每个文件和目录都有自己的权限。可以使用 `ls -l` 查看当前目录中文件的详细信息
-
-```bash
-$ ls -l
-total 8
--rwxrw-r-- 1 root root   40 Feb  3 22:37 a_file
-drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
-```
-
-第一列的字符串从左到右意义分别是
-
-- 第一位：文件类型，`-`为文件，`d`为目录，`l`为符号链接
-- 第二~四位：文件所属用户的权限
-  - 第二位：`r`表示读权限，`-`表示没有
-  - 第三位：`w`表示写权限，`-`表示没有
-  - 第四位：`x`表示有执行权限，`-`表示没有。对于文件，拥有执行权限就可以作为程序代码执行；而对于目录来说，拥有执行权限就可以访问这个目录下的文件的内容
-- 第五~七位：文件所属用户组的权限
-- 第八~十位：其他人的权限
-
-第三、四列为文件所属用户和用户组。可以使用 `chmod` (**ch**ange file **mod**e bits) 修改权限，`chown` (**ch**ange file **own**er) 修改文件所有者
-
-## 文件操作指令
-
-```bash
-# 文件
-cat file.txt    # 显示文件内容
-less file.txt   # 分页显示，操作类似vim
-
-# 目录
-cd ..   # change directory
-ls -li  # list
-pwd     # print working directory
-```
-
-其他常用命令：`cp`复制，`mv`移动，`rm`删除，`mkdir`创建目录，`touch`创建文件
-
-`find`指令可用于搜索文件，它的语法是`find [路径] [搜索条件]`。完整文档可参考[Linux Manual](https://man7.org/linux/man-pages/man1/find.1.html)，下面列出常用参数
-
-```bash
-find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
-find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
-find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
-```
-
-## 用户与权限指令
-
-```bash
-# 查看用户与权限
-id               # 查看当前用户名、uid、用户组和gid
-whoami           # 查看当前用户名
-groups           # 查看当前用户组
-cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
-cat /etc/group   # 查看用户组列表
-
-# 编辑用户组
-sudo groupadd $group_name
-sudo usermod -aG $group_name $USER   # 添加成员
-newgrp $group_name                   # 登录新加入的组
-
-# 更改权限
-sudo chmod -R 775 ~/dir   # 常用数字：7=rwx，5=r-x
-
-# 查看当前用户能以root权限执行的指令
-
-```
+本笔记各节都附带相关Bash指令，Bash语法一节将详细解释Bash语法以及脚本编写。遇到不理解的指令可在[Explain Shell](https://www.explainshell.com/)网站查询
 
 # Bash语法
 
@@ -337,6 +222,119 @@ echo a?.txt
 source script.sh # 句点的别名
 ```
 
+# 文件、用户和权限
+
+## 文件系统
+
+Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（mount）在树上；计算机设备也抽象为文件的形式挂在树上。大部分发行版的文件结构遵循文件系统层次结构标准（FHS, Filesystem Hierarchy Standard）
+
+**系统文件**
+
+| 目录    | 含义     | 说明                                 | 举例                      |
+| ------- | -------- | ------------------------------------ | ------------------------- |
+| `/bin`  | Binaries | 系统命令                             | `ls`，`cp`                |
+| `/etc`  | Etcetra  | 系统配置文件                         | 用户账号信息`/etc/passwd` |
+| `/dev`  | Device   | 设备文件，即被抽象为文件的计算机设备 | 硬盘`/dev/sda`            |
+| `/mnt`  | Mount    | 临时挂载的其他文件系统               | 光驱                      |
+| `/proc` | Process  | 进程的伪文件，是系统内存的映射       |                           |
+| `/lib`  | Library  | 各种程序使用的动态链接库             |                           |
+| `/boot` | Boot     | Linux系统启动时使用的核心文件        |                           |
+
+**其他**
+
+| 目录    | 含义                  | 说明                                               | 举例       |
+| ------- | --------------------- | -------------------------------------------------- | ---------- |
+| `/home` | Home                  | 用户主目录                                         |            |
+| `/usr`  | Unix System Resources | 各种程序、文档、头文件、库文件（应该是Unix的遗产） |            |
+| `/var`  | Variable              | 经常变动的文件                                     | `/var/www` |
+| `/srv`  | Service               | 网络服务文件                                       | `/srv/ftp` |
+| `/opt`  | Optional              | 可选软件安装目录，通常装第三方商业软件             |            |
+| `/tmp`  | Temp                  | 临时文件。其中文件用完就删，重启时会被清空         |            |
+
+文件目录中，有若干文件夹结构和根目录很类似，例如，`/usr`下面也有`/usr/bin`，`/usr/lib`等目录。安装程序时一般按用途装到这些位置：
+
+- `/bin`：操作系统命令
+- `/usr/bin`：使用包管理器安装的程序
+- `/usr/local/bin`：用户手动安装的程序
+
+完整安装位置和搜索顺序可以查看`$PATH`环境变量
+
+## 用户与用户组
+
+- 超级用户：用户名为root，ID为0。大部分Linux发行版禁止使用root登录。拥有所有文件的权限，可管理所有进程
+- 普通用户：用户ID为500以上 / 1000以上，取决于版本。home目录是`/home/username`（每个普通用户拥有自己home目录的文件权限。登录后可以用`~`指代自己的home目录），只能操作自己启动的进程。可以通过`sudo`指令临时获得root权限
+- 系统用户：ID为1~499 / 100~999，不能登录，一般由系统服务使用。此类用户文件、指令操作权限都有严格限制，旨在防止服务受攻后获取过高权限
+
+此外，Linux还用用户组管理权限，用户组的成员享有某些权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
+
+## 文件权限
+
+在 Linux 中，每个文件和目录都有自己的权限。可以使用 `ls -l` 查看当前目录中文件的详细信息
+
+```bash
+$ ls -l
+total 8
+-rwxrw-r-- 1 root root   40 Feb  3 22:37 a_file
+drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
+```
+
+第一列的字符串从左到右意义分别是
+
+- 第一位：文件类型，`-`为文件，`d`为目录，`l`为符号链接
+- 第二~四位：文件所属用户的权限
+  - 第二位：`r`表示读权限，`-`表示没有
+  - 第三位：`w`表示写权限，`-`表示没有
+  - 第四位：`x`表示有执行权限，`-`表示没有。对于文件，拥有执行权限就可以作为程序代码执行；而对于目录来说，拥有执行权限就可以访问这个目录下的文件的内容
+- 第五~七位：文件所属用户组的权限
+- 第八~十位：其他人的权限
+
+第三、四列为文件所属用户和用户组。可以使用 `chmod` (**ch**ange file **mod**e bits) 修改权限，`chown` (**ch**ange file **own**er) 修改文件所有者
+
+## 文件操作指令
+
+```bash
+# 文件
+cat file.txt    # 显示文件内容
+less file.txt   # 分页显示，操作类似vim
+
+# 目录
+cd ..   # change directory
+ls -li  # list
+pwd     # print working directory
+```
+
+其他常用命令：`cp`复制，`mv`移动，`rm`删除，`mkdir`创建目录，`touch`创建文件
+
+`find`指令可用于搜索文件，它的语法是`find [路径] [搜索条件]`。完整文档可参考[Linux Manual](https://man7.org/linux/man-pages/man1/find.1.html)，下面列出常用参数
+
+```bash
+find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
+find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
+find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
+```
+
+## 用户与权限指令
+
+```bash
+# 查看用户与权限
+id               # 查看当前用户名、uid、用户组和gid
+whoami           # 查看当前用户名
+groups           # 查看当前用户组
+cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
+cat /etc/group   # 查看用户组列表
+
+# 编辑用户组
+sudo groupadd $group_name
+sudo usermod -aG $group_name $USER   # 添加成员
+newgrp $group_name                   # 登录新加入的组
+
+# 更改权限
+sudo chmod -R 775 ~/dir   # 常用数字：7=rwx，5=r-x
+
+# 查看当前用户能以root权限执行的指令
+
+```
+
 # 包管理器
 
 [参考](https://www.digitalocean.com/community/tutorials/package-management-basics-apt-yum-dnf-pkg)
@@ -390,3 +388,22 @@ openssl x509 -in cert.crt -inform pem -out cert.der -outform der
 # 计算哈希值
 openssl x509 -in cert.pem -inform PEM -subject_hash
 ```
+
+## 打印二进制文件hex值
+
+**hexdump**
+
+```bash
+hexdump -v -e '30/1 "%02x" "\n"' example.png > example.txt
+# -v: 遇到两行相同的不把后面的行省略为*号
+# -e：输出格式。说明：读取30个1字节的数据，以%02x格式打印，然后打印一个换行符。此格式和xxd的plain格式相同
+```
+
+**xxd**
+
+```bash
+xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
+xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
+```
+
+以上是Unix指令。windows可以用WSL，或者git bash也可以

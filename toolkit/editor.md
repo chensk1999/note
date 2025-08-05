@@ -1,33 +1,38 @@
 # VSCode
 
-vscode的设置都存储在settings.json中，每个键值对对应一项设置
+## 设置
+
+VSCode的设置存储在`%APPDATA%\Code\User\settings.json`
 
 ```json
 {
-    "workbench.colorTheme": "Default Dark+",
-    "editor.rulers": [
-        79,
-        120
-    ]
+    "editor.rulers": [79, 120],  // 标尺
+    "files.associations": {      // 后缀和语言绑定
+        "*.va": "verilog"
+    }
+    "[verilog]": {   // 仅作用于指定语言的设置
+        "files.autoGuessEncoding": true
+    }
 }
 ```
 
-部分配置文件：
+## 扩展
 
-- 设置：`%APPDATA%\Code\User\settings.json`（`%APPDATA% = C:\Users\current_user\AppData\Roaming`）
-- 扩展：`%USERPROFILE%\.vscode\extensions`（`%USERPROFILE% = C:\Users\current_user`）
+所有扩展均安装在`%USERPROFILE%\.vscode\extensions`
 
-## language-specific settings
+## 项目配置
+
+项目配置放在项目中的`.vscode`文件夹内
+
+**`settings.json`**
 
 ```json
-"[verilog]": {
-    "files.autoGuessEncoding": true
-}
-
-"files.associations": {
-    "*.va": "verilog"
+{
+    "python.pythonPath": "~/myproject/.venv/Scripts/python.exe"
 }
 ```
+
+**`launch.json`**：运行和调试配置。[配置文件文档](https://code.visualstudio.com/docs/debugtest/debugging-configuration#_launchjson-attributes)
 
 # Vim
 

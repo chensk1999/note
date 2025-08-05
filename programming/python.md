@@ -890,9 +890,16 @@ raise ValueError('message')
 
 并发编程通常有以下三种方式：
 
-- **多进程**：用多个进程同时进行任务。每个进程有独立的内存空间。**适合计算密集型任务**
-- **多线程**：在一个进程下启动多个线程，线程之间共享内存空间。由于python的全局解释器锁（GIL），不同线程无法同时执行。**适合可以并行执行、且受限于IO的任务**（其实没想明白有什么任务属于这一类）
-- **协程**：在一个进程内切换执行任务。**适合需要等待IO的任务**，比如等待用户输入、等待设备响应
+- **多进程**：开辟多个新进程执行任务
+  - 优点：进程间相互独立，稳定性高；能跑满CPU
+  - 缺点：创建进程的开销大；操作系统支持的进程数有限；进程间通信复杂
+
+- **多线程**：在当前进程下开辟多个线程执行任务。线程之间共享内存。额外性能消耗主要来自在进程间切换，以及多线程锁
+  - 优点：异步IO效率
+
+- **协程**：同一个线程内交替执行多个任务。没有额外开销，但也不能利用多核CPU
+
+Linux系统下
 
 ## 多进程
 
@@ -1342,25 +1349,6 @@ if __name__ == '__main__':
     httpd = http.server.HTTPServer(server_address, PartialContentHandler)
     print(f'Serving HTTP on {ip_addr}:{PORT}')
     httpd.serve_forever()
-```
-
-## html
-
-```python
-from html.parser import HTMLParser
-
-class MyParser(HTMLParser):
-    def handle_starttag(self, tag, attrs):
-        print('start tag: ', tag, attrs)
-    def handle_endtag(self, tag):
-        print('end tag: ', tag)
-
-    # 其他还有handle_startendtag(tag, attrs), handle_data(data)
-    # handle_comment(data)， handle_entityref(name), handle_charref(name)等
-
-parser = MyParser()
-parser.feed('example.html')
-# feed之后立即分析整个文档，每当遇到相应元素时，就会调用对应handle函数
 ```
 
 ## itertools（迭代器工具）
