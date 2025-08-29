@@ -6,7 +6,7 @@ HTML（超文本标记语言，Hyper-Text Markup Language）是用于创建网�
 
 HTML由多个**元素**（Element）组成。元素由起始标签、元素的内容、终止标签构成，例如`<p>Hello, World</p>`。元素可以没有内容，甚至可以在起始的同时终止（比如，换行标签`<br />`。一些不规范写法将其写成`<br>`，可能会被当作缺少终止标签）
 
-元素常具有**属性**（Attribute），属性用键值对表示，且属性值必须用引号括起来；属性通常写在开始标签。例：`<a href="example.html">链接</a>`
+元素常具有**属性**（Attribute），属性用键值对表示，且属性值必须用引号括起来。例：`<a href="http://www.baidu.com">百度</a>`。特别地，元素的`id`属性必须是独一无二的，常用于标识元素；`class`属性可包含用空格分开的多个值
 
 ## 基础
 
@@ -21,7 +21,6 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
     </head>
 
     <body>            <!-- body包含了可见的内容 -->
-
         <h1>一级标题</h1>
         <p>段落</p>
         <a href="http://www.google.com">超文本链接</a>
@@ -31,24 +30,8 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
         <hr>  <!-- 分割线 -->
 
         <p>字体
-            <b>粗体(bold)</b>
-            <i>斜体(italic)</i>
-            <strong>加重，通常也被渲染为粗体</strong>
-            <em>着重，常被渲染称斜体</em>
-            <sub>下标</sub>
-            <sup>上标</sup>
-            <del>删除线</del>
-        </p>
-
-        <p style="color:blue;margin-left:20px;">
-            内联样式。常用样式：
-            background-color   背景颜色
-            font-family        字体
-            color              文字颜色
-            font-size          文字尺寸，如20px
-            text-align         对齐方式，如center
-            在旧版本，有font, center, strike标签，color, bgcolor属性用来实现样式
-            现在建议只使用style
+            <b>粗体(bold)</b><i>斜体(italic)</i>
+            <sub>下标</sub><sup>上标</sup><del>删除线</del>
         </p>
 
         <!-- 图像 -->
@@ -72,13 +55,8 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
         </table>
 
         <li>无序列表</li>
-        <ol>
-            <li>li套在ol里为有序列表</li>
-        </ol>
-
-        <div>
-            块级元素，经常当作容器
-        </div>
+        <ol><li>有序列表</li></ol>
+        <div>块级元素，经常当作容器</div>
   </body>
 </html>
 ```
@@ -322,7 +300,9 @@ div::text {background: white;}
 
 当样式重复定义时，冲突属性取最后定义的
 
-## 尺寸
+## 布局
+
+### 尺寸
 
 HTML元素尺寸称作“盒子模型”，包括四部分
 
@@ -330,8 +310,6 @@ HTML元素尺寸称作“盒子模型”，包括四部分
 - **Border（边框）**：边框
 - **Padding（内边距 / 填充）**：边框内的留空。这部分算作HTML元素
 - **Content（内容）**：HTML元素内容
-
-## 布局
 
 ### display属性
 
@@ -430,6 +408,8 @@ HTML元素尺寸称作“盒子模型”，包括四部分
 # JavaScript
 
 ## 语法
+
+[现代JavaScript教程](https://zh.javascript.info/)
 
 ### 数据类型与变量
 
@@ -623,7 +603,12 @@ document.body.addEventListener('mouseover', obj.on_event);        // this接收�
 document.body.addEventListener('mouseout', (e)=>obj.on_event(e)); // this是obj
 ```
 
-## 调用
+### 异步
+
+```javascript
+```
+
+## 在网页中使用JS
 
 ### 代码块
 
@@ -691,46 +676,32 @@ getEventListeners(btn)
 
 ## HTML DOM
 
-DOM（文档对象模型，Document Object Model）是描述文档的树状结构。JavaScript可以通过操作DOM访问网页元素。JavaScript提供了丰富的DOM API，使用`document`、`console`等对象就能访问网页内容，如：
-
-```javascript
-document.getElementById("demo").innerHTML = "Hello World";
-```
-
-此例子将首个id为demo的元素内容更改为Hello World
+DOM（文档对象模型，Document Object Model）是描述HTML文档的树状结构。JavaScript可以通过操作DOM访问网页元素
 
 ### 访问网页元素
 
-```html
-<div id="div1">
-    <p id="p1">第1段</p>
-    <p id="p2">第2段</p>
-</div>
-```
-
 ```javascript
-// 获取网页元素
+// 用CSS选择器获取网页元素
 let element = document.querySelector("div > p");
 const elements = document.querySelectorAll("div > p");
 
 // 访问网页元素
 element.innerHTML = "Hello"; // 访问元素的内容
 element.id = "honey";        // 访问元素Property
-element.hasAttribute("id");  // 访问元素Attribute。还有setAttribute，getAttribute等
 ```
 
-访问网页元素有Property和Attribute两种方式。严格来说，Attribute和Property是不同的东西，Attribute属于HTML，Property属于DOM
+注意，JS访问的是元素对象的Property，它和HTML标签的Attribute不相同。绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如`<input value="Hello">`标签，它的value Attribute是初始值，Property是当前值
 
-绝大多数时候两者是同步的，但格式可能不同，比如：字符串的Attribute可能对应布尔值的Property；相对路径的Attribute可能对应绝对路径的Property。也有些例外是不同步的，比如非标准Attribute不会生成Property。一般**建议使用Property**，一方面因为更简洁（尤其是布尔值Property），另一方面是在旧版本浏览器上问题较少
+用JS操作DOM时通常使用Property，它才是真正显示在页面上的东西。如果确实有访问Attribute的需求，可用`element.getAttribute("attr_name")`
 
-通过插入和删除DOM节点的方式添加和删除网页元素
+### 添加、删除网页元素
 
 ```javascript
 var div1 = document.querySelector("#div1");
 var p1 = document.querySelector("#p1");
 var p2 = document.querySelector("#p2");
 
-// 添加网页元素
+// 插入DOM节点，添加网页元素
 var p0 = document.createElement("p");
 var p3 = document.createElement("p");
 p0.innerHTML = "paragraph 0";
@@ -738,7 +709,7 @@ p3.innerHTML = "paragraph 3"
 div1.appendChild(p3);      // 插入为div1最后一个子节点
 div1.insertBefore(p0, p1); // 插入为p1前一个兄弟节点。注意，只有insertBefore，没有after
 
-// 删除网页元素
+// 删除DOM节点，删除网页元素
 div1.removeChild(p0);
 
 // 替换网页元素
@@ -746,6 +717,68 @@ var p_new = document.createElement("p");
 p_new.innerHTML = "new paragraph";
 div1.replaceChild(p_new, p1)
 ```
+
+## 在浏览器中存储数据
+
+### Cookie
+
+Cookie是HTTP协议中用来管理会话的字段，通常由服务器管理，但未设置`HttpOnly`的Cookie也可以用Javascript操作
+
+```javascript
+// 读取Cookie。读到的是包含键、值等信息的字符串
+alert(document.cookie);
+document.cookie = "user=John; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT";
+```
+
+### `localStorage`和`sessionStorage`
+
+这两个对象是Javascript存储数据的主要手段。同源（域名、协议、端口相同的网站）共享数据。`localstorage`不会自动清空；`sessionStorage`在浏览器关闭时清空
+
+```javascript
+localStorage.setItem("app_name", "applet-7ff2");
+localStorage.getItem("app_name");
+localStorage.removeItem("app_name");
+localStorage.clear();
+
+for(let i = 0; i < localStorage.length; i++) {
+  let key = localStorage.key(i);  // 获取第 i 个键
+  alert(`${key}: ${localStorage.getItem(key)}`);
+}
+```
+
+这两个存储对象的键值对都只能是字符串
+
+### IndexedDB
+
+浏览器内建数据库，功能很强大，但复杂度较高，不适合一般网页使用。可配合ServiceWorkers等技术构建离线应用
+
+## 网络请求
+
+
+
+```javascript
+// 发起请求
+let response = await fetch(url, {
+    method: "POST",
+    headers: {
+        Authentication: "Basic YWRtaW46YWRtaW4="
+    },
+    body: "id=1&page=1"
+}
+                          );
+
+// 处理响应包
+alert(response.status);  // 状态码
+for (let [key, value] of response.headers) {
+  alert(`${key} = ${value}`);  // 响应头
+}
+// 响应体。两种方法选一个
+let text = response.text();
+let data = response.json();
+let data = response.blob();
+```
+
+
 
 ## 框架
 
@@ -850,9 +883,7 @@ php的HTML转义函数`htmlspecialchars`默认不转义单引号，因此拼接�
 
 ## Javascript压缩与混淆
 
-目前主流的前端开发技术大多都会利用 Webpack、Rollup 等工具进行打包
+目前主流的前端开发技术大多都会利用Webpack、Rollup等工具进行打包
 
 [javascript-obfuscator](https://github.com/javascript-obfuscator/javascript-obfuscator)
-
-
 

@@ -506,7 +506,7 @@ Downloader Middleware：https://docs.scrapy.org/en/latest/topics/downloader-midd
 
 scrapy自带[logging模块支持](https://docs.scrapy.org/en/latest/topics/logging.html)，每个spider类都有自己的logger
 
-# Websockets
+# Websockets - Web Socket服务器与客户端
 
 ## 服务器
 
@@ -576,7 +576,7 @@ async def connect_ws():
 
 # Beautiful Soup - 提取HTML数据
 
-Beautiful Soup是从HTML和XML中提取数据的库。它支持标准库的`html.parser`解析器和`lxml`解析器，提供了易用的接口
+Beautiful Soup是从HTML和XML中提取数据的库。它支持`html.parser`解析器和`lxml`解析器，提供了易用的接口
 
 安装：`pip install beautifulsoup4`
 
@@ -607,5 +607,145 @@ tag['class'] # 多值属性，解析为列表
 
 # 子节点
 tag.children, tag.descendants, tag.next_sibling
+```
+
+# Selenium - 浏览器自动化
+
+Selenium是一套浏览器自动化工具，常用于网页应用测试
+
+参考：[Selenium文档](https://www.selenium.dev/zh-cn/documentation/)，[Selenium教程](https://www.runoob.com/selenium/selenium-tutorial.html)
+
+```python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+driver = webdriver.Chrome()
+driver.get("http://example.com/") # 打开网页
+pw_elem = driver.find_element(By.ID, "passwd") # 选择页面元素
+pw_elem.send_keys("123456") # 操作元素
+driver.close() # 关闭标签页
+driver.quit()  # 关闭浏览器
+```
+
+## 启动浏览器
+
+```python
+from selenium import webdriver
+
+# 启动选项
+options = webdriver.ChromeOptions()
+options.add_argument("--headless") # 无头模式
+options.add_argument("--proxy-server=localhost:8080")  # 启动浏览器的命令行参数
+options.add_argument("--user-data-dir=C:\\SeleniumChromeProfile")
+# 注意：Chrome禁止用自动化工具控制默认profile。最好创建一个profile专门给selenium用
+options.add_extension("example_plugin.zip")            # 加载扩展程序
+
+# 驱动程序
+# Selenium会自动检测浏览器版本并下载驱动程序，安装到 %USERPROFILE%/.cache/selenium
+# 也可手动指定驱动程序
+service = webdriver.ChromeService(executable_path="path/to/driver")
+
+# 启动浏览器
+driver = webdriver.Chrome(service=service, options=options)
+```
+
+## 模拟交互
+
+页面导航
+
+```python
+driver.get("http://example.com")  # 打开网页，并等待网页加载完成（即onload回调执行完毕）
+driver.refresh()  # 刷新页面
+
+# 页面信息
+print(driver.current_url)
+print(driver.title)
+
+# 切换页面
+win = driver.windle_handles[1]
+driver.switch_to.window(win)   # 切换到第二个标签页
+iframe = driver.find_element(By.ID, "frame")
+driver.switch_to.frame(iframe) # 切换到iframe
+
+# 处理弹窗
+from selenium.webdriver.common.alert import Alert
+alert = Alert(driver)
+alert.send_keys("输入文本")
+alert.accept()  # 或者alert.dismiss()
+```
+
+与网页元素交互
+
+```python
+# 定位元素。有By.ID，By.XPATH，By.CSS_SELECTOR等多种方式
+from selenium.webdriver.common.by import By
+search_box = driver.find_element(By.CSS_SELECTOR, "#search input")
+search_btn = driver.find_element(By.ID, "submit")
+
+# 访问元素
+print(search_box.get_attribute("placeholder"))
+print(search_btn.text)
+
+# 获取元素状态
+ok = all(
+    search_btn.is_displayed(),  # 是否显示
+    search_btn.is_enabled(),    # 是否启用
+    search_btn.is_selected()    # 选框是否被选中
+)
+search_btn.rect  # 坐标、尺寸信息
+
+# 鼠标、键盘操作
+search_btn.click() # 点击
+search_box.clear()          # 清空输入框
+search_box.send_keys("foo") # 键盘输入
+from selenium.webdriver.common.keys import Keys
+search_box.send_keys(Keys.CONTROL + "a")  # 输入不可打印字符
+
+# 执行Javascript
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+ret = driver.execute_script("return 1;")  # 执行JS并获取结果
+```
+
+对于复杂操作，可以使用Actions接口模拟硬件输入
+
+```python
+from selenium.webdriver.common.action_chains import ActionChains
+
+actions = ActionChains(driver)
+actions.move_to_element(clickable) \
+    .pause(1) \
+    .click() \
+    .perform()
+```
+
+其他常用操作有：
+
+- 点击：`click, double_click, context_click`
+- 拖放：`drag_and_drop, click_and_hold, release``
+- 键盘：`send_keys`
+
+## 等待策略
+
+默认配置下，Selenium等待HTML所有资源加载完成，然后继续运行代码。但如果网站使用异步加载，HTML资源加载完成的时候，部分资源还没加载出来（未显示或者不存在），试图用selenium访问这些元素会报错`selenium.common.exceptions.NoSuchElementException`。因此Selenium还提供了两种等待机制：
+
+- 隐式等待：设置全局超时秒数，定位元素失败时等待至多这么久。此方法简单易用，但是不够灵活，比如无法等待元素变为可点击状态
+- 显式等待：在代码中添加等待指令，运行到该处时按照指令等待
+
+两种等待策略不可混合使用，否则等待时间不可预测
+
+```python
+# 隐式等待。每次定位元素失败时等待至多5秒
+driver.implicitly_wait(5)
+
+# 显式等待
+# 其中，wait.until的参数是Callable[[], bool]，代码将等待到它返回True为止
+from selenium.webdriver.support.ui import WebDriverWait
+wait = WebDriverWait(driver, timeout=2)
+wait.until(lambda _: element.is_enabled())
+
+# expected_conditions模块提供了许多常用的等待条件
+from selenium.webdriver.support import expected_conditions as EC
+elem = (By.ID, "checkbox")  # 此参数是查找元素的关键字元组。也可以是元素本身
+wait.until(EC.element_to_be_clickable(elem))
 ```
 

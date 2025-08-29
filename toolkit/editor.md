@@ -24,7 +24,7 @@ VSCode的设置存储在`%APPDATA%\Code\User\settings.json`
 
 项目配置放在项目中的`.vscode`文件夹内
 
-**`settings.json`**
+**`settings.json`**：覆盖软件配置
 
 ```json
 {
@@ -33,6 +33,53 @@ VSCode的设置存储在`%APPDATA%\Code\User\settings.json`
 ```
 
 **`launch.json`**：运行和调试配置。[配置文件文档](https://code.visualstudio.com/docs/debugtest/debugging-configuration#_launchjson-attributes)
+
+以下示例将当前文件作为子模块运行
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "调试python子模块",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mymodule.${fileDirnameBasename}.${fileBasenameNoExtension}",
+            "cwd": "${workspaceFolder}/.."
+        }
+    ]
+}
+```
+
+简单说明：假设文件结构如下（省略了`__init__.py`等无关文件），vscode工作区是`mymodule`文件夹，当前打开`main_panel.py`。那么，开始调试时，模组名`mymodule.${fileDirnameBasename}.${fileBasenameNoExtension}`，其中`fileDirBasename`解析为文件夹名`gui`，`fileBasenameNoExtension`解析为文件名`main_panel`，得到被调试的模组名：`mymodule.gui.main_panel`
+
+```
+mymodule
+  |- connector
+  |    \- sqlite_connector.py
+  \- gui
+       \- main_panel.py
+```
+
+**`tasks.json`**：自定义任务
+
+```json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build project",
+            "type": "shell",
+            "command": "npm run build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
+```
 
 # Vim
 

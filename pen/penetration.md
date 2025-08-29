@@ -62,12 +62,17 @@ graph LR
 
 ### 工具
 
-- **网络空间测绘工具**：可以搜索目标的子域名、ICP备案、开放端口、指纹等网络资产信息
-  - 国内：[鹰图平台](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)
-  - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
-- **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等。可参考[Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
-- **源代码分析**：`JSFinder`脚本、`FindSomething`插件分析网页HTML、JavaScript源代码寻找信息
-- **子域名爆破**
+- **域名**
+  - **Whois查询**：[爱站网](https://whois.aizhan.com/)、[站长之家](https://whois.chinaz.com/)
+  - **ICP备案查询**：[工信部备ICP案管理系统](https://beian.miit.gov.cn/)、天眼查、[小蓝本](https://sou.xiaolanben.com/)
+  - **子域名爆破**：[OneForAll](https://github.com/shmilylty/OneForAll)
+- **综合工具**
+  - **网络空间测绘工具**：可以搜索目标的子域名、ICP备案、开放端口、指纹等网络资产信息
+    - 国内：[鹰图](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)、[零零信安](https://0.zone/)
+    - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
+  - **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等。常用关键字：`site:域名 intitle:标题 intext:网页内容 filetype:文件后缀 inurl:链接`；更多用法可参考[Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
+- **其他**
+  - **前端代码分析**：`JSFinder`脚本、`FindSomething`插件分析网页HTML、JavaScript源代码寻找信息
 
 ### CDN绕过
 
@@ -76,7 +81,7 @@ graph LR
 - **相关域名**：相关站点经常在同一IP段，可尝试扫描其他资产的C段
 - **邮件服务**：网站发起请求不可用CDN，可从该站点发出的邮件（比如验证邮件、RSS邮件订阅）分析
 - **国外地址请求**：一般不会为海外地址部署CDN，从国外访问到的可能是真实地址
-- **DNS历史记录**：如[IP地址查询](https://site.ip138.com/)，找启用CDN之前的ip
+- **DNS历史记录**：如[ip138](https://site.ip138.com/)，找启用CDN之前的ip
 - **DDoS攻击**：打光网站CDN流量
 
 找到疑似真实IP后，首先可以多方法互相验证；然后可以尝试改Hosts，能正常访问就说明找到真实IP地址了
@@ -86,12 +91,12 @@ graph LR
 找到真实IP地址后，就可以探测哪些端口开放、各端口运行什么服务
 
 1. 测绘工具
-2. 扫描工具：nmap，masscan，fscan等
+2. 扫描工具：nmap，masscan，goby，tscan，fscan等
 
 访问各端口，通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等），例如服务器返回Apache的默认404页面就可以推断服务器使用Apache；部分资源路径包含`wp-content`，可以推断服务器使用Word Press。这种方法叫做**指纹识别**
 
 - **手工识别**：内容太多，且实用性较差，从略
-- **指纹识别工具**：nmap的服务识别就是一种指纹识别；wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)等工具可用于识别网页服务器的指纹
+- **指纹识别工具**：nmap的服务识别就是一种指纹识别；其他工具还有wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)，tidefinger，ehole等
 
 ## 辅助信息
 
@@ -99,9 +104,7 @@ graph LR
 
 识别服务器的防护手段也可以帮助后续测试。WAF识别与绕过：[Awesome-WAF](https://github.com/0xInfection/Awesome-WAF)
 
-## 梳理资产
-
-以上方法如果找到了数量庞大的资产（这是非常有可能的！），就要从中筛选出“值得挖”的资产——当然，价值判断取决于渗透的目的，但一般来说，业务越重要、功能越多，越有可能挖出高价值的漏洞
+以上方法如果找到了数量庞大的资产（这是非常有可能的！），就要从中筛选出“值得挖”的资产。价值判断取决于渗透的目的，但一般来说，业务越重要、功能越多，越有可能挖出高价值的漏洞
 
 # Web漏洞基础
 
@@ -111,9 +114,9 @@ graph LR
 
 寻找注入点可以用**时间盲注**，因为它注入成功时必定能看到网站响应时间变化。其他注入语句即使注入成功了，也可能看不到回显
 
-当常见payload都试过之后，要**果断放弃**。SQL注入的大前提是服务器将攻击者控制的字符串直接拼接到SQl语句中。若后端代码使用了参数化查询，或者对用户输入强验证，就不存在SQL注入的可能性
+当常见payload都试过之后，要**果断放弃**。SQL注入的大前提是服务器将攻击者控制的字符串直接拼接到SQL语句中。若后端代码使用了参数化查询，或者对用户输入强验证，就不存在SQL注入的可能性
 
-不要忘记，所有和数据库有关的地方都可能出现注入，包括但不限于GET参数、POST参数、HTTP头、URL
+不要忘记，所有和数据库有关的地方都可能出现注入，包括但不限于GET参数、POST参数、HTTP头、URL。只要有迹象表明服务器把这些参数存起来了，或者用这些参数查询东西，就可以尝试去注
 
 ### Union注入
 
@@ -214,34 +217,23 @@ UPDATE users SET pwd='pswd' WHERE name='admin' -- '
 
 ### 防护
 
-- **文件校验**：检验文件合法性
-  - **简单校验**：利用HTML表单、javascript、MIME类型校验
+文件上传漏洞的防护包含两方面，其一是检测恶意文件
 
-  - **文件名校验**：检测扩展名并进行黑名单 / 白名单过滤。更严格一点的会把文件名也给改了，比如改成`时间戳.jpg`
+- **简单校验**：利用HTML表单、javascript、MIME类型校验
+- **文件名校验**：检测扩展名并进行黑名单 / 白名单过滤
+- **文件头**：读取文件前几个字节判断文件格式（俗称Magic Number），如JPEG文件应以`FF D8 FF`开头，PNG为`89 50 4E 47`，GIF为`GIF89a`
+- **内容过滤**：用防火墙，杀毒软件等扫描文件内容
+- **内容处理**：进行图像转码后再保存
 
-  - **文件头Magic Number**：读取文件前几个字节判断文件格式，如JPEG文件应以`FF D8 FF`开头，PNG为`89 50 4E 47`，GIF为`GIF89a`
+其二，要防止文件执行。恶意文件类型多样，不可能完全检测出来，但只要上传的文件不被执行，攻击者上传的木马就无法造成危害
 
-- **存储隔离**：放在静态资源目录或者OSS（Ojbect Storage Service，对象存储服务），禁止解析
+- **禁止解析**：上传目录关闭脚本解析功能。或者放在OSS（Ojbect Storage Service，对象存储服务）
 
-- **图像处理**：进行图像处理后重新保存
+- **禁止直接访问**：不允许用户直接访问文件，必须通过特定接口加载。且下载时也要验证用户权限
 
-### 绕过
+- **更改文件名**：把文件名改成难以猜测的形式，如随机字符串，后缀也改成合法后缀，避免攻击者访问该文件
 
-#### 文件校验绕过
-
-1. **冷门后缀**：php可能解析`php5` / `pht` / `phtml` / `shtml` / `pwml`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本的服务器基本不可能成功
-2. **系统命名绕过**：Windows系统可尝试`shell.php.`（末尾句点）、`shell.php%20`（末尾空格）、`shell.php:1.jpg`（冒号）、`shell.php::$DATA`（文件流）；Linux系统可尝试`index.php/.`、`./aa/../index.php/.`
-3. **`.user.ini`文件**：适用于PHP 5.3以上，需要服务器处于CGI / Fast CGI模式，且上传目录下有PHP脚本，比如index.php。构造配置文件`auto_prepend_file=01.gif`，访问同一目录的php脚本时自动运行`01.gif`
-4. **`.htaccess`文件**：适用于apache服务器，需要服务器配置`AllowOverride`（也有说法称需要开启`rewrite`模块、需要Thread Safe版本PHP）
-
-```htaccess
-# 将所有文件名包含pwn的文件作为php解析
-<FilesMatch "pwn">
-    Sethandler application/x-httpd-php
-</FilesMatch>
-```
-
-#### 图片木马
+### 图片木马
 
 包含恶意代码的图片俗称图片马。恶意代码插入于图片文件结束标记之后，或EXIF元数据，不影响图片显示；但将图片马作为代码执行时，比如用文件包含漏洞，解释器解析执行`<?php ?>`或`<% %>`中的代码。和图种的原理类似
 
@@ -259,7 +251,9 @@ copy a.jpg /b + shell.php /a > shell.jpg  # Windows
 
 ## 跨站脚本（XSS）
 
-跨站脚本（Cross-Site Scripting，简称XSS。第一个字母改为X以避免和样式层叠表CSS冲突）是网站显示用户输入（比如，论坛发帖）时，字符串被浏览器误当作代码解析执行从而产生危害。例如下面的文本若被当作javascript执行，将在用户不知情之下将Cookie发送到攻击者服务器，攻击者可以用它进行会话劫持攻击
+跨站脚本（Cross-Site Scripting，简称XSS。第一个字母改为X以避免和样式层叠表CSS冲突）是可以执行任意Javascript代码的漏洞
+
+网站显示内容可控（比如，论坛发帖）时，攻击者构造恶意载荷，让浏览器将将输入当作Javascript代码解析执行从而执行任意Javascript代码。例如下面的文本若被当作javascript执行，将在用户不知情之下将Cookie发送到攻击者服务器，攻击者可以用窃取来的Cookie进行会话劫持攻击
 
 ```html
 <script>
@@ -268,11 +262,12 @@ copy a.jpg /b + shell.php /a > shell.jpg  # Windows
 </script>
 ```
 
-XSS只能影响到用户前端，无法直接作用于服务器
+XSS还可以在用户不知情之下进行敏感操作，或是通过DOM控制网页进行钓鱼攻击。XSS只能影响到用户，无法直接作用于服务器。
 
-- **反射型**：恶意代码写在URL内，如`example.com?q=<script>alert(1);</script>`，打开此链接便受到攻击。易受攻击的功能有搜索等
-- **存储型**：恶意代码存储在服务器中，打开对应页面便受到攻击。易受攻击的功能有评论、文章、用户个人资料等
-- **DOM型**：污染动态加载的数据，如`example.com/#<script>alert(1);</alert>`，浏览器解析数据时就会受到攻击。DOM型XSS在浏览器前端完成，恶意代码没有发送到服务器，因此无法拦截。易受攻击的功能有前端渲染搜索等
+- **反射型**：载荷写在URL内，如`example.com?q=<script>alert(1);</script>`，打开此链接便受到攻击。易受攻击的功能有搜索等
+- **存储型**：载荷存储在服务器中，打开对应页面便受到攻击。易受攻击的功能有评论、文章、用户个人资料等
+- **DOM型**：载荷写在URL的`#`号后面，如`example.com/#<script>alert(1);</alert>`，前端动态加载页面时就会受到攻击。DOM型XSS在浏览器前端完成，恶意代码没有发送到服务器，因此无法拦截。易受攻击的功能有单页应用、前端渲染搜索等
+- **其他**：载荷存储在其他地方，比如Cookie、`LocalStorage`。也叫Self-XSS，需要与其他漏洞配合构造攻击链才有危害性
 
 ### 防护
 
@@ -282,26 +277,31 @@ XSS只能影响到用户前端，无法直接作用于服务器
 
 ## 跨站请求伪造（CSRF）
 
-跨站请求伪造（Cross-Site Requet Forgery，CSRF）利用网站同源策略缺陷，使用用户浏览器存储的Cookie伪造用户请求。例如：
+跨站请求伪造（Cross-Site Requet Forgery，CSRF）是利用受害者浏览器存储的Cookie，以受害者身份执行操作的漏洞
 
-1. 用户登录银行网站，浏览器存储了银行网站的Cookie
-2. 用户访问攻击者的恶意页面，该页面隐藏一个自动提交的请求，如`<img src="http://bank.com/transfer?to=attacker&amount=1000 />"`
-3. 用户的浏览器自动携带Cookie发送请求，银行网站误认为是用户操作，执行转账
-
-以上攻击成功需要网站同源策略配置不当：1. `SameSite=Lax`，允许跨站GET请求；2. 可以用GET请求进行重要操作。CSRF也经常配合XSS漏洞使用，利用XSS嵌入伪造的请求
-
-Cookie的`SameSite`属性有三种模式：
-
-- `Strict`：请求目标与当前URL一致时才会携带Cookie。也就是说跳转、后台请求都不带Cookie
-- `Lax`：跨域Get请求会携带Cookie。现代浏览器默认使用`Lax`
-- `None`：任何情况都会携带Cookie。基本见不到此模式
+若某网站`vuln-to-csrf.com`关键功能的数据包容易伪造，攻击者可以搭建一个恶意网站`evil.net`，受害者访问`evil.net`时它会悄悄伪造数据包发给`vuln-to-csrf.com`。若受害者浏览器中保存了`vuln-to-csrf.com`网站的Cookie，请求中自动包含Cookie，就以受害者账户进行了操作
 
 ### 防护
 
-- **验证Referer**
-- **SameSite属性**：设置`SameSite=Strict`可以完全防范。不过对用户不方便，多数时候不值得
-- **CSRF Token**：请求需要附带Token（一般用JavaScript设置，可能放在请求头或请求体）。正常会话时服务器生成Token并发给客户端；发生跨站攻击时，客户端没有收到Token，攻击者若无法预测CSRF Token就无法实现攻击
+- **验证Referer**：重要功能的请求必须是从自己网站发起，而非第三方恶意网站。
+- **CSRF Token**：正常会话时服务器生成随机Token并发给客户端，客户端进行敏感操作需要附带Token。攻击者若无法预测CSRF Token就无法伪造请求
+- **SameSite属性**：设置Cookie的SameSite属性为Lax或Strict，避免跨站请求携带Cookie。不过对用户不方便，可能影响一般业务
 - **用户操作确认**：要求输入验证码 / 输入密码等验证
+
+一般强度防护使用CSRF Token；高强度防护使用CSRF Token加上SameSite属性；非常重要的操作再加上用户确认
+
+### 绕过
+
+- 绕过`Referer`验证
+  - 空`Referer`：在恶意网页的HTML头部中加入meta标签`<meta name="referrer" content="never">`；GET请求可用JS跳转`window.location = 'vuln-to-csrf.com'`
+  - 匹配漏洞：子域名、域名前增加字符、路径中包含域名，如`sub.vuln-to-csrf.com`，`aavuln-to-csrf.com`，`evil.net/vuln-to-csrf.com/`
+- 绕过CSRF Token
+  - 利用逻辑错误：可能请求方法换成GET就跳过验证逻辑；可能把Token删了就跳过验证逻辑
+  - Token和Cookie没有强绑定：Token可能没绑定到用户，也可能绑定到非业务Cookie上。这种情况可以访问网站获取CSRF Cookie & Token，写进受害者浏览器
+- 绕过SameSite
+  - `SameSite=Lax`的GET请求，可用`document.location = 'vuln-to-csrf.com'`跳转绕过
+  - 利用目标站点的重定向页面，或是XSS漏洞（注意，子域名也是SameSite）
+
 
 ## 远程代码执行（RCE）
 
@@ -353,7 +353,7 @@ Cookie的`SameSite`属性有三种模式：
 
 ## XML外部实体（XXE）
 
-XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件系统中的文件、互联网文件等。若XML解析器配置不当，可能在解析XML对象时引发LFI、RFI、SSRF等漏洞
+XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件系统中的文件、互联网文件等。若XML解析器允许文档类型定义[DTD](./frontend.md#文档类型定义)，可能在解析XML对象时引发LFI、RFI、SSRF等漏洞
 
 可以上传XML的地方（如，使用XML的api、上传svg文件、上传Excel文件）都可能出现XXE漏洞
 
@@ -377,18 +377,11 @@ XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件�
 
 ## SQL注入
 
-https://www.geekby.site/2021/01/sql%E6%B3%A8%E5%85%A5%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86%E6%95%B4%E7%90%86/
-
-https://wiki.wgpsec.org/knowledge/web/sql_injection.html
-
-判断数据库类别：https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html
+参考资料：[SQL注入相关知识整理](https://www.geekby.site/2021/01/sql%E6%B3%A8%E5%85%A5%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86%E6%95%B4%E7%90%86/)、[SQL注入漏洞基本原理](https://wiki.wgpsec.org/knowledge/web/sql_injection.html)、[数据库检测](https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html)、[SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)、[SQL注入参考文章](https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks)
 
 ### 绕过
 
-虽然写网站的程序员很少用关键字过滤（写网站的人一般用参数化查询一劳永逸；不会用参数化查询的人大概也不懂关键字过滤），但WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
-
-- [SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)
-- https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks
+WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
 
 #### 关键字
 
@@ -473,8 +466,8 @@ SELECT count(*),concat('payload', floor(rand()*2))x from member group by x
 
 | 库                   | 表                                    | 字段                         | 备注         |
 | -------------------- | ------------------------------------- | ---------------------------- | ------------ |
-| `information_schema` | `schemata`                            | `schema_name`                |              |
-|                      | `tables`                              | `table_name, table_schema`   |              |
+| `information_schema` | `schemata`                            | `schema_name`                | 数据库名     |
+|                      | `tables`                              | `table_name, table_schema`   | 表名         |
 |                      | `columns`                             | `column_name, table_name`    | 字段名       |
 | `performance_schema` | `table_handlers`                      | `object_name, object_schema` |              |
 |                      | `objects_summary_global_by_type`      | `object_name, object_schema` |              |
@@ -581,6 +574,10 @@ SELECT a FROM (
 #### 二次编码注入
 
 数据可能多次解码，比如JSON将`\u0065`解码为`e`，XML将`&#101;`解码为`e`，多做一次”不必要“的编码有机会绕过关键字过滤
+
+## 文件上传
+
+
 
 ## XSS
 
