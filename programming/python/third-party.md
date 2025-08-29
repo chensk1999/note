@@ -15,30 +15,70 @@ python有大量第三方模块，只要在[PyPI](https://pypi.org/)上注册就�
 
 python自带的管理工具
 
+```shell
+python -m venv env_name
+```
+
 ## uv
 
 uv是用Rust写的python环境管理工具，运行速度比pip快得多。安装以及使用方式可以参考[uv文档](https://docs.astral.sh/uv/)
 
-**更换镜像**
+- 脚本一键安装：`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`，默认安装位置`%USERPROFILE%/.local/bin`
+- 手动安装：下载[uv Releases](https://github.com/astral-sh/uv/releases)，将`uv.exe`路径加入Path
 
-以下三种方法均可：
+### 配置
 
-1. 创建环境变量`UV_DEFAULT_INDEX`，变量值为镜像源地址
-2. 在配置文件中添加下面的内容
-   - 用户配置文件：`%APPDATA\uv\uv.toml`（Windows）或`~/.config/uv/uv.toml`（Linux）
-   - 项目配置文件：`pyproject.toml`
+**管理python版本**：
+
+```shell
+uv python list          # 查看可安装版本
+uv python install 3.12
+uv python dir           # 查看安装位置
+uv python pin 3.12      # 设置为默认版本
+```
+
+**管理缓存目录**：
+
+```shell
+uv cache dir    # 查看缓存目录
+uv cache clean requests  # 删除requests库
+uv cache clean  # 删除全部库
+uv cache prune  # 删除过时库文件
+```
+
+安装第三方库时，库文件首先下载到缓存目录；虚拟环境使用第三方库时，通过硬链接或者复制的方式引用，这样就不用重复下载了
+
+缓存目录和虚拟环境在同一个盘时，可以用硬链接直接引用缓存的库文件，效率更高。参考文档[Settings | uv](https://docs.astral.sh/uv/reference/settings/#cache-dir)，添加以下配置可更改缓存目录
 
 ```toml
+# 用户配置文件`%APPDATA%\uv\uv.toml`（Windows）或`~/.config/uv/uv.toml`（Linux）
+cache-dir = "./.uv_cache"
+
+# 项目配置文件`pyproject.toml`
+[tool.uv]
+cache-dir = "./.uv_cache"
+```
+
+**换源**：
+
+在配置文件中添加下面的内容。用户配置文件或项目配置文件`pyproject.tmol`
+```toml
+# 用户配置文件`%APPDATA%\uv\uv.toml`（Windows）或`~/.config/uv/uv.toml`（Linux）
+# 或者项目配置文件``pyproject.toml
 [[index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
 ```
 
-3. 用`--index`或`--default-index`参数临时指定镜像
+或者用`--index`参数临时指定镜像
 
-**依赖**
+### 运行脚本
 
-在文件开头加上以下内容：
+```shell
+uv init --script example.py --python 3.12  # 创建脚本文件
+```
+
+然后编辑其中的inline metadata，用`uv run example.py`时会自动创建临时环境。inline metadata的格式如下：
 
 ```python
 # /// script
@@ -48,13 +88,20 @@ default = true
 #   "rich",
 # ]
 # ///
+
+import requests
+from rich.pretty import pprint
 ```
 
-使用`uv run script.py`时就会自动安装依赖（应该是在安装路径创建一个虚拟环境，把依赖装到那里了）
+或者用`--with`参数：
 
-**Project**
+```shell
+uv run --with requests,rich example.py
+```
 
-uv一般使用Project来管理python运行环境。创建项目时，会创建`pyproject.toml, .python-version, uv.lock`等配置文件，还有对应的虚拟环境（默认为`.venv`）。安装或删除第三方库时，会将操作记录在配置文件中，并修改虚拟环境
+### 管理Project
+
+创建项目时，会创建`pyproject.toml, .python-version, uv.lock`等配置文件，还有对应的虚拟环境（默认为`.venv`）。安装或删除第三方库时，会将操作记录在配置文件中，并修改虚拟环境
 
 这种管理方式的好处是容易发布、容易管理——只需发布环境配置文件和源代码，其他人就能简单地配出完全相同的运行环境；需要配多个不同环境时，只需创建多个项目，在每个项目的虚拟环境中分别配置即可
 
@@ -178,6 +225,10 @@ my_model = keras.models.load_model('my_model')
 https://github.com/openai/whisper
 
 ```shell
+# 安装
+pip install openai-whisper
+sudo apt install ffmpeg    # whisper依赖ffmpeg
+
 python -m whisper --help
 python -m whisper "src.mp4" --language zh
 ```
