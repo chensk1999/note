@@ -419,20 +419,23 @@ kali自带的字典包括：
 
 - `/usr/share/worelists`
 
-# CTF
+# 其他工具
 
 ## John The Ripper - 哈希爆破
 
 John The Ripper在已知散列值（以及使用的散列算法）时用于爆破原始数据，常用于密码爆破
 
 ```shell
-zip2john secret.zip > hash.txt    # 提取压缩包哈希
-
-john --wordlist=rockyou.txt hash.txt
-
+zip2john secret.zip > hash.txt       # 提取压缩包哈希
+john --wordlist=rockyou.txt hash.txt # 爆破zip压缩包密码
 ```
 
+## hashcat - 哈希爆破
 
+```shell
+hashcat -a ${攻击模式} -m ${哈希类型} ${哈希值} ${字典}
+hashcat -a 0 -m 16500 $jwt $wordlist  # 爆破JWT
+```
 
 # 其他
 

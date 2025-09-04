@@ -285,7 +285,11 @@ Cookie: sessionId=38afes7a8
 
 ## 同源策略
 
-同源策略（Same-origin Policy，SOP）是浏览器的安全策略，它限制脚本访问其他站点的网络资源。它不是HTTP协议的一部分，但现代浏览器均采用此策略
+同源策略（Same-origin Policy，SOP）是浏览器的安全策略，它限制脚本访问**其他站点**的资源。它不是HTTP协议的一部分，但现代浏览器均采用此策略
+
+同源策略防止恶意网站操作其他网站页面。假如没有SOP，恶意页面可以通过脚本获得其他网站的完全控制权，比如用户打开恶意页面后，恶意页面可以用Javascript打开银行网站（如`window.open`），然后进行恶意操作；有SOP之后，除非银行网站允许，其他站点无法访问它的DOM，也无法用脚本操作网页
+
+注意：SOP不能防范XSS、CSRF：前者成因与跨源操作完全无关；后者可以用跨源写操作绕过。不过它确实增加了利用这两类漏洞的难度
 
 ### 跨源访问
 
@@ -303,10 +307,6 @@ Cookie: sessionId=38afes7a8
   - 如`fetch("other-origin.com")`会被浏览器拦截
   - 但是如果先进行跨源资源嵌入，就可以调用被嵌入的资源。如用`<img src="other-origin.com/logo.png">`嵌入图片后，可以用JS操作
 - 跨源**DOM操作**：访问其他源（例如用`window.open`打开的、用`iframe`嵌入的网站）的DOM。**不允许**
-
-同源策略的设计初衷是防止恶意网站操作其他网站页面。假如没有SOP，恶意页面拥有对其他网站的完全控制权，比如用`window.open`打开银行网站，然后用Javascript窃取个人信息，甚至转账
-
-SOP不能防范XSS、CSRF：前者成因与跨源操作完全无关；后者可以用跨源写操作绕过。不过它确实增加了利用这两类漏洞的难度
 
 ### CORS
 
@@ -329,9 +329,26 @@ JSONP，postMessage，WebSocket
 
 ## 内容安全策略
 
-Content Security Policy，CSP
+内容安全策略（Content Security Policy，CSP）可以限制浏览器执行脚本，主要用于防御XSS攻击。内容安全策略可以通过CSP响应头设置：
 
-待补充
+```http
+GET / HTTP/1.1
+Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src 'self'; 
+```
+
+其中每一项指定一类资源的加载源，比如网站`http://example.com`设置了`script-src 'self'`，表示只允许加载同源脚本，不同源的脚本如`<script src="lib.aliyun.com/js/jquery.js">`不能加载
+
+- 策略（Directives）
+  - `default-src`：未指定的策略按照这条
+  - `script-src`：限制`<script>`脚本的源
+  - `connect-src`：限制`<a>`标签、网络通信（`fetch`、`XMLHttpRequest`、`WebSocket`等）的源
+  - `img-src`限制`img`标签；`media-src`限制`audio, video`等
+- 源：可以指定多个源，用空格分开
+  - `'none'`：都不允许
+  - `'self'`：和文档同源（协议、域名、端口）
+  - `'unsafe-inline'`：内联资源，如`script`标签的内联脚本、`style`标签的内联样式
+  - `'nonce-{随机字符串}'`：`nonce`值匹配的内联资源，如`<script nonce="随机字符串">`
+  - URL：如`http://*.example.com`。若协议缺省则用当前页面的协议
 
 # 防火墙
 
