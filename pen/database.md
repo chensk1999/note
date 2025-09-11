@@ -65,10 +65,10 @@ SQL分为四种语句：
 
 ```sql
 SHOW DATABASES;  -- 查询数据库列表
-CREATE DATABASE school;  -- 创建
+CREATE DATABASE school; -- 创建数据库
 USE school;      -- 选择数据库
 SHOW TABLES;     -- 查询当前数据库所有表
-DESC student;   -- 查询表的结构，字段类型，主键，是否为空等属性
+DESC student;    -- 查询表的结构，字段类型，主键，是否为空等属性
 DROP school;     -- 删除数据库
 ```
 
@@ -328,6 +328,11 @@ SELECT left("Hello", 3), right("Hello", 2); -- 截取开头、结尾的若干字
 
 ### 文件IO
 
+```sql
+SELECT load_file("/etc/passwd");
+
+```
+
 # SQL数据库
 
 ## MySQL
@@ -340,6 +345,9 @@ service mysql start
 # 登录成功后会显示SQL shell。在此输入SQL语句即可访问数据库
 mysql -u root -p
 mysql>
+
+# 登录远程服务器
+mysql -h $ip -P 3306 -u root -p --ssl-verify-server-cert=false
 ```
 
 用户管理

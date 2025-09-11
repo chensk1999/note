@@ -13,49 +13,18 @@ HTML由多个**元素**（Element）组成。元素由起始标签、元素的�
 ```html
 <!DOCTYPE html>   <!-- 声明是html5文档。建议用小写标签 -->
 <html>            <!-- 根元素 -->
-    <head>            <!-- head标签是元数据 -->
+    <head>  <!-- 元数据 -->
         <title>文档标题</title>
         <meta charset="utf-8" />
-        <base href="//www.runoob.com/images/" target="_blank" />     <!-- 默认链接 -->
-        <link rel="stylesheet" type="text/css" href="mystyle.css" /> <!-- 外部样式 -->
     </head>
 
-    <body>            <!-- body包含了可见的内容 -->
+    <body>  <!-- 网页内容 -->
         <h1>一级标题</h1>
         <p>段落</p>
         <a href="http://www.google.com">超文本链接</a>
-        <img src="/images/logo.png" width="100%" height="30" />
-            <!-- 宽度为页面的100%，高度30像素。会自动拉伸图片，如果宽高只指定一个就能保持宽高比 -->
+        <img src="/images/logo.png" width="100%" />
         <br>  <!-- 换行。源代码中的连续空白、空行都会被当作一个空格 -->
         <hr>  <!-- 分割线 -->
-
-        <p>字体
-            <b>粗体(bold)</b><i>斜体(italic)</i>
-            <sub>下标</sub><sup>上标</sup><del>删除线</del>
-        </p>
-
-        <!-- 图像 -->
-        <img src="boat.gif" alt="加载不出来的时候显示这段文字" width="304" height="228">
-
-        <!-- 表格 -->
-        <table width="500" border="1" cellpadding="10">
-            <caption>标题</caption>
-            <tr>
-                <th colspan="2">Header 1</th>
-                <!-- th表示表头，colspan表示跨列（即一个占两列），rowspan表跨行-->
-            </tr>
-            <tr>
-                <td>row 1, cell 1</td>
-                <td>row 1, cell 2</td>
-            </tr>
-            <tr>
-                <td>row 2, cell 1</td>
-                <td>row 2, cell 2</td>
-            </tr>
-        </table>
-
-        <li>无序列表</li>
-        <ol><li>有序列表</li></ol>
         <div>块级元素，经常当作容器</div>
   </body>
 </html>
@@ -421,7 +390,7 @@ JS有7种基本类型 + 1种引用类型，引用类型又可以细分为许多�
 // 定义变量。let声明局部变量，const声明常量（列表、对象建议用const定义）
 let x = 'name';
 const arr = ['a', 'b', 'c'];
-const obj = {name: 'Joe', sex: 'Male'};  // 注意：这是对象，不是字典
+const obj = {name: 'Joe', sex: 'Male'};
 
 // 获取变量类型。注意typeof是个特殊运算符，不是函数
 typeof arr;
@@ -451,10 +420,8 @@ text.includes(pattern);  // 返回是否匹配到（布尔值）
 text.match(pattern);     // 返回包含了每个匹配的列表
 text.replace(/some/g, 'random');  // 替换
 
-// Template Literal 格式化字符串。使用反引号
-let firstName = "John";
-let lastName = "Doe";
-let text = `Welcome ${firstName}, ${lastName}!`;
+// 反引号字符串（Template Literal，格式化字符串）
+let text = `Welcome, ${firstName} ${lastName}!`;
 ```
 
 #### 列表
@@ -610,32 +577,31 @@ document.body.addEventListener('mouseout', (e)=>obj.on_event(e)); // this是obj
 
 ## 在网页中使用JS
 
-### 代码块
+### script标签
 
-JavaScript以代码块的形式嵌入到html，一般定义在head中或者body的底部。其中的代码在网页加载时会被运行一次，之后还可以事件处理器等方式调用
+浏览器从上到下解析HTMl，遇到`script`标签就会加载并执行其中的脚本，执行完之后继续解析剩余HTML
+
+一般把Javascript脚本放在Body末尾，这样一来脚本运行时页面元素都已加载完毕，可以用Javascript控制；此外放在底部不会阻塞HTML解析
 
 ```html
-<head>
-    <!-- 使用外部脚本 -->
-    <script src="myScript.js"></script>
-
-    <!-- 页面内嵌脚本 -->
-    <script>
-        function func() {document.getElementById("demo").innerHTML="Hello";}
-    </script>
-</head>
-
 <body>
     <p id="demo">Javascript Demo</p>
     <button type="button" onclick="func()"> Button </button>
+
+    <!-- 外部脚本 -->
+    <script src="myScript.js"></script>
+
+    <!-- 内联脚本 -->
+    <script>
+        function func() {document.getElementById("demo").innerHTML="Hello";}
+    </script>
+    
+    <!-- 特殊：用a标签调用JS -->
+    <a href="javascript:alert(1);">Don't Click</a>
 </body>
 ```
 
-还可以用`<a>`标签调用
 
-```html
-<a href="javascript:alert(1);">Don't Click</a>
-```
 
 ### 事件
 

