@@ -455,46 +455,6 @@ def score(self):
 
 注意，property的setter, getter和deleter是一个整体，继承时要一起重载，或者用如`@父类.属性名.setter`的装饰器重载
 
-# 迭代器
-
-## 迭代器
-
-iterator是一个具有`__next__`方法的对象，调用此方法能得到下一个迭代值，并且在迭代结束时抛出`StopIteration`
-
-iterable是一个具有`__iter__`方法的对象，并且这个方法要返回一个iterator
-
-使用for循环时，底层会自动获得对应iterator并且重复获取下一个元素，直到`StopIteration`
-
-## 生成器
-
-生成器(generator)是一种特殊的迭代器，它简化了定义的方法。定义及使用方法如下
-
-```python
-# 定义
-def gen_square():
-    # 将return替换为yield，执行到yield时自动生成一个值，下次执行时从上一次的yield处继续
-    # 此函数返回值是生成器
-    for i in range(100):
-        yield i ** 2
-
-# 用类似列表解析方法定义生成器
-gen_square2 = (i**2 for i in range(100))
-
-# 使用生成器
-total = 0
-for sq in gen_square():
-    total += sq
-```
-
-## 判断是否可迭代
-
-```python
-from collections.abc import Iterable, Iterator, Generator
-
-g = (i**2 for i in [1, 2])
-isinstance(g, Iterable)    # True
-```
-
 # 模块与包
 
 每个python脚本都可以作为模块（module）被其他脚本导入；若干模块组合起来就构成一个包（package）
@@ -672,7 +632,7 @@ async def main():
     async for quote in fetch_many_quotes(10):
         # 等待异步生成器返回结果
         print(quote)
-    
+
     async with asyncio.TaskGroup as tg:
         # 等待全部任务结束，然后关闭TaskGroup
         tasks = [tg.create_task(fetch_quote(page)) for page in range(10)]
@@ -792,6 +752,33 @@ env_name\source env_name/bin/activate    # Unix or MacOS
 ```
 
 打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作
+
+## 可迭代对象
+
+可迭代对象（Iterable）是能够逐个返回数据元素的对象，列表、字典、字符串等都是可迭代对象。也可以用生成器（Generator）自定义可迭代对象
+
+```python
+# 定义
+def gen_square():
+    # 将return替换为yield，执行到yield时自动生成一个值，下次执行时从上一次的yield处继续
+    # 此函数返回值是生成器
+    for i in range(100):
+        yield i ** 2
+
+# 用类似列表解析方法定义生成器
+gen_square2 = (i**2 for i in range(100))
+
+# 使用生成器
+total = 0
+for sq in gen_square():
+    total += sq
+
+# 判断是否可迭代
+from collections.abc import Iterable
+isinstance(gen_square, Iterable)
+```
+
+也可以手动实现Iterable协议、Iterator协议。Iterable对象需要实现`__iter__() -> Iterator`；其返回的Iterator对象要实现`__next__() -> Any|StopIteration`方法，逐个返回元素，并在迭代结束时抛出`StopIteration`
 
 ## 其他
 

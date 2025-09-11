@@ -627,6 +627,22 @@ driver.close() # 关闭标签页
 driver.quit()  # 关闭浏览器
 ```
 
+## 浏览器引擎简介
+
+浏览器引擎（Borwser Engine），也叫浏览器内核，是负责渲染网页的组件。主流的引擎包括
+
+- **Gecko**：俗称“Firefox内核”，1997年由网景公司推出，目前由Mozilla主导开发
+- **Webkit**：开源，由KHTML（一个已经过时的开源浏览器引擎）分支出来，目前由苹果等公司开发
+- **Blink**：分支自Webkit（刚分支出来时叫Chromium，现在也有人把它叫做Chromium或者Chrome内核），目前主要由Google开发
+- **Trident**：俗称“IE内核”，由微软开发，早已停止开发，但部分旧网站（需要用IE打开的那些）需要Trident引擎渲染
+
+三大主流引擎（Gecko，Webkit，Trident）都是开源的。目前主流浏览器使用引擎是
+
+- Firefox使用Gecko
+- Safari、iOS的其他浏览器使用Webkit
+- Chrome、Opera、Edge、安卓的浏览器主要使用Blink
+- 国产浏览器主要使用Blink，或者Blink + Trident双内核
+
 ## 启动浏览器
 
 ```python
@@ -747,5 +763,144 @@ wait.until(lambda _: element.is_enabled())
 from selenium.webdriver.support import expected_conditions as EC
 elem = (By.ID, "checkbox")  # 此参数是查找元素的关键字元组。也可以是元素本身
 wait.until(EC.element_to_be_clickable(elem))
+```
+
+# Playwright - 浏览器自动化
+
+Playwright是微软开发的网络应用程序自动化测试框架
+
+Playwright使用自己编译的浏览器、驱动，避免浏览器自动更新导致测试环境变化（这一点和Selenium不同，Selenium使用电脑上已安装的浏览器，以及浏览器官方驱动）。安装playwright库之后要手动安装浏览器和驱动，安装位置在`%USERPROFILE/AppData/Local/ms-playwright`
+
+```shell
+pip install playwright        # 安装playwright库
+playwright install chromium   # 安装浏览器
+```
+
+## 基础
+
+```python
+from playwright.sync_api import sync_playwright
+from playwright.sync_api import Playwright, Browser  # 可以用作type hint
+
+# 启动 Playwright driver 进程
+with sync_playwright.start() as playwright:
+    # 启动浏览器
+    chromium = playwright.chromium.launch(headless=False)
+    # 打开网页
+    page = browser.new_page()
+    page.goto("http://example.com")
+    page.wait_for_timeout(1000)  # 等待1秒
+    # 操作网页
+    page.locator("#keyword").fill("Hello")
+    page.locator("#submit").click()
+    # 关闭网页
+    browser.close()
+```
+
+除了以上用法之外，Playwright还提供了一套异步api（若无说明，本笔记其他部分均使用同步api）
+
+```python
+import asyncio
+from playwright.async_api import async_playwright, Playwright
+
+async def run(playwright: Playwright):
+    browser = await playwright.chromium.launch()
+    page = await browser.new_page()
+    await page.goto("http://example.com")
+    # other actions...
+    await browser.close()
+
+async def main():
+    async with async_playwright() as playwright:
+        await run(playwright)
+asyncio.run(main())
+```
+
+## 定位网页元素
+
+[Playwright文档](https://playwright.dev/python/docs/locators#locating-elements)鼓励用人类用户视角定位网页元素，不建议使用CSS选择器或XPath选择元素。理由是网页布局变化时DOM变更，容易导致CSS选择器和XPath失效，相比之下贴近用户的定位方式更可靠
+
+```python
+# 用标签的 ARIA role 定位
+# 参考：https://www.w3.org/TR/html-aria/#docconformance
+# 常见Role有：link, button, checkbox, tables等
+button = page.get_by_role("button", name="Sign In")
+checkbox = page.get_by_role("checkbox", name=re.compile("subscribe"))
+
+# 用文字定位
+div = page.get_by_text("Welcome")
+
+# 定位输入框<input>
+page.get_by_placeholder("请输入密码")  # input标签的placeholder属性
+page.get_by_label("Password")         # 与input关联的label标签
+
+# 定位图片
+page.get_by_alt_text("banana")  # 根据img标签的alt属性
+
+# 定位容器、链接
+page.get_by_title("首页")  # 根据span、a等标签的title属性
+```
+
+虽然文档从测试稳定性的角度出发不推荐CSS、XPath，但它们的能力比Playwright提供的定位工具强大太多了，而且用id、class定位也很可靠。合适的时候应该毫不犹豫的使用
+
+```python
+button = page.locator("css=button")
+button = page.locator("xpath=//button")
+# 前缀css=、xpath=可以省略，Playwright会自动判断是哪一种
+```
+
+匹配到多个元素可用以下方式处理
+
+```python
+locagor = page.locator(".highlight")
+
+all_highlight = locator.all()  # 获取全部元素，list[Locator]
+first, second, last = locator.first(), locator.nth(1), locator.last()  # 获取首个、第n个、末尾元素
+count = locator.count()   # 匹配到元素的数量
+```
+
+## 模拟交互
+
+定位到的网页元素是[Locator](https://playwright.dev/python/docs/api/class-locator)对象，用其方法与网页元素交互。也可参考[教程](https://www.byhy.net/etc/playwright/04/)
+
+```python
+link = page.get_by_role("link", name="Test Page")
+
+# 读取元素内容
+print(link.inner_text())  # 元素内的文本
+print(link.inner_html())  # 元素内全部内容
+print(link.get_attribute("href"))  # 元素属性
+# 判断元素状态
+ok = link.is_visible() and link.is_enabled()
+
+# 鼠标操作
+link.hover()
+link.click()
+link.dbclick()
+
+# 键盘操作
+pw = page.locator("#password")
+pw.clear()
+pw.fill("123456")
+```
+
+## Tracing
+
+Tracing功能可以记录所有网络活动，以及每一步操作详情
+
+```python
+browser = playwright.chromium.launch()
+context = borwser.new_context()
+context.trace.start(screenshots=True, snapshots=True, sources=True)
+# snapshot选项记录网络活动和DOM；screenshots选项截图；sources选项保存源代码并与网页操作联动
+page = context.new_page()  # 注意，是context.new_page，不是browser
+page.goto("http://example.com")
+context.trace.stop(path="trace.zip")  # 将记录保存到文件
+```
+
+记录之后，可通过`show-trace`功能查看
+
+```shell
+python -m playwright show-trace "trace.zip"
 ```
 

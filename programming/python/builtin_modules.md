@@ -464,12 +464,10 @@ conn.close()
 ```python
 import subprocess
 
-cmd = ['echo', 'Hello']
-result = subprocess.run(cmd, capture_output=True, shell=True)
+cmd = ['powershell', 'write-host', 'Hello']
+result = subprocess.run(cmd, capture_output=True)
 print(result.stdout.decode('utf-8'))
 ```
-
-完整用法可以参照[`Popen`](https://docs.python.org/zh-cn/3.13/library/subprocess.html#subprocess.Popen)接口
 
 # urllib - 网络
 
