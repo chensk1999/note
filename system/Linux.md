@@ -51,8 +51,8 @@ grep "txt" < file.txt   # 省略n时默认重定向到0，即stdin
 ```bash
 ls >  file       # 省略n时取n=1，即stdout。将stdout写入文件
 ls 2> /dev/null  # 将stderr重定向到/dev/null（即丢弃掉）
-ls &> file       # 将stdout和stderr都重定向到file。另一种写法是>file 2>&1
-ls  >> file      # >>表示向文件末尾添加（>则会覆盖文件）
+ls &> file       # 将stdout和stderr都重定向到file
+ls >> file       # >>表示向文件末尾添加（>则会覆盖文件）
 ```
 
 **复制文件描述符**：`n>&m`，本来写入n号描述符的改为写入m号描述符
@@ -106,10 +106,24 @@ a=1       # 定义变量。注意不能加空格
 b="str b" # 如果变量值有空格，需要用双引号括起来
 c="price is \$100"  # "$"等特殊符号需要反斜杠转义
 
-echo $a           # 访问变量。在变量名前面加上$
-echo "a = $a"     # 字符串中的变量也会自动格式化为变量的值
-echo "${a}_file"  # 变量名和其他字符连用，可以用花括号
-echo '$a'         # 单引号不会格式化
+echo $a           # 访问变量。详见“Shell扩展 - 参数扩展”
+```
+
+变量扩展（详见Shell扩展）
+
+```bash
+echo $a      # "$变量"替换为变量值
+echo 'a=$a'  # 单引号中的不会替换
+echo "a=$(cat flag.txt)" # $()执行指令
+echo "a=`cat flag.txt`"  # 反引号执行指令
+
+# 正则表达式替换
+# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
+a='Hello, world'
+f='example.png'
+echo "${a/o/O}"       # 匹配第一个，得到HellO, world
+echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
+echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
 数组和关联数组
@@ -117,10 +131,14 @@ echo '$a'         # 单引号不会格式化
 ```bash
 # 数组
 arr=(1 2 3)
-echo ${arr[1]}   # 数组索引。注意：从1开始
+echo ${arr[0]}   # 数组索引
 echo ${arr[@]}   # 数组所有元素
 echo ${#arr[@]}  # 数组长度
 arr+=(4)  # 添加元素
+# 遍历数组
+for a in ${arr[@]}; do
+  echo $a
+done
 
 # 关联数组
 declare -A dict
@@ -130,14 +148,6 @@ dict[banana]=yellow
 for key in "${!my_dict[@]}"; do
   echo "$key -> ${my_dict[$key]}"
 done
-```
-
-变量默认值
-
-```bash
-echo ${var:-0}    # 若变量不存在，输出默认值（此例子中为0）
-echo ${var:=0}    # 若变量不存在，输出默认值，并将变量设为默认值
-echo ${var:?undefined}    # 若变量不存在，报错
 ```
 
 ### 环境变量
@@ -169,42 +179,51 @@ export PATH=$PATH:/home/username/mysql/bin  # 环境变量赋值
 for f in *; do
   echo "File -> $f"
 done
-
-# 正则表达式替换
-# "${src/pattern/rep}"，将src变量中匹配pattern的都替换成rep
-a='Hello, world'
-f='example.png'
-echo "${a/o/O}"       # 匹配第一个，得到HellO, world
-echo "${a//o/O}"      # 匹配全部，得到HellO, wOrld
-echo "${f/%png/txt}"  # 匹配最后一个，得到example.txt
 ```
 
-## 其他
+## Shell扩展
+
+处理指令时，Bash首先将一条指令拆分为若干Token，例如`ls /var`拆分为`["ls", "/var"]`；然后，对每个Token进行Shell扩展（Shell Expansion），扩展执行次序如下。参考：[GNU Bash Reference Menu](https://www.gnu.org/software/bash/manual/bash.html#Shell-Expansions)
+
+1. 大括号扩展（Brace Expansion）：`{a,b,c}.txt` → `a.txt b.txt c.txt`
+2. 波浪线扩展（Tilde Expansion）：`~` → `$HOME`
+3. 参数扩展（Parameter Expansion）：`$a` → 变量a的值
+4. 命令替换（Command Substitution）：`$(command)`，反括号括起来的命令 → 命令执行结果
+5. 算数扩展（Arithmatic Expansion）：`$((1+1))` → 表达式计算结果
+6. 进程替换（Process Substitution）：`<(进程名), >(进程名)` → 该进程的输入输出的文件名
+7. 词切割（Word Splitting）：使用`$IFS`作为分隔符，拆分不在双引号中的参数扩展、命令替换和算数扩展结果
+8. 文件名扩展（Filename Expansion）：`*, ?, []` → 文件名
+9. 引号移除（Quote Removal）：移除多余反斜杠、单引号 、双引号
+
+### 参数扩展
+
+```bash
+a="Hello"
+echo $a           # $ + 变量名，扩展为变量的值
+echo "a = $a"     # 双引号字符串中变量一样扩展
+echo "${a}_file"  # 变量名和其他字符连用，可以用花括号分隔
+echo '$a'         # 单引号不会扩展
+
+# 变量默认值
+echo ${var:-0}    # 若变量不存在，扩展为默认值（此例子中为0）
+echo ${var:=0}    # 若变量不存在，扩展为默认值，并将变量设为默认值
+echo ${var:?undefined}    # 若变量不存在，报错
+```
 
 ### 模式扩展
 
-向bash输入命令之后，首先将模式扩展（globbing，也叫filename expansion）的字符替换为实际存在的文件名，然后再执行命令。模式扩展是shell的特性，与命令无关
+不在单引号、双引号中的`*, ?, []`字符都会进行模式扩展（Filename Expansion，俗称Globbing），替换为实际存在的文件名
 
 ```bash
-ls ~         # ~ = 用户home目录，如/home/user
 ls ?.txt     # ? = 单个字符
 ls *.txt     # * = 任意个字符
 ls [ab].txt  # [] = 其中任意字符
 ls [^a].txt
 ls [a-z].txt
 ls [[:xdigit:]] # 字符类。例子是十六进制字符
-
-ls {a,b,c}.txt  # 扩展为大括号中的字符。和中括号不同的是，无论有没有对应文件都会扩展
-ls {a..z}.txt
 ```
 
-各种模式中，除了大括号外，都会扩展为实际存在的文件名
-
-```bash
-echo a?.txt
-```
-
-假如当前目录存在`aa.txt`和`ab.txt`，则会打印`aa.txt ab.txt`；若没有符合的文件，则原样输出为`a?.txt`
+## 其他
 
 ### 脚本
 
@@ -267,9 +286,53 @@ Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（
 
 此外，Linux还用用户组管理权限，用户组的成员享有某些权限。比如使用docker时，可以把自己加入 `docker` 用户组，从而不需要使用 `root` 权限，也可以访问它的接口
 
+```bash
+# 查看用户与权限
+id               # 查看当前用户名、uid、用户组和gid
+whoami           # 查看当前用户名
+cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
+
+# 查看用户组
+groups           # 查看当前用户组
+cat /etc/group   # 查看用户组列表
+
+# 编辑用户组
+sudo groupadd $group_name
+sudo usermod -aG $group_name $USER   # 添加成员
+newgrp $group_name                   # 登录新加入的组
+```
+
+### sudo
+
+sudo，全称Super User DO，允许普通用户以其他用户权限执行指令。常用sudo暂时获取root用户权限进行操作：`sudo <需要root权限的指令>`
+
+sudo配置存储在`/etc/sudoers`文件中，可用`sudo visudo`编辑配置。`sudo -l`可以查看当前用户的配置，它的输出是`(用户) 配置 命令`，例如`(root) NOPASSWORD /usr/bin/bash`表示可以以root权限无需输入密码执行`bash`，`(ALL:ALL) ALL`表示可以以任意用户、任意用户组权限执行任意命令
+
 ## 文件权限
 
-在 Linux 中，每个文件和目录都有自己的权限。可以使用 `ls -l` 查看当前目录中文件的详细信息
+在 Linux 中，每个文件和目录都有自己的权限，其权限由12个标志位控制
+
+```
++----------------------+-------+-------+-------+
+|         11-9         |  8-6  |  5-3  |  2-0  |
++----------------------+-------+-------+-------+
+|       Special        | User  | Group | Other |
++----------------------+-------+-------+-------+
+| SUID | SGID | Sticky | r,w,x | r,w,x | r,w,x |
++----------------------+-------+-------+-------+
+```
+
+- 11-9比特：特殊标志位
+  - SUID：全称Set User Identity，执行`SUID=1`的文件时，暂时获取文件属主的权限
+  - SGID：全称Set Group Identity，执行`SGID=1`的文件时，暂时获得文件所属用户组的权限
+  - Sticky：也叫Sticky bit，若目录设置`Sticky=1`，则改目录下的文件只有各自的属主可以删除
+- 8-6比特：文件属主（**U**ser）的权限。包括读（**R**ead）、写（**W**rite）、执行（e**X**ecute）。拥有文件执行权限就可以将它作为程序代码执行，拥有目录执行权限就可以查看这个目录下有什么文件
+- 5-3比特：文件所属用户组（**G**roup）的权限
+- 2-0比特：其他用户（**O**ther）的权限
+
+### 查看权限
+
+可以使用 `ls -l` 查看文件权限
 
 ```bash
 $ ls -l
@@ -282,13 +345,35 @@ drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
 
 - 第一位：文件类型，`-`为文件，`d`为目录，`l`为符号链接
 - 第二~四位：文件所属用户的权限
-  - 第二位：`r`表示读权限，`-`表示没有
-  - 第三位：`w`表示写权限，`-`表示没有
-  - 第四位：`x`表示有执行权限，`-`表示没有。对于文件，拥有执行权限就可以作为程序代码执行；而对于目录来说，拥有执行权限就可以访问这个目录下的文件的内容
 - 第五~七位：文件所属用户组的权限
 - 第八~十位：其他人的权限
 
 第三、四列为文件所属用户和用户组。可以使用 `chmod` (**ch**ange file **mod**e bits) 修改权限，`chown` (**ch**ange file **own**er) 修改文件所有者
+
+### 更改权限
+
+`chmod`指令可以更改文件权限
+
+```shell
+chmod g+w main.py
+chmod o-rwx file_name
+```
+
+其中`g+w`表示向用户组成员授予写权限，`o-rwx`表示撤销其他用户的读、写、执行权限。这个参数由“Who What Which”三部分组成：
+
+- `ugoa`：修改谁的权限。四个字母分别表示所有者（User）、用户组（Group）、其他用户（Other）、全部（All）
+- `+=-`：如何修改权限。`+`授予权限，`-`撤销权限，`=`设置权限
+- `rwxst`：修改哪些权限。分别是读、写、执行、SUID / SGID、Sticky
+
+此外还可以用三位或四位数字表示权限。每位数表示3比特，如`5 = 0b101 = r-x`，表示具有读、执行权限，没有写权限
+
+```bash
+chmod 777 main.py  # 授予所有用户读、写、执行权限
+chmod 4755 main.py # 设置SUID=1，并授予文件属主rwx权限，授予用户组、其他用户读与执行权限
+
+# 补充：修改目录下全部文件（Recursive）
+chmod -R u+rwx dir_name
+```
 
 ## 文件操作指令
 
@@ -311,28 +396,6 @@ pwd     # print working directory
 find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
 find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
 find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
-```
-
-## 用户与权限指令
-
-```bash
-# 查看用户与权限
-id               # 查看当前用户名、uid、用户组和gid
-whoami           # 查看当前用户名
-groups           # 查看当前用户组
-cat /etc/passwd  # 查看用户列表。每行内容为用户名:密码占位符:用户ID:组ID:注释:主目录:登录Shell
-cat /etc/group   # 查看用户组列表
-
-# 编辑用户组
-sudo groupadd $group_name
-sudo usermod -aG $group_name $USER   # 添加成员
-newgrp $group_name                   # 登录新加入的组
-
-# 更改权限
-sudo chmod -R 775 ~/dir   # 常用数字：7=rwx，5=r-x
-
-# 查看当前用户能以root权限执行的指令
-
 ```
 
 # 包管理器
@@ -388,6 +451,10 @@ openssl x509 -in cert.crt -inform pem -out cert.der -outform der
 # 计算哈希值
 openssl x509 -in cert.pem -inform PEM -subject_hash
 ```
+
+## SSH - 远程登录
+
+
 
 ## 打印二进制文件hex值
 
