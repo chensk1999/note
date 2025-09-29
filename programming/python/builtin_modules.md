@@ -471,7 +471,7 @@ print(result.stdout.decode('utf-8'))
 
 # urllib - 网络
 
-第三方库[Requests](https://requests.readthedocs.io/en/latest/)在urllib基础上提供了更好用的api，较复杂应用可以考虑用Reauest代替urllib
+第三方库[Requests](https://requests.readthedocs.io/en/latest/)在urllib基础上提供了更好用的api，较复杂应用可以考虑用Request代替urllib
 
 ## request
 

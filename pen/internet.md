@@ -58,7 +58,7 @@ OSI模型是国际标准化组织提出的分层方案，它的划分如下表
 | 6    | 表示层（Presentation Layer）  | 数据处理（编码、加密解密等） |
 | 5    | 会话层（Session Layer）       | 管理应用程序间会话           |
 | 4    | 传输层（Transport Layer）     | 维护数据传输可靠性           |
-| 3    | 网络层（Network Layer）       | 不同网络间通信（路由和寻址） |
+| 3    | 网络层（Network Layer）       | 网络间通信（路由和寻址）     |
 | 2    | 数据链路层（Data Link Layer） | 帧编码和误差纠正             |
 | 1    | 物理层（Physical Layer）      | 传输比特流                   |
 
@@ -161,6 +161,9 @@ ICMP报文包括类型和编码两部分，“类型”说明报文含义，编�
 TCP（Transmission Control Protocol，传输控制协议）是可靠的传输协议。它在传输时进行简单的数据校验，并在出错时重传。TCP传输流程如下：
 
 1. 三次握手，验证双工通信，让另一端准备接收数据，并初始化序列号等参数
+   - 源发送`SYN (SEQ=x)`。目标收到SYN包就能确认`src -> dest`信道正常
+   - 目标返回`SYN+ACK (SEQ=y, ACK=x+1)`。源收到返回的SYN ACK包就能确认`src <-> dest`信道正常
+   - 源发送`ACK (ACK=y+1)`。目标收到ACK包就能确认`src <- dest`正常。至此双方都知道信道可双工通信
 2. 将报文分割为大小合适的数据包
 3. 在每个数据包开头加上TCP头，包括：
    - 源端口和目的端口：标识数据包由哪个应用程序发送、哪个应用程序接收
@@ -250,13 +253,47 @@ TLS（Transport Layer Security，传输层安全）是SSL的继任者，两者�
 
 # 网络应用程序
 
-网络应用程序（Web Application）是通过网络提供服务的程序。它通常专指服务器-客户端模式、使用HTTP协议传输数据的应用。各种基于HTML开发的应用，比如微信小程序，理论上来说也属于Web应用范畴，不过一般只把传统的、用浏览器访问的网站叫做Web应用
+网络应用程序（Web Application）是通过网络提供服务的程序。它通常专指服务器-客户端模式、使用HTTP协议传输数据的应用，用户通过浏览器访问服务。微信小程序这样不兼容浏览器的应用，理论上来说也属于Web应用范畴，不过一般只把传统的、用浏览器访问的网站叫做Web应用
 
 参考资料：[MDN](https://developer.mozilla.org/zh-CN/docs/Web)
 
-## HTTP报文简介
+## HTTP协议
 
 待补充
+
+### 状态码
+
+[HTTP常见状态码总结](https://javaguide.cn/cs-basics/network/http-status-codes.html)
+
+注意：虽然[RFC 7231](https://www.rfc-editor.org/rfc/rfc7231)定义了HTTP各状态码的含义，但网站开发者不一定完全遵循协议设计网站
+
+**1XX**（信息响应，Informational）
+
+- **101 Switching Protocols**：常用于切换WebSocket协议。客户端发送带有`Upgrade: websocket`头的请求，服务器返回带有`Upgrade: websocket Connection: Upgrade`的101包，然后双方可开始Websocket协议通信
+
+**2XX**（成功，Successful）
+
+- **200 OK**
+- **204 No Content**
+- **206 Partial Content**
+
+**3XX**（重定向，Redirection）：指示资源URL变更，并在`Location`响应头中给出新的URL。浏览器会自动跳转到该URL
+
+- **301 Moved Permanently**（永久重定向）：比如`example.com/index`永久重定向到`example.com/home`，表示服务器希望客户以后不要再访问`example.com/index`了，直接去访问`example.com/home`
+- **302 Found**（临时重定向）：比如`example.com/index`临时重定向到`example.com/login`，表示服务器希望用户这次先去`example.com/login`登录，以后访问网站主页还是去`example.com/index`
+- **304 Not Modified**
+
+**4XX**（客户端错误，Client Error）：客户端发送的请求有问题，服务器无法处理 / 拒绝处理
+
+- **400 Bad Request**
+- **401 Unauthorized**
+- **403 Forbidden**
+- **404 Not Found**
+
+**5XX**（服务器错误，Server Error）：服务器故障，无法处理请求
+
+- 500 Internal Error
+- 502 Bad Gateway：网关与
 
 ## 会话
 

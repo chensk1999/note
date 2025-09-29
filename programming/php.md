@@ -300,15 +300,17 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 
 ```shell
 # 数据流
-'data://text/plain,<?php phpinfo();?>'
+'data://text/plain,<?php%20phpinfo();?>'
 'data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8+'
 
 # 本地文件（主要是为了兼容性，和直接用文件路径效果相同）
 'file:///etc/passwd'
 
 # IO流
-# 读取src.php，并用base64-encode处理读到的数据。base64编码可以阻止代码执行，从而实现任意文件读取
+# 读取src.php，并用base64-encode处理读到的数据。base64编码可以在读取PHP源代码时阻止代码执行
 'php://filter/read=convert.base64-encode/resource=src.php'
+# 读取请求体（POST请求，Content-Type: application/x-www-form-urlencoded）
+'php://input'
 
 # 访问压缩文件（把压缩文件当作目录来访问）
 'zip://shell.zip#shell.php'
@@ -325,7 +327,7 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 system('whoami', $out);   # 输出到stdout，返回值存进$out
 passthru('whoami', $out); # 和system一样
 exec('whoami', $out);     # 输出以Array存进$out
-$out = shell_exec('ls');  # 返回输出的str
+shell_exec('ls');         # 返回输出的str
 echo `whoami`;            # 反引号的内容当作指令执行
 
 # 用popen开启指向进程的管道。类似还有proc_open和pcntl_exec
@@ -336,18 +338,11 @@ while !(feof($fp)) {
 pclose($fp);
 ```
 
-## 文件
+## 文件目录
 
 ```php
 print_r(scandir('.'));  # 列出子目录、子文件
 print_r(glob('*'));     # 遍历目录
-
-if(preg_match("/[A-Za-oq-z0-9$]+/",$cmd)){
-    die("cerror");
-}
-if(preg_match("/\~|\!|\@|\#|\%|\^|\&|\*|\(|\)|\（|\）|\-|\_|\{|\}|\[|\]|\'|\"|\:|\,/",$cmd)){
-    die("serror");
-}
 ```
 
 # 其他

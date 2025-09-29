@@ -17,6 +17,10 @@ public class HelloWorld {
 ```shell
 javac Main.java   # 编译为字节码
 java Main         # 用JVM运行
+
+# 打包
+jar -cvf Main.jar Main.class
+java -jar Main.jar
 ```
 
 # 基础语法

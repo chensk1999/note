@@ -112,7 +112,12 @@ docker image rm $REPO
 
 代理、镜像
 
-Docker仓库被墙了，需要配置代理或者镜像。在`/etc/docker/daemon.json`写入（两者选一个即可）
+Docker仓库被墙了，需要配置代理或者镜像。在`/etc/docker/daemon.json`写入（两者选一个即可）。注意，先关掉Docker再配置
+
+```shell
+sudo systemctl stop docker
+systemctl list-units --type=service | grep docker  # 确认已经关掉了
+```
 
 ```json
 {
@@ -126,7 +131,7 @@ Docker仓库被墙了，需要配置代理或者镜像。在`/etc/docker/daemon.
 }
 ```
 
-写完之后可能要重启服务：
+写完之后重启服务：
 
 ```bash
 sudo systemctl daemon-reload

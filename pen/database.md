@@ -330,7 +330,14 @@ SELECT left("Hello", 3), right("Hello", 2); -- 截取开头、结尾的若干字
 
 ```sql
 SELECT load_file("/etc/passwd");
+SELECT "Hello" INTO OUTFILE "hello.txt";
+SELECT "Hello" INTO DUMPFILE "hello2.txt";
+```
 
+需要配置`secure_file_priv`，若`secure_file_priv = null`则不能读写文件，`secure_file_priv = 目录`则只能读写改目录下的文件。MySQL 5.6.34+默认不能读写文件
+
+```sql
+SHOW variables LIKE 'secure_file_priv';
 ```
 
 # SQL数据库

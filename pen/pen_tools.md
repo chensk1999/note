@@ -66,7 +66,7 @@ TCP握手复习：客户端发送SYN包，服务器返回SYN-ACK包，客户端�
 
 ### 隐蔽选项
 
-NA
+待补充
 
 ## watweb - 指纹识别
 
@@ -113,6 +113,20 @@ searchsploit Mail Masta   # 查找有关Mail Masta的漏洞。多个关键词是
 searchsploit -x 41438     # 查看漏洞详情
 ```
 
+## xray - 综合漏洞扫描
+
+[文档](https://docs.xray.cool/tools/xray/BasicIntroduction)
+
+```powershell
+./xray_windows_amd64.exe version  # 查看软件版本
+./xray_windows_amd64.exe genca    # 生成CA证书。须手动安装，并把证书留在原地
+./xray_windows_amd64.exe          # 生成配置文件config.yml。须手动修改hostname_allowed
+./xray_windows_amd64.exe webscan --listen 127.0.0.1:7777 --html-output xray-__datetime__.html
+# 开启代理并被动扫描
+```
+
+# 漏洞利用
+
 ## sqlmap - SQL注入工具
 
 ### 注入点
@@ -128,7 +142,29 @@ sqlmap -u "example.com?id=1&page=1" -p id     # 指定扫描的参数
 
 GET和POST参数会被自动当作注入点；也可以用星号`*`指定注入位置，sqlmap会尝试将星号替换为payload。所有Request参数都可以注入，比如cookie，user-agent，其他header
 
+**扫描级别和风险**：扫描级别越高，发送的请求越多；风险越高，破坏数据完整的可能性越高，如插入、删除、写文件
+
+```bash
+sqlmap -u "example.com" -p id --level=3 --risk=1
+```
+
+**技术**：sqlmap支持BEUSTQ六种注入技术（布尔盲注、报错注入、Union注入、堆叠查询、时间盲注、嵌套查询）
+
+```bash
+sqlmap -u "example.com?id=1" --technique=U
+```
+
+### Tamper
+
+可以用脚本预处理payload。自带脚本位于`sqlmap/tamper`（kali系统安装在`/usr/share/sqlmap/tamper`）
+
+```bash
+sqlmap -u "example.com?id=1" --tamper=if2case.py ---suffix="#"
+```
+
 ### Payload
+
+注意：sqlmap的payload库无法用命令配置，因此对payload文件的更改难以管理。如果需要用自定义载荷，应该优先考虑Tamper脚本
 
 sqlmap的payload由以下几部分组合而成：`<prefix> <vector> <comment> <suffix>`，各部分由以下配置文件提供：
 
@@ -138,7 +174,7 @@ sqlmap的payload由以下几部分组合而成：`<prefix> <vector> <comment> <s
     └─payloads/       --> vector, comment
 ```
 
-payload格式如下（为了方便理解，只包含大致结构，细节可参考`payloads/`中）
+payload格式如下（为了方便理解，只包含大致结构，细节可参考`payloads/`文件中的注释）
 
 ```xml
 <test>
@@ -155,40 +191,6 @@ payload格式如下（为了方便理解，只包含大致结构，细节可参�
     </response>
 </test>
 ```
-
-### 其他
-
-**预处理**：可以用脚本预处理payload。自带脚本位于`/usr/share/sqlmap/tamper`
-
-```bash
-sqlmap -u "example.com?id=1" --tamper=if2case.py ---suffix="#"
-```
-
-**扫描级别和风险**：扫描级别越高，发送的请求越多；风险越高，破坏数据完整的可能性越高，如插入、删除、写文件
-
-```bash
-sqlmap -u "example.com" -p id --level=3 --risk=1
-```
-
-**技术**：sqlmap支持BEUSTQ六种注入技术（布尔盲注、报错注入、Union注入、堆叠查询、时间盲注、嵌套查询）
-
-```bash
-sqlmap -u "example.com?id=1" --technique=U
-```
-
-## xray - 综合漏洞扫描
-
-[文档](https://docs.xray.cool/tools/xray/BasicIntroduction)
-
-```powershell
-./xray_windows_amd64.exe version  # 查看软件版本
-./xray_windows_amd64.exe genca    # 生成CA证书。须手动安装，并把证书留在原地
-./xray_windows_amd64.exe          # 生成配置文件config.yml。须手动修改hostname_allowed
-./xray_windows_amd64.exe webscan --listen 127.0.0.1:7777 --html-output xray-__datetime__.html
-# 开启代理并被动扫描
-```
-
-# 漏洞利用
 
 # 后渗透
 
@@ -591,7 +593,7 @@ newgrp docker
     "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
   }
 
-  "registry-mirrors": ["https://mirror.com"]
+  "registry-mirrors": ["https://docker.xuanyuan.me/"]
 }
 ```
 

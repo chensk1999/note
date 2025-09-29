@@ -1,4 +1,4 @@
-# 服务器&框架
+# 中间件
 
 ## Apache
 
@@ -19,6 +19,59 @@
     - error.log          # 错误日志
     - error_log
 ```
+
+**多后缀解析漏洞**
+
+Apache支持一个文件拥有多个后缀（参考：[mod_mime](https://httpd.apache.org/docs/current/mod/mod_mime.html)），比如使用以下配置，访问`index.cn.html`返回中文页面
+
+```htaccess
+AddType text/html .html
+AddLanguage zh-CN .cn
+```
+
+假如配置不当，如`AddHandler application/x-httpd-php .php`，那么服务器会认为`evil.php.jpg`这样“不是php”的文件也包含后缀`.php`，并当作php解析
+
+较新版本（应该是PHP 7+）的php配置文件（`php<版本号>.conf`）默认使用如下配置，不会产生多后缀解析漏洞
+
+```htaccess
+<FilesMatch ".+.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+```
+
+**换行解析漏洞**（CVE-2017-15715）
+
+Apache 2.4.0-2.4.29版本，访问`evil.php\x0A`，即`evil.php\n`，按照php文件解析
+
+## Nginx
+
+**自动修复路径漏洞**
+
+若配置Nginx的`cgi.fix_pathinfo=1`，cgi解析出错时会匹配上一级文件，比如`http://example.com/evil.jpg/non-exist.php`，这个文件不存在，就会尝试把`evil.jpg`交给PHP-FPM（这个配置的原意是修复`PATH_INFO`错误）
+
+若同时配置PHP-FPM的`security.limit_extensions=空`，则它可以解析任意后缀的文件，因此将`evil.jpg`作为php解析
+
+很久以前（应该是php 5.3）PHP-FPM的默认配置就改为了`security.limit_extensions = .php`，Nginx的默认配置也禁用了`cgi.fix_pathinfo`
+
+**文件名逻辑漏洞**（CVE-2013-4547）
+
+Nginx 0.8.41~1.4.3 / 1.5.0~1.5.7，若文件名包含`\x20\x00`就无法正确检测`\x00`
+
+上传文件`evil.jpg\x20`，访问`evil.jpg\x20\x00.php`，Nginx没有正确识别到`\x00`，认为它是正常php文件并发送给PHP-FPM；PHP-FPM读取文件名时被00截断，读取`evil.jpg\x20`。若同时配置了`security.limit_extensions=空`则会将`evil.jpg\x20`作为php解析
+
+## Tomcat
+
+**PUT方法任意写入文件**（CVE-2017-12615）
+
+Tomcat 8.5.19，若配置`readonly=false`，使用PUT方法就能上传任意文件。Tomcat会做后缀黑名单校验，可以用`shell.jsp/`等方式绕过
+
+## IIS
+
+**目录解析漏洞**：IIS 5.x / 6.0版本中，名为`*.asp, *.asa, *.cer, *.cdx`的目录中所有文件都解析为asp文件
+
+**文件名解析漏洞**：IIS 5.x / 6.0版本中，`evil.asp;.jpg`解析为asp文件
+
+**畸形解析漏洞**：IIS 7.0版本，与Nginx自动修复路径漏洞类似，开启Fast-CGI模式且`cgi.fix_pathinfo=1`，访问`evil.jpg/non-exist.php`，会将`evil.jpg`作为php文件解析
 
 # 读文章
 
