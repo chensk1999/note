@@ -159,15 +159,13 @@ fsutil hardlink list yourfile.txt
 (Get-Item yourfile.txt).Target
 ```
 
-
-
 ## 网络
 
 ### 综合
 
-ipconfig
+**ipconfig**
 
-netsh
+**netsh** - 网络配置与管理，包括网络接口、防火墙、路由等
 
 ### 应用层
 
@@ -186,7 +184,7 @@ nslookup www.google.com "8.8.8.8"  # 使用指定DNS服务器
 
 ### 传输层
 
-netstat - 网络状态
+**netstat** - 网络状态
 
 查询网络状态，如当前建立的连接、路由表
 
@@ -197,7 +195,7 @@ netstat -r          # 显示路由表
 netstat -no | findstr "8080"  # 查找指定端口的连接
 ```
 
-选项列表如下：
+常用选项如下：
 
 | 选项 | 作用                                                    |
 | ---- | ------------------------------------------------------- |

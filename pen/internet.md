@@ -292,8 +292,8 @@ TLS（Transport Layer Security，传输层安全）是SSL的继任者，两者�
 
 **5XX**（服务器错误，Server Error）：服务器故障，无法处理请求
 
-- 500 Internal Error
-- 502 Bad Gateway：网关与
+- **500 Internal Error**
+- **502 Bad Gateway**：网关（CDN，反向代理，网关聚合等）无法连接到服务器
 
 ## 会话
 

@@ -213,7 +213,7 @@ git push --delete <tagname>  # 移除远程仓库的标签
 
 ```bash
 # 查看分支
-git branch -v
+git branch -a
 
 # 切换分支
 git checkout <branch>

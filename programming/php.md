@@ -158,8 +158,8 @@ function make_coffee(&$cnt, $name='Alice', $coffee='espresso') {
 # 调用函数
 $i = 1;
 make_coffee($i, 'Bob');
-func1 = "print_name";             # 变量函数，即函数指针
-func1($i, coffee:'Coffe Latte');  # 命名参数。8.0.0以上可用
+$func1 = "make_coffee";            # 可变函数，类似于函数指针
+$func1($i, coffee:'Coffee Latte'); # 命名参数。8.0.0以上可用
 
 # 匿名函数、箭头函数（Lambda函数）
 $func2 = function ($x) use ($i) {   # 从父作用域继承变量必须用use，继承的是定义时的值
@@ -198,9 +198,7 @@ $taobao = new Site();
 $taobao->set_url("taobao.com");
 ```
 
-## 魔术方法
-
-### 序列化和反序列化
+## 序列化和反序列化
 
 ```php
 class Connection {
@@ -243,6 +241,8 @@ class Connection {
     }
 }
 ```
+
+
 
 # IO
 

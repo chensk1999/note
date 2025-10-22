@@ -396,6 +396,8 @@ pwd     # print working directory
 find ~ -name *.pdf -size +1M    # 在用户home目录下搜索名字以.pdf结尾、大小超过1MB的东西
 find ~ -name adb* -type f,d     # 在用户home目录下搜索名字以adb开头的文件、目录
 find / -name file | grep -v "Permission denied"  # 搜根目录的时候可以过滤掉看不到的目录
+find / -name file 2>/dev/null                    # 另一种过滤方式。原理是不显示报错信息
+find ~ -type f -exec file {} \; # 对每个找到的文件执行命令。{}是文件名占位符，\;表示命令结束
 ```
 
 # 包管理器
@@ -435,7 +437,7 @@ systemctl list-unit-files --type=service  # 所有服务及其启用状态
 
 老版本可能需要使用`service`命令
 
-## openssl - 密钥
+## openssl - SSL / TLS加密
 
 **passwd**：生成密码。下面例子使用SHA256算法、以`salt`为盐计算123456的哈希
 
@@ -452,9 +454,21 @@ openssl x509 -in cert.crt -inform pem -out cert.der -outform der
 openssl x509 -in cert.pem -inform PEM -subject_hash
 ```
 
-## SSH - 远程登录
+**s_client**：TLS客户端。`openssl s_client -connect $ip:$port`。加上参数`quiet`隐藏握手等信息
 
+## SSH
 
+```bash
+ssh -p 22 $user@$ip
+```
+
+密钥登录
+
+1. 生成密钥：`ssh-keygen`，私钥存储在`~/.ssh/id_rsa`，公钥存储在`~/.ssh/id_rsa.pub`
+2. 在服务器上安装公钥：`cat id_ras.pub >> ~/.ssh/authorized_keys`
+3. 配置`/etc/ssh/sshd_config`，开启`RSAAuthentication`，`PubkeyAuthentication`。还可以禁用`PasswordAuthentication`
+4. 重启SSH：`service sshd restart`
+5. 使用私钥登录：`ssh -i $key_file $user@$ip`
 
 ## 打印二进制文件hex值
 
@@ -474,3 +488,34 @@ xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 ```
 
 以上是Unix指令。windows可以用WSL，或者git bash也可以
+
+## 压缩文件
+
+```shell
+# tar：归档工具，打包但不压缩数据，后缀.tar
+# 常配合其他压缩工具，压缩为.tar.gz, .tar.bz2, .tar.xz等类型
+tar -cvf archive.tar dir/   # 打包tar。参数表示create, verbose, file
+tar -xvf archive.tar        # 解包tar。参数x表示extract
+tar -czvf archive.tar.gz dir/    # 打包并用gzip压缩。参数z表示gzip
+tar -xzvf archive.tar.gz -C d2/  # 用gzip解压并解包到目录d2/
+
+# gzip: 单文件压缩工具，后缀.gz
+gzip a.tar        # 压缩文件
+gzip -l a.tar.gz  # 查看压缩比
+gzip -d a.tar.gz  # 解压
+
+# bzip2：压缩工具，后缀.bz2。压缩率比gzip高，速度比gzip慢
+bzip2 -d a.bz
+
+# xz：压缩工具，后缀.xz。压缩率比bzip2更高，速度最慢
+
+# zip：打包+压缩工具
+zip archive.zip *.txt
+unzip archive.zip /to/here/
+```
+
+杂项
+
+crontab - 定时执行
+
+`mktemp -d` - 创建临时文件夹

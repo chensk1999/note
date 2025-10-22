@@ -437,6 +437,16 @@ re.split(pattern, string)
 re.sub(pattern, 'repl', string)
 ```
 
+# socket - 套接字编程
+
+```python
+import socket
+
+with socket.create_connection(('127.0.0.1', 8000), timeout=1):
+    sock.sendall(b'example message\n')
+    response = sock.recv(4096)
+```
+
 # sqlite3 - 嵌入式SQL数据库
 
 ```python

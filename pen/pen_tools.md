@@ -85,13 +85,10 @@ $COOKIE = "name1:value1; name2:value2"
 whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 ```
 
-## tscan - 综合扫描器
+## 综合扫描器
 
-gui
-
-## fscan - 综合扫描器
-
-
+- tscan：gui
+- fscan
 
 ## 测绘工具
 
@@ -99,10 +96,11 @@ gui
 - Shodan：https://www.shodan.io/（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）
 - 钟馗之眼：https://www.zoomeye.org/
 - 鹰图平台：https://hunter.qianxin.com/
-- https://quake.360.net/quake/#/index
+- 360quake：https://quake.360.net/quake/#/index
 - https://x.threatbook.cn
+- 零零信安：https://0.zone/
 
-# 漏洞分析
+# 漏洞分析&利用
 
 ## searchsploit - 漏洞搜索
 
@@ -124,8 +122,6 @@ searchsploit -x 41438     # 查看漏洞详情
 ./xray_windows_amd64.exe webscan --listen 127.0.0.1:7777 --html-output xray-__datetime__.html
 # 开启代理并被动扫描
 ```
-
-# 漏洞利用
 
 ## sqlmap - SQL注入工具
 
@@ -270,9 +266,11 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 Web Fuzzer中可使用模糊测试标签（fuzztag）生成数据，它由两层花括号包裹起来，如`{{int(1-5)}}`。参考：[标签一览](https://yaklang.com/docs/yakexamples/fuzztag/)
 
+Fuzztag可加编号，如`{{int::1(1-5)}}`，同编号的一起迭代
+
 ### Yak-Lang
 
-极简、缝合了各种语法糖的语言，自带丰富的网络、安全相关功能
+缝合了各种语法糖的语言，自带丰富的网络、安全相关功能
 
 ```javascript
 // 字符串
@@ -317,16 +315,12 @@ myFunction = () => { // 箭头函数
 - 打印：`println`打印换行；`dump`打印变量信息；`desc`打印结构体信息
 - [文档](https://yaklang.com/docs/yak-basic/cap7-buildin-functions)
 
-
-
 ### 插件
 
 插件仓库 - 本地 - 新建插件。常用的插件种类有两类：
 
 1. **独立模块**：如Yak原生插件，单独一个进程运行，通过Webhook与主进程通信
 2. **嵌入式模块**：如MITM模块，由Yakit主进程直接调用。嵌入式模块崩溃、内存泄漏都会影响主进程
-
-
 
 ```javascript
 yakit.AutoInitYakit()   // 建立与主进程的通信
@@ -342,10 +336,6 @@ yakit.SetProgress(0.9)
 yakit.EnableTable("测试表格", ["id", "name"])
 yakit.Output(yakit.TableData("测试表格", {"id":10324, "name":"John"}))
 ```
-
-
-
-
 
 ## Metasploit Framework
 
@@ -401,12 +391,6 @@ $COOKIE = "name1:value1; name2:value2"
 
 dirb $URL $WORDS -a $UA -c $COOKIE -o "output.txt"  # 基本扫描
 dirb $URL -z 100 -X .php,.html,.txt   # 请求之间间隔100ms；在词典每项后面加上后缀
-```
-
-## ffuf - 模糊测试
-
-```shell
-ffuf -v
 ```
 
 ## hydra - 多协议密码爆破

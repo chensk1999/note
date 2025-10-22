@@ -185,6 +185,19 @@ JWT（JSON Web Token）的原理是将会话信息存储在客户端。其结构
 
 localStorage与sessionStorage
 
+# PTES Technical Guidelines
+
+- 信息收集
+- 漏洞分析（Vulnerability Analysis）：发现漏洞，并分析可能危害
+  - 识别（Identification）：发现可能存在的漏洞（漏扫）
+  - 验证（Validation）：验证漏洞存在
+- 漏洞利用（Exploitation）：利用发现的漏洞造成实际后果
+  - 分析阶段只要证明有漏洞，利用阶段则要证明漏洞的危害并给出完整攻击链。比如证明注入SQL语句能控制延时是漏洞分析阶段；利用时间盲注读出部分数据是利用阶段
+  - 分析阶段一般不进行高危操作，利用阶段则会做可控的高危操作
+  - 两者之间没有明确分界线。区分主要是为了项目管理方便
+- 后渗透（Post Exploitation）：取得系统控制权后扩大成果
+- 报告
+
 # 其他
 
 ## Host碰撞
