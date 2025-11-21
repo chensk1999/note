@@ -338,6 +338,8 @@ SELECT "Hello" INTO DUMPFILE "hello2.txt";
 
 ```sql
 SHOW variables LIKE 'secure_file_priv';
+SELECT group_concat(grantee, '-', is_grantable, ';') FROM information_schema.user_privileges;
+SELECT group_concat(user, '-', file_priv, ';') FROM mysql.user;
 ```
 
 # SQL数据库

@@ -219,15 +219,13 @@ with open('whatever.csv', 'r') as fp:
     for line in dict_reader:
         print(line)  # 字典，用第一行内容作为键
 
-# 写csv文件
-with open('whatever.csv', 'w', newline='') as fp:
+# 写csv文件。备注：utf-8-sig编码带BOM，与Excel兼容
+with open('whatever.csv', 'w', encoding='utf-8-sig', newline='') as fp:
     writer = csv.writer(fp)
     writer.writerow([1, 2, 3])
     rows = [(i, i+1, i**2) for i in range(0, 10)]
     writer.writerows(rows)
 ```
-
-
 
 # datetime - 时间
 
@@ -459,15 +457,20 @@ cursor = conn.cursor()
 # 操作数据库
 cursor.execute('create table user (name varchar(100) primary key)')
 cursor.execute('insert into user (name) values ("Tim")')
-cursor.rowcount                 # insert, update或delete影响的行数
 cursor.execute('select * from user')
 values = cursor.fetchall()      # 查询结果，List[Tuple]
 
-# 提交事务并关闭
-conn.commit()
+cursor.rowcount  # insert, update或delete影响的行数
+
+# 提交事务
+conn.commit()   # 提交修改。如果不提交，关闭数据库时全部更改都会回滚
+
+# 关闭连接。如果不显式关闭，gc时也会自动关
 cursor.close()
 conn.close()
 ```
+
+注意：`cursor`对象多线程不安全，建议随用随开，用完就关；也可调用`conn.execute`，此方法会创建一个新`cursor`，用完后马上关闭
 
 # subprocess - 启动子进程
 

@@ -121,10 +121,10 @@ uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目�
 ## openpyxl - 操作excel表格
 
 ```python
-import openpyxl as xl
+from openpyxl import load_workbook
 
 # 打开表格
-wb = xl.load_workbook('example.xlsx')
+wb = load_workbook('example.xlsx')
 sheet = wb['Sheet1']
 
 # 读写表格内容
@@ -132,6 +132,10 @@ i = sheet['A1'].value
 area = sheet['A1':'C2']
 area[1][1]  # B1 Cell
 sheet['A2'] = 2
+
+# iter
+for row in ws.iter_rows(min_row=2):
+    print(row[0])
 ```
 
 ## passlib - 密码散列

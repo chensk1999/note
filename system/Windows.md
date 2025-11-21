@@ -140,7 +140,14 @@ $PROFILE | Select-Object *   # 查看PROFILE文件
 
 # 常用指令
 
+## 文本处理
+
 ```powershell
+# 读文件
+Get-Content example.txt                            # 别名cat，相当于linux的cat
+Get-Content example.txt | Select-Object -first 10  # 别名select，相当于linux的head、tail
+Get-Content example.txt | Select-String hello      # 相当于linux的grep
+
 # 输出到文件
 Get-Process | Out-File filename.txt
 Get-Process | Export-Csv filename.csv
@@ -149,15 +156,37 @@ Get-Process | Export-Clixml filename.xml
 
 ## 文件
 
+- 硬链接（Hard Link）：多个文件名指向磁盘中同一数据块
+  - 数据共享。硬链接指向同一段数据，修改其中一个，会反应在另一个
+  - 引用计数。文件系统维护硬链接数量，删除一个链接使计数减一，计数为零才会删除数据
+  - 只能在同一磁盘分区中使用，只能指向文件
+
 ```powershell
-# 创建硬链接
-New-Item -ItemType HardLink -Name CoverageCount.cs -Value ..\..\OPIAspnet5\Models\CoverageCount.cs
+# 创建硬链接。CMD使用mklink工具，Powershell使用New-Item指令
+mklink /H ".\link.txt" "D:\path\to\target.txt"  # CMD
+New-Item -ItemType HardLink -Path ".\link.txt" -Value "D:\path\to\target.txt"  # powershell
 
 # 查看文件的硬链接
 fsutil hardlink list yourfile.txt
 (Get-Item yourfile.txt).LinkType
 (Get-Item yourfile.txt).Target
 ```
+
+- 符号链接（Symbolic Link，软链接）：指向一个路径的文件
+  - 用户和软件访问符号链接时，操作系统自动重定向到它指向的位置
+  - 可以指向文件或目录，可以跨分区
+  - 指向的目标可能不存在
+  - 符号链接有安全隐患，因此需要管理员权限才能创建。比如高权限进程会访问某个低权限文件，将该文件替换为指向高权限文件的符号链接就能提权
+
+```powershell
+# 创建符号链接。需要管理员权限
+mklink ".\link.txt" "D:\path\to\target.txt"  # CMD创建文件符号链接
+mklink -D ".\to\link" "D:\path\to\target"    # CMD创建目录符号链接
+New-Item -ItemType SymbolicLink -Path ".\link.txt" -Value "D:\path\to\target.txt"  # powershell
+```
+
+- 目录联接（Junction）：和符号链接类似，不过只能用于目录。可以用符号链接实现相同效果，为了兼容性保留
+- 快捷方式（Shortcut）：指向路径的文件，后缀`.lnk`，Windows Explorer等程序会将快捷方式重定向到它指向的位置
 
 ## 网络
 
@@ -179,7 +208,9 @@ Invoke-Webrequest -Uri http://example.com
 ```shell
 # DNS查询
 nslookup www.baidu.com
-nslookup www.google.com "8.8.8.8"  # 使用指定DNS服务器
+nslookup -type=A www.baidu.com $DNS_SERVER
+
+dig example.com A  # linux自带，windows需
 ```
 
 ### 传输层

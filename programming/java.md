@@ -102,7 +102,13 @@ int[] arr2 = {1, 2, 3};    // 定义并初始化
 int[][] arr2d = new int[3][3];  // 二维数组
 ```
 
-数组（Array）过于原始了，大多数场景使用列表（List）更方便
+数组（Array）过于原始了，更常用的是列表（List）。注意：List是一个接口，而非具体的类，它有多种实现。最常用的是`ArrayList`和`LinkedList`
+
+```java
+List<int> arr = new ArrayList<>();
+arr.add(1);
+List<String> colors = Arrays.asList("blue", "red");
+```
 
 # 类和对象
 
@@ -331,6 +337,8 @@ public class Main {
 ```
 
 # Web编程
+
+简易HTTP服务器：
 
 ```java
 import com.sun.net.httpserver.HttpServer;

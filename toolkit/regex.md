@@ -79,7 +79,10 @@
 
 # 正则引擎
 
-正则引擎是处理正则表达式的程序组件。它通常分为NFA（Nondeterministic Finite Automaton，非确定性有限自动机）和DFA（Deterministic Finite Automaton，确定性有限自动机）两种，其中NFA可以支持全部正则表达式功能，但复杂度不确定，最坏情况O($e^N$)；DFA不支持捕获组、后向引用、懒惰匹配，复杂度总是O(N)
+正则引擎是处理正则表达式的程序组件。它通常分为NFA和DFA两种
+
+- **NFA**（Nondeterministic Finite Automaton，非确定性有限自动机）：支持全部功能，但复杂度不确定，最坏情况O($e^N$)
+- **DFA**（Deterministic Finite Automaton，确定性有限自动机）：不支持捕获组、后向引用、懒惰匹配，复杂度总是O(N)
 
 NFA功能强大，因此现代编程语言基本使用NFA引擎
 

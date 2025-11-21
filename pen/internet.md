@@ -84,32 +84,13 @@ OSI模型比TCP/IP参考模型分层更严格，功能更完善。因此需要�
 
 ## 网络层
 
-网络层负责不同**局域网之间的数据传输**，网络层常用协议有IP（核心协议）、ICMP（网络诊断，如ping）、RIP和OSPF等内部网关协议。以下面的网络结构为例，某单位有A、B两栋楼，A栋的设备都接入路由交换机A1，组成局域网A；B栋设备都接入路由交换机B1，组成局域网B；A1和B1接入交换机0
-
-```mermaid
-graph TD
-  0(交换机) --- routerA & routerB
-  subgraph netA [局域网A]
-    routerA(路由交换机A1) --- pcA(主机A2, A3, ...)
-  end
-  subgraph netB [局域网B]
-    routerB(路由交换机B1) --- pcB(主机B2, B3, ...)
-  end
-```
-
-此网络系统中，局域网A的设备之间可以用链路层协议通信，局域网B的设备之间也可以。但两个局域网之间的通信就需要网络层协议了，以A2、B2两设备通信为例
-
-1. A2判断B2不在局域网内，因此将数据包发给网关（局域网与其他网络的连接点），即A1
-2. A1计算连接到局域网B的最优路径——结果是发给B1，于是将数据包发给B1
-3. B1通过链路层协议将数据包发给B2
-
-步骤1中判断目标是否在同一局域网、步骤2中计算通往目标局域网的路径，这就是网络层的两个主要功能：**寻址**和**路由**
+网络层负责不同**局域网之间的数据传输**，网络层常用协议有IP（核心协议）、ICMP（网络诊断，如ping）、RIP和OSPF等内部网关协议
 
 ### IP
 
 网际协议（Internet Protocol，IP）是网络层的核心
 
-#### IP地址
+#### 寻址
 
 IP协议为每个网络设备分配IP地址作为标识符。IP地址有IPv4和IPv6版本，前者长度为32比特，通常用点分十进制表示，如`127.0.0.1`；后者长度为128比特，通常用冒分16进制表示，如`fe80:0:0:0:7d6f:979c:3a86:80b5`，连续多段为0的部分可以省略并用`::`表示，所以此地址也可以写作`fe80::7d6f:979c:3a86:80b5`
 
@@ -130,7 +111,7 @@ IP地址由多个机构分层授权分配。按照层级从高到低，分别是
 
 不同主机的IP地址不可重复，如果试图绕过这个体系，手动设置一个未授权的IP地址，会使路由无法正常转发，导致网络不通
 
-#### 寻址
+**寻址机制**
 
 IP地址分层授权机制告诉我们，从IP地址可以定位到主机的物理地址，此过程称作寻址。例如，地址`14.153.6.1`的分配过程是：IANA首先将`14.0.0.0/8`分配给亚太地区，亚太地区的RIR从中拆分出`14.144.0.0/12`分配给中国电信，中国电信从中进一步拆出`14.153.0.0/16`分给某个省……各环节IP地址分配给谁一般不是秘密，知道IP地址可以轻松定位到所在城市，权限足够的话直接定位到一个房间也不困难
 
@@ -143,6 +124,14 @@ IP地址分层授权机制告诉我们，从IP地址可以定位到主机的物�
 选取传输路径的策略存储在路由设备中，称作路由表。例如，路由表记录了`目标地址: 14.153.0.0/16 下一跳: 14.78.1.1`，当此路由器收到一个目的地是`14.153.0.0/16`的数据包时，就将它转发到`14.78.1.1`
 
 IP协议规定了使用路由表选择转发路径，但没有规定怎么建立路由表。路由表的建立、维护还要依靠OSPF，BGP等协议
+
+### OSPF
+
+OSPF（Open Shortest Path First，开放最短路径优先）是自治系统内部路由选择协议。使用OSPF时，自治系统（Autonomous System，AS）内的路由器会向同系统内所有其他路由器广播自己的链路状态。每台路由器都根据收到的链路状态广播、网络管理员配置的路径开销，构建自治系统完整拓扑图，并用Dijkstra最短路径算法计算路由表
+
+### BGP
+
+BGP（Broader Gateway Protocol，边界网关协议）是自治系统之间的路由选择协议。首先，自治系统`A`通过BGP协议交流，并计算出系统可达网段`x`；`A`的边界通过BGP协议告知相邻自治系统`B`：可通过`A`到达网段`x`；`B`再告知相邻其他系统`C`：可通过`B → A`到达网段`x`
 
 ### ICMP
 
@@ -226,12 +215,18 @@ DNS使用树状的分布式数据库。有两种查询方式：
 
 一条DNS记录包含4个字段：`Name, Value, Type, TTL`。常见类型以及它们Name，Value字段含义见下表。完整类型列表可参考[DNS记录类型列表](https://zh.wikipedia.org/wiki/DNS%E8%AE%B0%E5%BD%95%E7%B1%BB%E5%9E%8B%E5%88%97%E8%A1%A8)
 
-| Type     | Name           | Value                     |      |
-| -------- | -------------- | ------------------------- | ---- |
-| A / AAAA | 主机名         | IPv4地址 / IPv6地址       |      |
-| CNAME    | 别名           | 规范主机名                |      |
-| MX       | 邮件服务器别名 | 邮件服务器规范主机名      |      |
-| NS       | 域名           | 该域的权威DNS服务器主机名 |      |
+| Type     | Name           | Value                   |      |
+| -------- | -------------- | ----------------------- | ---- |
+| A / AAAA | 主机名         | IPv4地址 / IPv6地址     |      |
+| CNAME    | 别名           | 规范域名                |      |
+| MX       | 邮件服务器别名 | 邮件服务器规范域名      |      |
+| NS       | 域名           | 该域的权威DNS服务器域名 |      |
+
+备注：CNAME（Canonical Name）是通过服务器别名查询规范名称。
+
+用途1：**统一管理同IP的多个域名**。例如，某主机的规范域名是`example.com`，架设了API服务`api.example.com`和网页服务`www.example.com`。可以设置一条A记录从`example.com`指向服务器IP地址，并设置若干条CNAME记录，从`api.example.com`等别名指向规范名称`example.com`。用户访问`api.example.com`时，首先通过CNAME找到规范名称，再通过规范名称的A记录找到IP地址；更换IP地址时，只需更改一条A记录即可
+
+用途2：**CDN、负载均衡**。例如，网站`www.example.com`开启了CDN，需要设置一条CNAME记录，指向CDN运营商提供的专用域名。用户访问`www.example.com`时，首先通过CNAME找到CDN提供商的域名，然后去请求CDN的智能调度DNS服务器。该服务器通过用户IP选择节点，并返回节点IP地址
 
 ### 电子邮件
 
@@ -245,11 +240,9 @@ DNS使用树状的分布式数据库。有两种查询方式：
 
 ### SSL和TLS
 
-SSL（Secure Socket Layer，安全套接层）是保障通信安全的加密协议。TCP/IP参考模型中，它位于传输层和应用层之间（或者是应用层的一部分）；OSI模型中，它位于会话层、表示层
+SSL（Secure Socket Layer，安全套接层）是保障通信安全的加密协议。TLS（Transport Layer Security，传输层安全）是SSL的继任者。目前，SSL已完全停用，加密通信均使用TLS，但很多人仍把TLS协议称作SSL。TCP/IP参考模型中，它位于传输层和应用层之间（或者是应用层的一部分）；OSI模型中，它位于会话层、表示层
 
-TLS（Transport Layer Security，传输层安全）是SSL的继任者，两者功能相同，实现方法类似。目前，SSL已完全停用，**加密通信均使用TLS**，但很多人仍混用SSL和TLS
-
-通信双方建立TCP连接之后，双方进行TLS握手，使用双方的TLS证书进行身份验证，然后协商加密算法并交换密钥，然后进行加密通讯
+通信双方建立TCP连接之后，双方进行TLS握手，使用双方的TLS证书进行身份验证，然后协商加密算法并交换密钥，然后进行加密通讯。握手流程：[TLS1.0至1.3握手流程详解](https://www.cnblogs.com/enoc/p/tls-handshake.html)
 
 # 网络应用程序
 
@@ -258,8 +251,6 @@ TLS（Transport Layer Security，传输层安全）是SSL的继任者，两者�
 参考资料：[MDN](https://developer.mozilla.org/zh-CN/docs/Web)
 
 ## HTTP协议
-
-待补充
 
 ### 状态码
 
@@ -295,6 +286,10 @@ TLS（Transport Layer Security，传输层安全）是SSL的继任者，两者�
 - **500 Internal Error**
 - **502 Bad Gateway**：网关（CDN，反向代理，网关聚合等）无法连接到服务器
 
+## HTTPS协议
+
+待补充
+
 ## 会话
 
 [Cookie](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/Cookies)为HTTP协议添加了状态。首先由服务器响应头[设置Cookie](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Headers/Set-Cookie)，然后访问网页时浏览器会自动在请求头中加上Cookie
@@ -317,7 +312,6 @@ Cookie: sessionId=38afes7a8
   - `Lax`：用户直接操作的GET请求会携带Cookie，如点击超链接
   - `Strict`：任何跨站访问都不发送Cookie，如`fetch`、重定向、点击链接跳转
   - 未设置SameSite属性时，Chrome和Edge将其视为Lax（其实比Lax宽松一点点，比如为了兼容SSO，没有SameSite属性的Cookie设置之后120秒可以跨站使用），Firefox、Safari视作None
-  
 - `Secure`指示浏览器仅通过https请求发送Cookie，防御中间人攻击
 
 ## 同源策略
@@ -356,7 +350,7 @@ Access-Control-Allow-Headers: X-Ping
 Access-Control-Max-Age: 86400
 ```
 
-如果跨源请求不满足这些要求，浏览器会丢弃请求，并在控制台打印错误信息（脚本无法得知错误信息，必须人工看）
+如果请求来源、请求方法等不满足这些要求，浏览器会丢弃请求，并在控制台打印错误信息（脚本无法得知错误信息，必须人工看）
 
 如果不是简单请求（使用GET / POST / HEAD方法，Content-Type是`text/plain, multipart/form-data, application/x-www-form-urlencoded`，没有额外的请求头），浏览器首先用OPTIONS方法发一个预检（Preflight）请求，预检请求通过了才发真正的请求
 
@@ -370,7 +364,7 @@ JSONP，postMessage，WebSocket
 
 ```http
 GET / HTTP/1.1
-Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src 'self'; 
+Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src 'self';
 ```
 
 其中每一项指定一类资源的加载源，比如网站`http://example.com`设置了`script-src 'self'`，表示只允许加载同源脚本，不同源的脚本如`<script src="lib.aliyun.com/js/jquery.js">`不能加载
@@ -387,9 +381,7 @@ Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src '
   - `'nonce-{随机字符串}'`：`nonce`值匹配的内联资源，如`<script nonce="随机字符串">`
   - URL：如`http://*.example.com`。若协议缺省则用当前页面的协议
 
-# 防火墙
-
-
+# 网络安全设备
 
 - 包过滤防火墙：工作于传输、网络层，根据IP地址、端口号、协议类型判断是否允许数据包通过
 - 状态防火墙：工作于传输、网络层，根据连接状态（IP地址、端口、连接时长、流量等）判断是否允许通过
@@ -409,14 +401,47 @@ Windows安全中心 - 防火墙和网络保护 - 允许应用通过防火墙 / �
 
 NAT可以让多台设备共用一个IP地址，把有限的IPv4地址分配给更多设备。它的工作原理是将内网地址映射到公网地址，例如，某路由器的公网IP地址为`203.0.113.5`；一台电脑连接到此路由器，其内网IP地址为`102.168.1.1`；路由器NAT表中记录了映射信息`192.168.1.1:5000 -> 203.0.113.5:6000`。电脑通过浏览器访问网页，发出数据包中的源地址、端口为`192.168.1.1:5000`。数据包经过路由器时，路由器将数据包中的源地址、端口改为`203.0.113.5:6000`，发送至目标服务器。服务器返回响应时，将目标地址从`203.0.113.5:6000`还原为`192.168.1.1:5000`，数据包正确送达电脑
 
-
-
 ## 代理与VPN
 
-代理
+广义的代理指通过中间服务器转发进行通信的技术；狭义的代理指应用层代理技术。通过代理进行通信时，终端首先使用代理协议与代理服务器建立连接，代理服务器再与目标服务器建立连接，从而实现终端到目标服务器通信
 
-透明代理
+- 匿名代理：服务器无法得知真实访问IP
+- 透明代理：不隐藏真实用户IP，例如在HTTP请求中添加`X-Forwarded-For`头
+- 反向代理：架设在服务端（客户端和代理服务器用“正常”协议通信，代理服务器和目标服务器用代理协议通信），隐藏服务器的信息。这类代理也叫网关
 
-SSL VPN
+VPN工作在数据链路层（OSI模型第2层）或者网络层（OSI模型第3层），它在本地创建一个网络接口（虚拟网卡），应用程序从这个网络接口发送的数据经过加密、封装后转发给VPN服务器，再转发给目标服务器。计算机如同直接连接到了VPN服务器那边的局域网
 
-IPSec VPN
+### 应用层代理协议
+
+**HTTP代理**只能转发HTTP协议通信。客户端向代理发送的请求包和一般HTTP请求包类似，但请求行要换成绝对URI：
+
+```http
+GET https://example.com/index HTTP/1.1
+Accept: text/html
+```
+
+代理服务器向目标服务器请求资源，然后转发给客户端。返回包和HTTP返回包相同
+
+**HTTPS代理**可以转发任何支持`CONNECT`和TLS加密的TCP协议数据。客户端发送`CONNECT`请求，与服务器握手，然后客户端、服务器直接交换二进制数据，代理仅进行转发
+
+**SOCKS代理**工作在会话层（OSI模型第5层），客户端和代理服务器通过SOCKS协议进行握手，建立一个通用TCP/UDP隧道，然后代理服务器在客户端和目标服务器之间转发数据。目前常用的是第5版，简称SOCKS5
+
+这些代理协议对应用不透明——即，应用程序必须主动使用代理协议，才能让流量经过代理。好在各种系统库都对HTTP和SOCKS协议有广泛支持，所以大部分程序都能正确处理代理协议
+
+### 梯子
+
+梯子，也叫机场，有时也被误称为VPN，是穿透防火长城（GFW）访问互联网（俗称翻墙）的技术。梯子主要通过特殊的应用层代理协议实现，将自己伪装成普通的HTTP流量来绕过GFW检测。参考：[Great Firewall Report](https://gfw.report/zh/)
+
+大部分软件不支持这些特殊代理协议，通常需要多层协议转发
+
+```mermaid
+graph LR
+    a(浏览器) -->|HTTP代理| b(本地代理工具<br>如Clash，V2RayN)
+    b -->|trojan代理| c(境外代理服务器)
+```
+
+**ShadowSocks**：Clowwindy个人开发的软件，使用基于Socks5的自研加密代理协议`ShadowSocks`，简称`SS`。于2012年开源，2015年因开发者被警察警告而停止维护并删除源代码。此后仍有许多开发者维护ShadowSocks的分支，使用者最多的是breakwa11发起的分支ShadowSocksR，此分支改进了混淆方式并提升了安全性。ShadowSocksR项目于2017年因为esu开盒而中止。2019年之后，GFW已经能检测SS协议、SSR协议，目前使用较少
+
+**V2Ray**：2015年ShadowSocks被封杀之后出现的翻墙工具，支持ShadowSocks协议，并开发了VMess协议。后扩展为工具框架Project V，并分支出XRay。XRay还开发了VLESS和XTLS协议。开发者社区内部似乎比较混乱。目前（2025年）GFW能检测VMess协议，对VLESS协议也有一定检测能力
+
+**Trojan**：2018年前后开始流行的协议，将网络流量伪装为HTTPS流量

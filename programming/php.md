@@ -315,6 +315,9 @@ $file = 'data://text/plain,<?php phpinfo();?>';
 # 访问压缩文件（把压缩文件当作目录来访问）
 'zip://shell.zip#shell.php'
 'phar://shell.phar/shell.php'
+
+# 执行指令
+'expect://id'
 ```
 
 `data://`需要启用`allow_url_fopen`和`allow_url_include`配置；`file://`和`php://filter`不需要
