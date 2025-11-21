@@ -118,6 +118,65 @@ Shell扩展：参考[Linux笔记](../system/Linux.md#Shell扩展)
 
 - `^`绕过：`wh^oami`
 
+## 反序列化
+
+### PHP
+
+#### 简介
+
+PHP的`serialize`函数将对象转换为字符串，其中包括了对象的类名、属性名和属性值；`unserialize`函数将字符串转换回对象
+
+```php
+class Connection {
+    # 属性
+    protected $db;
+    private $user, $pass;
+    # 方法
+    private function connect(){
+        $this->db = new PDO('mysql:host=localhost;dbname=test', $this->user, $this->pass);
+    }
+    # 魔术方法
+    public function __construct($user, $pass){
+        $this->user = $user;
+        $this->pass = $pass;
+    }
+    public function __sleep(){
+        return array('user', 'pass');
+    }
+    public function __wakeup(){
+        // this->connect();
+        echo "wakeup\n";
+    }
+    public function __destruct(){
+        $this->db = null;
+    }
+}
+
+$conn = new Connection("John Doe", "p@ssword");
+echo serialize($conn);
+'O:10:"Connection":2:{s:16:"Connectionuser";s:8:"John Doe";s:16:"Connectionpass";s:8:"p@ssword";}'
+```
+
+序列化字符串中，
+
+- `O`：表示这是一个对象（数组则是A）
+- `10:"Connection"`：类名长度为10，值为`Connection`
+- `2`：有2个属性
+- `s:16:"Connectionuser"`：第一个属性名，它是字符串（`s`），长度为16，名为`Connectionuser`（private属性名会加上一些别的东西，8.2版本是类名，其他版本也有加空字节的）
+- `s:8:"John Doe"`：第一个属性值。含义同上
+
+`__wakeup`，`__destruct`都是与反序列化漏洞强相关的魔术方法，反序列化必定调用它们；其他魔术方法也可能被调用。假如`__wakeup`中有危险代码，或服务器用反序列化得到的对象进行危险操作，控制序列化字符串就能进行攻击了。不过，开发者不太可能犯这么大的错，一般需要用后面几节的技术
+
+注意：序列化字符串中可能有空字节，注意检查
+
+#### POP链
+
+面向属性编程链（Property-Oriented Programming Chain，也叫Gadget Chain）
+
+#### phar文件
+
+phar文件是PHP代码和资源的压缩包，其中以序列化形式存储了phar元数据。PHP以`phar://`封装协议访问phar文件时会反序列元数据。结合文件上传漏洞 + 可以控制文件名的文件操作（例如`example.com/download?file=phar://phar.gif`）就能利用反序列化攻击
+
 ## 其他
 
 伪造IP地址：`X-Forwarded-For, Client-IP, X-Real-IP, X-Remote-IP`

