@@ -487,8 +487,6 @@ xxd -p example.jpg example.txt      # -p: plain hex，不打印offset等东西
 xxd -p -r example.txt revert.jpg    # -r: reverse，将hex转bin
 ```
 
-以上是Unix指令。windows可以用WSL，或者git bash也可以
-
 ## 压缩文件
 
 ```shell

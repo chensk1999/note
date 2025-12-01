@@ -25,6 +25,8 @@ Docker是基于Linux容器（Linux Container，LXC）技术的一个虚拟化工
 ```bash
  curl -fsSL https://test.docker.com -o test-docker.sh
  sudo sh test-docker.sh
+ 
+ sudo systemctl start docker   # 启动Docker守护进程
 ```
 
 手动安装：
@@ -36,11 +38,9 @@ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker c
 # 安装。比较复杂，此处从略
 ```
 
-## 运行
+## 容器
 
 ```bash
-sudo systemctl start docker   # 启动Docker守护进程
-
 # 启动容器，并运行程序
 # 本地没有ubuntu:15.10镜像，因此会自动从仓库下载；命令完成后会自动退出容器
 docker run ubuntu:15.10 /bin/echo "Hello world"
@@ -55,7 +55,7 @@ docker rm $cid                  # 删除容器
 
 ### Docker Compose
 
-Compose是管理多个容器的工具
+Compose是管理多个容器的工具（旧版本可能要用`docker-compose`）
 
 ```bash
 docker compose up -d   # 读取当前目录的compose.yml配置并启动容器
@@ -110,30 +110,41 @@ docker image rm $REPO
 
 ## 配置
 
-代理、镜像
+Docker配置文件位于`/etc/docker/daemon.json`。注意，Docker可能占用了配置文件，如果写不进去就要关掉Docker再改
 
-Docker仓库被墙了，需要配置代理或者镜像。在`/etc/docker/daemon.json`写入（两者选一个即可）。注意，先关掉Docker再配置
-
-```shell
-sudo systemctl stop docker
+```bash
+sudo systemctl stop docker     # 关闭Docker
 systemctl list-units --type=service | grep docker  # 确认已经关掉了
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker  # 重启Docker
 ```
+
+### 代理和镜像
+
+Docker仓库被墙了，需要配置代理或者镜像
 
 ```json
 {
-  "proxies": {
-    "http-proxy": "http://proxy.example.com:3128",
-    "https-proxy": "https://proxy.example.com:3129",
-    "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
-  }
+    // 代理
+    "proxies": {
+        "http-proxy": "http://proxy.example.com:3128",
+        "https-proxy": "https://proxy.example.com:3129",
+        "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
+    }
 
-  "registry-mirrors": ["https://docker.xuanyuan.me/"]
+    // 镜像
+    "registry-mirrors": ["https://docker.xuanyuan.me/"]
 }
 ```
 
-写完之后重启服务：
+### TLS验证
 
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart docker
+如果仓库的CA证书有问题，Docker会拒绝操作（`tls: failed to verify certificate`），需要加上如下配置：
+
+```json
+{
+    "insecure-registries": ["registrydomain.com:5000"]
+}
 ```
+

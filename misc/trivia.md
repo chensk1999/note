@@ -533,7 +533,7 @@ RGB空间的最大价值就是显示颜色——使用红绿蓝三种发光元�
 
 ## HLS
 
-HLS（HTTP Live Stream）是基于HTTP协议的流媒体传输协议，常用于下载视频。客户首先从服务器获取播放列表。例如播放列表URL是`http://cdn.example.com/live/playlist.m3u8`，内容和说明如下
+HLS（HTTP Live Stream，`.m3u8`）是基于HTTP协议的流媒体传输协议，由苹果开发，其设备都提供原生支持。客户首先从服务器获取播放列表。例如播放列表URL是`http://cdn.example.com/live/playlist.m3u8`，内容和说明如下
 
 ```
 #EXTM3U                     # M3U8标识符
@@ -541,7 +541,7 @@ HLS（HTTP Live Stream）是基于HTTP协议的流媒体传输协议，常用于
 #EXT-X-ALLOW-CACHE:NO
 #EXT-X-TARGETDURATION:4     # 这几行是各种元数据
 #EXT-X-MEDIA-SEQUENCE:276   # 第一个分片的序号
-#EXTINF:3.440,    # 第一个分片的时长。HLS分片时长通常都在几秒到几十秒
+#EXTINF:3.440,    # 第一个分片的时长。HLS分片时长通常在几秒到几十秒
 56-19_276.ts      # 分片URL（此处使用了相对URL）
 #EXTINF:3.570,    # 第二个分片
 56-25_277.ts
@@ -554,13 +554,16 @@ HLS（HTTP Live Stream）是基于HTTP协议的流媒体传输协议，常用于
 
 对于直播，播放列表会不断更新，新产生的分片加入播放列表，旧的被移出，客户端需要轮询m3u8播放列表，获取新的分片。直播延迟不少于分片长度，因此一般会有5~30秒的延迟。直播结束转为点播时，可以不重新编解码，仅修改m3u8文件
 
-## WebRTC
+## DASH
 
-WebRTC（Web Real Time Communication，网页即时通信）是基于UDP的点对点视频通信协议，建立通信后会用UDP协议不断发送数据。其延迟可低于1秒，常用于直播推流、视频会议
+DASH（Dynamic Adaptive Streaming over HTTP，`.mpd`）是MPEG工作组指定的流媒体协议，目前在全世界得到广泛支持，目前Bilibili、Youtube等视频网站均使用DASH协议
+
+DASH协议和HLS协议原理类似，客户端首先获取`.mpd`分片列表，再下载其中的`.m4s`分片并播放
 
 ## 其他协议
 
-rtp, rtc, rtc, rtmp, rtsp, ws
+- **WebRTC**（Web Real Time Communication，网页即时通信）：基于UDP的点对点视频通信协议，建立通信后会用UDP协议不断发送数据。其延迟可低于1秒，常用于直播推流、视频会议
+- rtp, rtc, rtc, rtmp, rtsp, ws
 
 
 

@@ -154,7 +154,7 @@ Get-Process | Export-Csv filename.csv
 Get-Process | Export-Clixml filename.xml
 ```
 
-## 文件
+## 文件链接
 
 - 硬链接（Hard Link）：多个文件名指向磁盘中同一数据块
   - 数据共享。硬链接指向同一段数据，修改其中一个，会反应在另一个
@@ -289,3 +289,11 @@ tracert www.baidu.com
    - `<prompt>`为菜单中显示的文字
    
 2. 将command的值设为指令，如`notepad.exe %1`
+
+# 其他
+
+## 运行Linux指令
+
+`git-bash`是Windows版Git附带的终端环境，它包含了一整套类Unix运行环境、预编译好的GNU工具。因此可以在windows系统上用git-bash运行linux指令
+
+用WSL（Windows Subsystem for Linux）应该有更好效果，不过没试过
