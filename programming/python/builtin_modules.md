@@ -227,6 +227,22 @@ with open('whatever.csv', 'w', encoding='utf-8-sig', newline='') as fp:
     writer.writerows(rows)
 ```
 
+# dataclasses - 数据容器
+
+```python
+from dataclasses import dataclass, asdict
+
+@dataclass
+class Host:
+    ip: str
+    port: int
+    url: str | None = None
+
+test_server = Host(ip="127.0.0.1", port=80, url="http://127.0.0.1/home")
+```
+
+
+
 # datetime - 时间
 
 有两个时间的库：time和datetime，前者更接近操作系统层面，而datetime做了一定的封装，功能更丰富，用起来更容易

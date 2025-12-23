@@ -325,7 +325,7 @@ sudo配置存储在`/etc/sudoers`文件中，可用`sudo visudo`编辑配置。`
 - 11-9比特：特殊标志位
   - SUID：全称Set User Identity，执行`SUID=1`的文件时，暂时获取文件所有者的权限
   - SGID：全称Set Group Identity，执行`SGID=1`的文件时，暂时获得文件所属用户组的权限
-  - Sticky：也叫Sticky bit，若目录设置`Sticky=1`，则改目录下的文件只有各自的属主可以删除
+  - Sticky：也叫Sticky bit，若目录设置`Sticky=1`，则该目录下的文件只有各自的属主可以删除
 - 8-6比特：文件所有者（**U**ser）的权限。包括读（**R**ead）、写（**W**rite）、执行（e**X**ecute）。拥有文件执行权限就可以将它作为程序代码执行，拥有目录执行权限就可以查看这个目录下有什么文件
 - 5-3比特：文件所属用户组（**G**roup）的权限
 - 2-0比特：其他用户（**O**ther）的权限

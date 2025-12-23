@@ -65,7 +65,7 @@ y^\prime        % 求导
 \pm, \mp                        % 正负负正
 ```
 
-# 括号与空格
+# 括号与空白
 
 ```latex
 \left{, \left[, \left{, \left(   % 左括号。右括号同理
@@ -84,7 +84,8 @@ y^\prime        % 求导
 \; \,       % 3/18em, 5/18em
 \!          % -3/18em
 
-\\      %换行
+\\          %换行
+\\[10pt]    % 行间距
 ```
 
 # 集合与逻辑
@@ -157,18 +158,12 @@ k & u \\
 i & n
 \end{matrix}
 
-Equations(here \& is the symbol for aligning different rows)
-\begin{align}
-a+b&=c\\
-d&=e+f+g
-\end{align}
-
 % 多行公式用align或者aligned对齐（在&处对齐）
 \left\{
-\begin{aligned}
+\begin{align}
 &a+b=c\\
 &d=e+f+g
-\end{aligned}
+\end{align}
 \right.
 
 % 分段函数

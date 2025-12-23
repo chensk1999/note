@@ -4,10 +4,6 @@ Web服务器负责接受HTTP请求，并返回HTTP响应；处理静态请求，
 
 ## Apache
 
-### 指纹特征
-
-
-
 ### 常见漏洞
 
 **多后缀解析漏洞**
@@ -51,10 +47,6 @@ AddLanguage zh-CN .cn
 
 ## Nginx
 
-### 指纹特征
-
-
-
 ### 常见漏洞
 
 **自动修复路径漏洞**
@@ -72,6 +64,20 @@ Nginx 0.8.41~1.4.3 / 1.5.0~1.5.7，若文件名包含`\x20\x00`就无法正确�
 ## IIS
 
 ### 指纹特征
+
+<div style="margin:0; font-size:.7em; font-family:Verdana, Arial, Helvetica, sans-serif; background:#EEEEEE;">
+    <div id="header" style="margin:0 0 0 0; padding:6px 2% 6px 2%; font-family:'trebuchet MS', Verdana, sans-serif; color:#FFF; background-color:#555555;">
+        <h1 style="font-size:2.4em; margin:0; color:#FFF;">服务器错误</h1>
+    </div>
+    <div id="content" style="margin:0 0 0 2%; position:relative;">
+        <div class="content-container" style="background:#FFF; width:96%; margin-top:8px; padding:10px; position:relative;">
+            <fieldset style="padding:0 15px 10px 15px;">
+                <h2 style="font-size:1.7em; margin:0; color:#CC0000;">404 - 找不到文件或目录。</h2>
+                <h3 style="font-size:1.2em; margin:10px 0 0 0; color:#000000;">您要查找的资源可能已被删除，已更改名称或者暂时不可用。</h3>
+            </fieldset>
+        </div>
+    </div>
+</div>
 
 
 
@@ -91,15 +97,25 @@ Nginx 0.8.41~1.4.3 / 1.5.0~1.5.7，若文件名包含`\x20\x00`就无法正确�
 
 应用服务器负责运行动态代码（如JSP、ASPX、PHP），处理业务逻辑、数据库交互。它独立于Web服务器运行，处理由Web服务器转发来的动态请求。应用服务器也可以不依赖Web服务器，直接处理用户的请求，但其处理静态请求的性能远不如Web服务器
 
-### Tomcat
+## Tomcat
+
+**指纹特征**
+
+<div style="font-family:Tahoma,Arial,sans-serif;">
+    <h1 style="color:white; background-color:#525D76; font-size:22px;">
+        HTTP Status 404 – Not Found
+    </h1>
+</div>
 
 **PUT方法任意写入文件**（CVE-2017-12615）
 
 Tomcat 8.5.19，若配置`readonly=false`，使用PUT方法就能上传任意文件。Tomcat会做后缀黑名单校验，可以用`shell.jsp/`等方式绕过
 
-### Weblogic
+## Weblogic
 
-### JBoss / WildFly
+Oracle Weblogic Server，简称Weblogic或者WLS，是Oracle公司的企业级Java EE / Jakarta EE应用服务器，常用于部署大型企业系统
+
+## JBoss / WildFly
 
 # 框架
 
@@ -119,7 +135,8 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 常见漏洞
 
 - 敏感信息泄露：Spring Boot提供`actuator`模块，用于监控系统状态。1.5以下默认允许未授权访问所有端点，≥1.5则默认只能访问`/actuator/health`和`/actuator/info`端点。端点详情参考[对于Spring Boot的渗透姿势](https://blog.zgsec.cn/archives/129.html)
-- 扫描工具：[SpringBoot-Scan](https://github.com/AabyssZG/SpringBoot-Scan)，Burp插件[SpringScan](https://github.com/metaStor/SpringScan)
+- 扫描工具：[SpringBoot-Scan](https://github.com/AabyssZG/SpringBoot-Scan)，Burp插件[SpringScan](https://github.com/metaStor/SpringScan)（RCE漏洞检测）、[SpringScan](https://github.com/metaStor/SpringScan)（敏感目录检测）
+- 添加请求头`Forwarded:proto=/actuator/?`可绕过springboot的路由检测
 
 ## PHP
 
@@ -137,6 +154,10 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 ## 前端
 
+### Vue
+
+指纹特征：
+
 # 中间件&组件
 
 中间件通常是提供特定服务的独立进程，与其他组件通过TCP/IP协议进行通信；其他组件则直接运行在应用服务器（或者其他中间件）上
@@ -149,7 +170,7 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 **指纹特征**：Shiro默认使用Servlet容器的会话管理，即用`JSESSIONID`标识会话；其自动登录功能使用名为`rememberMe`的Cookie。若数据包Cookie带有`rememberMe`字段，或者在请求包添加`rememberMe`字段后，响应包设置Cookie`rememberMe = deleteMe`，可判定使用了Shiro
 
-**常见弱点**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)
+**常见漏洞**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)
 
 ## FastJson
 
@@ -157,7 +178,7 @@ FastJson是阿里巴巴开发的JSON序列化、反序列化库，它使用方�
 
 **指纹特征**：待补充
 
-**常见弱点**：参考[FastJson漏洞研究](https://github.com/HackJava/Fastjson)
+**常见漏洞**：参考[FastJson漏洞研究](https://github.com/HackJava/Fastjson)
 
 ## Log4j2
 
@@ -165,7 +186,31 @@ Log4j2是Apache开源的Java日志库，它也是Log4j的升级版
 
 **指纹特征**：待补充
 
-**常见弱点**：待补充
+**常见漏洞**：待补充
+
+## Docker Registry
+
+Docker仓库
+
+**指纹特征**：
+
+1. 响应头`Docker-Distribution-Api`
+2. 访问`/v1`或者`/v2`返回`{}`；访问`/v2/_catalog`返回仓库列表或者401
+
+**常见漏洞**：1.x版本有很多高危漏洞；2.x配置错误会导致API未授权访问
+
+1. 获取仓库列表：`https://<仓库>/v2/_catalog`
+2. 获取镜像的Tag：`https://<仓库>/v2/<repo>/tags/list`
+3. 获取指定Tag的Manifest：`https://<仓库>/v2/<repo>/manifests/<tag>`
+4. 下载镜像配置：`https://<仓库>/v2/<repo>/blobs/<digest>`
+5. 下载每一层的Layer：`https://<仓库>/v2/app/backend/blobs/sha256:<哈希>`
+
+获取了镜像名和标签之后也可以直接用Docker客户端下载镜像：
+
+```
+docker pull <镜像>/<repo>:<tag>
+docker save <镜像>/<repo>:<tag> -o image.tar
+```
 
 # 设备
 
@@ -183,8 +228,30 @@ DrayTek：Vigor-3900
 
 ## 物联网
 
+## 其他
+
+### 群晖NAS
+
+DiskStation Manager
+
+很多漏洞，不乏RCE。没找到POC
+
 # 其他
 
 Message HTTP Binding Service：应该是.Net框架的WCF接口，可能是SOAP API，也可能充当网关，接收外部SOAP请求并转发到内部真实服务
 
-Webpack
+## Webpack
+
+Webpack是前端资源打包工具，兼具压缩、混淆功能
+
+**指纹特征**：
+
+1. 文件名是`模块名.哈希值.js`，常见模块有主模块`app`、打包的模块`chunk-哈希值`、打包的第三方库`chunk-vendor`
+2. 模块包含变量`window.webpackJsonp`
+3. 网页HTML大部分是`script`和`link`标签
+
+[js逆向 - webpack](https://www.cnblogs.com/pengboke/p/18816851)、[Webpack逆向工程](https://comate.baidu.com/zh/page/vqz3smux9gm)、[webpack原理和逆向实战](https://blog.csdn.net/qq_38474570/article/details/135562509)
+
+**常见漏洞**：
+
+源码反编译
