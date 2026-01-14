@@ -1,4 +1,3 @@
-import os
 import re
 from pathlib import Path
 
@@ -32,9 +31,12 @@ def find_unreferenced_images(base_dir:str):
         matches = pattern_md.findall(text)
 
         for m in matches:
-            # 统一路径形式并相对化
+            # 统一路径形式
             img_relpath = m.strip().split("?")[0].split("#")[0]
             if not img_relpath:
+                continue
+            # 忽略 base64 图片
+            if img_relpath.startswith("data:image"):
                 continue
             img_abspath = md_file.parent / img_relpath
             # 记录引用路径
@@ -43,14 +45,6 @@ def find_unreferenced_images(base_dir:str):
     # 找出未被引用的图片、缺失的图片
     unreferenced = sorted(image_files - referenced)
     missing = sorted(referenced - image_files)
-
-    # print('图片文件：')
-    # for f in image_files:
-    #     print(f)
-    # print('引用')
-    # for f in referenced:
-    #     print(f)
-    # print()
     return unreferenced, missing
 
 
@@ -62,6 +56,7 @@ if __name__ == "__main__":
         for img in unused:
             print(" -", img)
     if missing:
+        print("缺失的图片：")
         for img in missing:
             print(" -", img)
     if not unused and not missing:
