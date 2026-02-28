@@ -71,11 +71,7 @@ ls 2>&1 1>filelist
 <&3-        # 关闭3号文件标识符
 ```
 
-重定向时经常使用一些**特殊文件**：
-
-| 路径        | 说明                   |
-| ----------- | ---------------------- |
-| `/dev/null` | 空文件，常用于丢弃输出 |
+重定向时经常使用一些**特殊文件**，如`/dev/null`为空文件，常用于丢弃输出
 
 ### 管道
 
@@ -261,16 +257,18 @@ Linux全部文件从根目录`/`开始，组织为树状，磁盘分区挂载（
 
 **其他**
 
-| 目录    | 含义                  | 说明                                               | 举例       |
-| ------- | --------------------- | -------------------------------------------------- | ---------- |
-| `/home` | Home                  | 用户主目录                                         |            |
-| `/usr`  | Unix System Resources | 各种程序、文档、头文件、库文件（应该是Unix的遗产） |            |
-| `/var`  | Variable              | 经常变动的文件                                     | `/var/www` |
-| `/srv`  | Service               | 网络服务文件                                       | `/srv/ftp` |
-| `/opt`  | Optional              | 可选软件安装目录，通常装第三方商业软件             |            |
-| `/tmp`  | Temp                  | 临时文件。其中文件用完就删，重启时会被清空         |            |
+| 目录    | 含义                  | 说明                                       | 举例       |
+| ------- | --------------------- | ------------------------------------------ | ---------- |
+| `/home` | Home                  | 用户主目录                                 |            |
+| `/usr`  | Unix System Resources | 各种程序、文档、头文件、库文件             |            |
+| `/var`  | Variable              | 经常变动的文件                             | `/var/www` |
+| `/srv`  | Service               | 网络服务文件                               | `/srv/ftp` |
+| `/opt`  | Optional              | 可选软件安装目录，通常装第三方商业软件     |            |
+| `/tmp`  | Temp                  | 临时文件。其中文件用完就删，重启时会被清空 |            |
 
-文件目录中，有若干文件夹结构和根目录很类似，例如，`/usr`下面也有`/usr/bin`，`/usr/lib`等目录。安装程序时一般按用途装到这些位置：
+文件目录中，有若干文件夹结构和根目录很类似，例如，`/usr`下面也有`/usr/bin`，`/usr/lib`等目录。这是Unix时期的遗产：开机启动的文件装在一张软盘内，挂载在根目录；启动完毕后，使用`mount`将第二张软盘挂载到`/usr`目录下。现代系统没有这么区分的必要，这么做只是历史惯性
+
+安装程序时一般按用途装到这些位置：
 
 - `/bin`：操作系统命令
 - `/usr/bin`：使用包管理器安装的程序
@@ -418,6 +416,16 @@ find ~ -type f -exec file {} \; # 对每个找到的文件执行命令。{}是�
 
 # 其他指令
 
+## 进程管理
+
+```bash
+top          # 查看系统运行状态
+ps -aux      # 查看进程状态
+kill $pid    # 删除指定进程
+```
+
+
+
 ## systemctl - 系统服务
 
 `systemctl`指令与后台的`systemd`交互，管理系统服务。以`nginx`服务器为例
@@ -459,13 +467,13 @@ openssl x509 -in cert.pem -inform PEM -subject_hash
 ## SSH
 
 ```bash
-ssh -p 22 $user@$ip
+ssh -p 22 $user@$ip   # 连接到SSH服务器
 ```
 
 密钥登录
 
-1. 生成密钥：`ssh-keygen`，私钥存储在`~/.ssh/id_rsa`，公钥存储在`~/.ssh/id_rsa.pub`
-2. 在服务器上安装公钥：`cat id_ras.pub >> ~/.ssh/authorized_keys`
+1. 在客户端生成密钥：`ssh-keygen`，默认存储在`~/.ssh`，`%USERPROFILE%/.ssh`
+2. 在服务器上安装公钥：将公钥`id_rsa.pub`发送给服务器，然后放到`~/.ssh/authorized_keys`
 3. 配置`/etc/ssh/sshd_config`，开启`RSAAuthentication`，`PubkeyAuthentication`。还可以禁用`PasswordAuthentication`
 4. 重启SSH：`service sshd restart`
 5. 使用私钥登录：`ssh -i $key_file $user@$ip`
@@ -511,6 +519,20 @@ bzip2 -d a.bz
 zip archive.zip *.txt
 unzip archive.zip /to/here/
 ```
+
+## 字节序
+
+大端（Big-Endian）和小端（Little-Endian），大端序从MSB开始处理（最高字节存放在内存最低的地址，传输时放在流的开端）；小端序则相反
+
+处理器一般使用小端序（x86、RISC-V等均如此）；网络传输一般用大端序
+
+
+
+
+
+
+
+
 
 杂项
 

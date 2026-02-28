@@ -1,4 +1,4 @@
-# PowerShell
+# PowerShell语法
 
 Shell指用户界面，与内核（Kernel）相对。它通常专指操作系统的命令行界面（Command-Line Interface，CLI）。Windows系统的Shell主要有命令提示符（Command Prompt，`cmd.exe`）和Powershell。前者是Windows祖传的Shell，可追溯至DOS时代，已经过时，但因为历史包袱仍然有很大作用；Powershell是自Windows 7推出的命令行界面，功能比CMD强大
 
@@ -114,29 +114,32 @@ $sum4 = 0
 $arr.foreach({$sum4 += $PSItem})
 ```
 
-## 执行策略
-
-Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
-
-- Restricted：不允许运行脚本（默认策略）
-- AllSigned：允许有数字签名的脚本
-- RemoteSigned：允许有数字签名的脚本、本地编写的脚本
-- Bypass：允许所有脚本且不警告
-
-建议设置为RemoteSigned
+## 函数
 
 ```powershell
-Get-ExecutionPolicy
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
+# 定义函数
+function Say-Hello($name, $count=1) {
+    for ($i=0; $i -lt $count; $i++) {
+        Write-Output("Hello, $name")
+    }
+}
+
+# 调用函数
+Say-Hello -name "Alice" -count 3
 ```
 
-## Profile
-
-Profile脚本在每次启动Powershell时执行
+也可用`param()`定义参数（脚本参数也是用这个方法）
 
 ```powershell
-$PROFILE | Select-Object *   # 查看PROFILE文件
+function Say-Hello {
+    param(
+        $name
+    )
+    Write-Output("Hello, $name")
+}
 ```
+
+
 
 # 常用指令
 
@@ -156,10 +159,11 @@ Get-Process | Export-Clixml filename.xml
 
 ## 文件链接
 
-- 硬链接（Hard Link）：多个文件名指向磁盘中同一数据块
-  - 数据共享。硬链接指向同一段数据，修改其中一个，会反应在另一个
-  - 引用计数。文件系统维护硬链接数量，删除一个链接使计数减一，计数为零才会删除数据
-  - 只能在同一磁盘分区中使用，只能指向文件
+**硬链接**（Hard Link）：多个文件名指向磁盘中同一数据块
+
+- 数据共享。硬链接指向同一段数据，修改其中一个，会反应在另一个
+- 引用计数。文件系统维护硬链接数量，删除一个链接使计数减一，计数为零才会删除数据
+- 只能在同一磁盘分区中使用，只能指向文件
 
 ```powershell
 # 创建硬链接。CMD使用mklink工具，Powershell使用New-Item指令
@@ -172,11 +176,12 @@ fsutil hardlink list yourfile.txt
 (Get-Item yourfile.txt).Target
 ```
 
-- 符号链接（Symbolic Link，软链接）：指向一个路径的文件
-  - 用户和软件访问符号链接时，操作系统自动重定向到它指向的位置
-  - 可以指向文件或目录，可以跨分区
-  - 指向的目标可能不存在
-  - 符号链接有安全隐患，因此需要管理员权限才能创建。比如高权限进程会访问某个低权限文件，将该文件替换为指向高权限文件的符号链接就能提权
+**符号链接**（Symbolic Link，软链接）：指向一个路径的文件
+
+- 用户和软件访问符号链接时，操作系统自动重定向到它指向的位置
+- 可以指向文件或目录，可以跨分区
+- 指向的目标可能不存在
+- 符号链接有安全隐患，因此需要管理员权限才能创建。比如高权限进程会访问某个低权限文件，将该文件替换为指向高权限文件的符号链接就能提权
 
 ```powershell
 # 创建符号链接。需要管理员权限
@@ -185,8 +190,9 @@ mklink -D ".\to\link" "D:\path\to\target"    # CMD创建目录符号链接
 New-Item -ItemType SymbolicLink -Path ".\link.txt" -Value "D:\path\to\target.txt"  # powershell
 ```
 
-- 目录联接（Junction）：和符号链接类似，不过只能用于目录。可以用符号链接实现相同效果，为了兼容性保留
-- 快捷方式（Shortcut）：指向路径的文件，后缀`.lnk`，Windows Explorer等程序会将快捷方式重定向到它指向的位置
+**目录联接**（Junction）：和符号链接类似，不过只能用于目录。可以用符号链接实现相同效果，为了兼容性保留
+
+**快捷方式**（Shortcut）：指向路径的文件，后缀`.lnk`，Windows Explorer等程序会将快捷方式重定向到它指向的位置
 
 ## 网络
 
@@ -210,7 +216,7 @@ Invoke-Webrequest -Uri http://example.com
 nslookup www.baidu.com
 nslookup -type=A www.baidu.com $DNS_SERVER
 
-dig example.com A  # linux自带，windows需
+dig example.com A  # linux自带，windows需安装
 ```
 
 ### 传输层
@@ -291,6 +297,37 @@ tracert www.baidu.com
 2. 将command的值设为指令，如`notepad.exe %1`
 
 # 其他
+
+## 脚本执行策略
+
+Powershell执行策略控制哪些脚本可以运行。它有以下几个等级
+
+- Restricted：不允许运行脚本（默认策略）
+- AllSigned：允许有数字签名的脚本
+- RemoteSigned：允许有数字签名的脚本、本地编写的脚本
+- Bypass：允许所有脚本且不警告
+
+建议设置为RemoteSigned
+
+```powershell
+Get-ExecutionPolicy
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned  #可能需要以管理员身份运行
+```
+
+## Powershell Profile
+
+Profile脚本在每次启动Powershell时执行
+
+```powershell
+$PROFILE | Select-Object *   # 查看PROFILE文件
+```
+
+## 中文乱码
+
+若Powershell编码和脚本编码不同，可能输出乱码。对于UTF-8编码脚本，可从以下几种解决方法中选择：
+
+1. 将脚本保存为UTF-8 With BOM，或者系统默认的编码
+2. 将控制台编码临时切换为UTF-8：`chcp 65001 > $null`
 
 ## 运行Linux指令
 

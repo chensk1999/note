@@ -365,7 +365,7 @@ filedialog.asksaveasfilename(
     filetypes = (('png files','*.png'),)
 )
 filedialog.askdirectory()
-#均返回一个完整的文件路径或空字符串
+# 均返回一个完整的文件路径或空字符串
 ```
 
 ### 选色器

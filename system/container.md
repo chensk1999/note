@@ -42,7 +42,7 @@ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker c
 
 ```bash
 # 启动容器，并运行程序
-# 本地没有ubuntu:15.10镜像，因此会自动从仓库下载；命令完成后会自动退出容器
+# 若本地没有ubuntu:15.10镜像，则会从仓库下载
 docker run ubuntu:15.10 /bin/echo "Hello world"
 
 # 启动容器，并在后台运行
@@ -55,7 +55,7 @@ docker rm $cid                  # 删除容器
 
 ### Docker Compose
 
-Compose是管理多个容器的工具（旧版本可能要用`docker-compose`）
+Compose是管理多个容器的工具（旧版本为`docker-compose`，需要独立安装）
 
 ```bash
 docker compose up -d   # 读取当前目录的compose.yml配置并启动容器

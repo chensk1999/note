@@ -501,8 +501,6 @@ python把和文件类似的对象（能打开，能读能写）称作file-like�
 
 # 错误处理与调试
 
-## try-except
-
 ```python
 try :
     do_something()
@@ -531,8 +529,6 @@ finally :
   - 优点：异步IO效率
 
 - **协程**：同一个线程内交替执行多个任务。没有额外开销，但也不能利用多核CPU
-
-Linux系统下
 
 ## 多进程
 
@@ -580,8 +576,6 @@ th2.join()
 
 多个线程共享进程内的变量，变量可能被不同线程修改。而且，如果若干个线程几乎同时修改一个变量，有可能造成难以预估的错误。这种情况要使用`threading.Lock`锁住变量，当一个线程锁住变量之后，其他线程将被暂停，等待到这把锁解开为止
 
-python解释器的GIL(Global Interpreter Lock)锁导致多线程无法利用多核，想跑满CPU该用多进程
-
 ThreadLocal可以帮助参数在不同线程中传递
 
 好像不能直接获得返回值，要手动把结果存到某个容器里（比如OOP，把某个对象的方法设为target，结果存为该对象的属性）
@@ -595,7 +589,7 @@ import asyncio
 import requests
 
 async def fetch_quote(page: int) -> bytes:
-    # 此函数从网络下载数据，耗时不固定，且网络差时可能要等很久
+    # 此函数从网络下载数据，耗时不固定，若网络差可能要等很久
     url = f'https://quotes.toscrape.com/page/{page}/'
     return requests.get(url).text
 

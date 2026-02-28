@@ -264,6 +264,27 @@ time_str = now.strftime('%Y.%m.%d %H:%M:%S')
 fromstr = datetime.strptime('2020.02.02', '%Y.%m.%d')
 ```
 
+# enum - 枚举
+
+枚举类可以用于几种储存常量，有助于提高可读性、可维护性
+
+```python
+import enum
+
+# 定义枚举类
+@enum.unique   # 保证没有重复值（若有则抛出ValueError）
+class Color(enum.Enum):
+    BLACK = 0
+    WHITE = 255
+    GRAY = 128
+
+# 使用枚举类
+color = Color.WHITE
+brightness = Color.White.value
+if color is COLOR.WHITE:
+    print("color is white")
+```
+
 # hashlib
 
 包括sha256, sha512等哈希算法

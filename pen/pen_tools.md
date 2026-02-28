@@ -95,6 +95,14 @@ whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 .\fscan.exe -h $ip -np -p 0-65535 -nopoc -o result.txt
 ```
 
+fscan弱口令扫描：
+
+```bash
+fscan.exe -h 10.0.0.0/24 -p 5037,8009,61616,8161,20880,11111,9042,7180,7182,8123,9000,9004,5984,2375,9200,9300,9100,4369,2379,6123,8081,21,8649,8080,4848,25000,25010,8019,8020,8088,8443,9000,19888,8888,8051,7051,11000,8042,443,9083,143,9990,8080,8000,5005,9092,5601,8080,389,11211,502,27017,1433,3306,8848,7848,137,111,2049,1521,5632,8999,110,5432,4899,3389,6379,1099,10911,873,554,445,587,161,1080,4440,7077,18080,4040,4000,3128,22,9001,3690,5000,5631,23,69,5900,7001,9043,8880,8069,2181,2888,3888,111,2049,2181,2222,2375,2888,3888,4000,4040,4440,4848,5005,5900,5984,6123,7001,7051,7077,7180,7182,8019,8020,8048,8051,8069,8081,8088,8161,9042,9043,9100,9200,9300,9990,10000,11111,18080,20880,25000,25010,50000,50030,50070,50090,60000,60010,60030,27018,8083,8086 -pwdf pwd.txt
+```
+
+
+
 ## 测绘工具
 
 - FOFA：https://fofa.info/
@@ -102,8 +110,10 @@ whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 - 钟馗之眼：https://www.zoomeye.org/
 - 鹰图平台：https://hunter.qianxin.com/
 - 360quake：https://quake.360.net/quake/#/index
-- https://x.threatbook.cn
+- 微步在线：https://x.threatbook.cn
 - 零零信安：https://0.zone/
+
+整合：OneForAll
 
 # 漏洞分析&利用
 
@@ -259,10 +269,20 @@ List<String> filteredPaths = Arrays.asList(
     "/some_annoying_path",
     "/test?q=1"
 );
+
+// 完全匹配过滤
 if (filteredPaths.contains(path_raw)) {
     logging().logToOutput(path_raw);
     return false;
 }
+
+// 部分匹配过滤
+for (String filteredPath : filteredPaths) {
+    if (path_raw.contains(filteredPath)) {
+        return false;
+    }
+}
+
 ```
 
 ### 插件

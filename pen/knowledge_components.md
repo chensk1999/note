@@ -134,7 +134,8 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 常见漏洞
 
-- 敏感信息泄露：Spring Boot提供`actuator`模块，用于监控系统状态。1.5以下默认允许未授权访问所有端点，≥1.5则默认只能访问`/actuator/health`和`/actuator/info`端点。端点详情参考[对于Spring Boot的渗透姿势](https://blog.zgsec.cn/archives/129.html)
+- 敏感信息泄露：Spring Boot提供`actuator`模块，用于监控系统状态。1.5以下默认允许未授权访问所有端点，≥1.5则默认只能访问`/actuator/health`和`/actuator/info`端点。端点详情参考[对于Spring Boot的渗透姿势](https://blog.zgsec.cn/archives/129.html)。注意：路径也可能是`/api/actuator`等样子。一台服务器也可能有多个actuator页面
+- actuator未授权中价值大的有`/actuator/env`配置文件、`/actuator/heapdump`，其暴露的`.hprof`文件是Java应用的内存转储，很可能包含数据库账户密码等敏感信息，可用[JDumpSpider](https://github.com/whwlsfb/JDumpSpider)提取
 - 扫描工具：[SpringBoot-Scan](https://github.com/AabyssZG/SpringBoot-Scan)，Burp插件[SpringScan](https://github.com/metaStor/SpringScan)（RCE漏洞检测）、[SpringScan](https://github.com/metaStor/SpringScan)（敏感目录检测）
 - 添加请求头`Forwarded:proto=/actuator/?`可绕过springboot的路由检测
 
@@ -156,7 +157,9 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 ### Vue
 
-指纹特征：
+指纹特征：绿色V字：![Vue_icon](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHMSURBVDhPpZM9SyNhEMdn9iXZGDfmMCpqzpiLJnJ6jdhEfEEQLTywEywkjYWIhR/Bj3CVWNiEKw6u1c7SE7/A3YHiCxaipSZExIR9fP6T9TXBg/MHA/+Z+c88z+6yrDT0DvjHyZ739+qckZT/XFPltCSN3NxXNZBJSf33wbHK/9wWbSXDZPc3QdLnaKfio8Klt7S/yZ6+iCpWqPT9jFTZo0xPgvLf1sSYW12jg6MzYtug8EKC2LXIYKaN7KIyUm4bz8QH5THQCAx9kCEMbO3sKgQ0QA8egBnMyju4vrtRuV/rXCzfElWU3MIrlCnihmVxoVhiI2LL6WQxubZD+ZFl1RRoYAMGiIXUWPVlakNwNCYSgwhoqekegBcz0LIAzHYNcaIxJkusnkYyPzZIHZjxkNQAPPBKonlcYOnLrPRN+xmRM6ZPNLRPhzPe4ldJPPA+8KQ0g81JHm5Nyy2MWJDsgYgENEAPHkl8XiwAy31TZBum6GC2WQKght5raha0h6I8152tflbHlACooSfJM2oWgPlPwxxzXD8jgkbNT19Qd0HIDNBi70T1s2qgUatH3QVgsuML90fjCgHtl2t48288LFxILx1p/78F/4boHqhajx1a0DlqAAAAAElFTkSuQmCC)
+
+
 
 # 中间件&组件
 
@@ -170,7 +173,7 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 **指纹特征**：Shiro默认使用Servlet容器的会话管理，即用`JSESSIONID`标识会话；其自动登录功能使用名为`rememberMe`的Cookie。若数据包Cookie带有`rememberMe`字段，或者在请求包添加`rememberMe`字段后，响应包设置Cookie`rememberMe = deleteMe`，可判定使用了Shiro
 
-**常见漏洞**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)
+**常见漏洞**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)、[Shiro权限绕过汇总](https://yinwc.github.io/2022/01/13/shiro-%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E7%B3%BB%E5%88%97%E6%B1%87%E6%80%BB/)
 
 ## FastJson
 
@@ -253,5 +256,14 @@ Webpack是前端资源打包工具，兼具压缩、混淆功能
 [js逆向 - webpack](https://www.cnblogs.com/pengboke/p/18816851)、[Webpack逆向工程](https://comate.baidu.com/zh/page/vqz3smux9gm)、[webpack原理和逆向实战](https://blog.csdn.net/qq_38474570/article/details/135562509)
 
 **常见漏洞**：
+
+`js.map`泄露
+
+```bash
+npm install -g reverse-sourcemap
+reverse-sourcemap "example.js.map"  # 还原源文件
+```
+
+
 
 源码反编译

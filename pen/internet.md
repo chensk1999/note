@@ -318,7 +318,7 @@ Cookie: sessionId=38afes7a8
 
 同源策略（Same-origin Policy，SOP）是浏览器的安全策略，它限制脚本访问**其他站点**的资源。它不是HTTP协议的一部分，但现代浏览器均采用此策略
 
-同源策略防止恶意网站操作其他网站页面。假如没有SOP，恶意页面可以通过脚本获得其他网站的完全控制权，比如用户打开恶意页面后，恶意页面可以用Javascript打开银行网站（如`window.open`），然后进行恶意操作；有SOP之后，除非银行网站允许，其他站点无法访问它的DOM，也无法用脚本操作网页
+同源策略防止恶意网站操作其他网站页面。假如没有SOP，恶意页面可以通过脚本获得其他网站的完全控制权，比如用户打开恶意页面后，恶意页面可以用Javascript打开银行网站并进行恶意操作，例如用`bank_pate = window.open`开启页面，再通过`bank_page.document`操作其DOM；有SOP之后，除非银行网站允许，其他站点无法访问它的DOM，也无法用脚本操作网页
 
 注意：SOP不能防范XSS、CSRF：前者成因与跨源操作完全无关；后者可以用跨源写操作绕过。不过它确实增加了利用这两类漏洞的难度
 
@@ -337,7 +337,7 @@ Cookie: sessionId=38afes7a8
 - 跨源**读操作**（Cross-origin reads）：向其他源发起请求并获取响应。**不允许**（能发起请求，无法获得响应）
   - 如`fetch("other-origin.com")`会被浏览器拦截
   - 但是如果先进行跨源资源嵌入，就可以调用被嵌入的资源。如用`<img src="other-origin.com/logo.png">`嵌入图片后，可以用JS操作
-- 跨源**DOM操作**：访问其他源（例如用`window.open`打开的、用`iframe`嵌入的网站）的DOM。**不允许**
+- 跨源**DOM操作**：访问其他源（例如用`window.open`或`iframe`打开的网站）的DOM。**不允许**
 
 ### CORS
 

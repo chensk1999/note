@@ -336,3 +336,12 @@ sim/**
 出现`Failed to connect to github.com port 443 after 20000 ms: Timed out`错误大概率是因为代理设置
 
 首先关闭系统代理；然后执行`git config --global --unset http.proxy`和`git config --global --unset https.proxy`
+
+## 代理
+
+本次操作使用代理：
+
+```bash
+git -c http.proxy="http://127.0.0.1:7890" clone $repo
+```
+
