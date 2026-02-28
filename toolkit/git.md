@@ -135,6 +135,8 @@ git log --graph --oneline   # 类似树状输出，只输出简洁信息
 git diff  # 比较工作区与暂存区
 git diff --compact-summary  # 只输出摘要，即各文件增删多少行
 git diff <commit> <path>    # 暂存区与commit，且只比较path以及path的子文件
+
+git show HEAD~3:README.md   # 查看文件历史版本。注意，不可以用反斜杠
 ```
 
 ## stash
