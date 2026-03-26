@@ -783,18 +783,21 @@ from playwright.sync_api import sync_playwright
 from playwright.sync_api import Playwright, Browser  # 可以用作type hint
 
 # 启动 Playwright driver 进程
-with sync_playwright.start() as playwright:
+with sync_playwright.start() as p:
     # 启动浏览器
-    chromium = playwright.chromium.launch(headless=False)
+    chromium = p.chromium.launch(headless=False)
+    # 打开新窗口，不同context之间Cookie、LocalStorage等状态不共享
+    context = chromium.new_context()
     # 打开网页
-    page = browser.new_page()
+    page = context.new_page()
     page.goto("http://example.com")
     page.wait_for_timeout(1000)  # 等待1秒
     # 操作网页
     page.locator("#keyword").fill("Hello")
     page.locator("#submit").click()
     # 关闭网页
-    browser.close()
+    page.close()
+# 退出with块时自动关闭浏览器，同时关闭所有context、page
 ```
 
 除了以上用法之外，Playwright还提供了一套异步api（若无说明，本笔记其他部分均使用同步api）
@@ -892,8 +895,8 @@ Tracing功能可以记录所有网络活动，以及每一步操作详情
 browser = playwright.chromium.launch()
 context = borwser.new_context()
 context.trace.start(screenshots=True, snapshots=True, sources=True)
-# snapshot选项记录网络活动和DOM；screenshots选项截图；sources选项保存源代码并与网页操作联动
-page = context.new_page()  # 注意，是context.new_page，不是browser
+# snapshot: 记录网络活动和DOM；screenshots: 截图；sources: 保存源代码并与网页操作联动
+page = context.new_page()
 page.goto("http://example.com")
 context.trace.stop(path="trace.zip")  # 将记录保存到文件
 ```

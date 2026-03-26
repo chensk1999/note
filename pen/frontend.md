@@ -848,7 +848,11 @@ onMounted(() => {
 
 两种API功能相同；选项式更符合面向对象的风格，组合式则更加自由。对于简单应用，建议使用选项式；若打算做复杂的单页应用，建议使用组合式
 
+## JS加密库
 
+JSEncrypt - RSA加密
+
+cryptoJS - 待补充
 
 # JS后端
 
@@ -884,7 +888,7 @@ npx $module
 安装后，可以用`import`语句导入模块，或用`require`语句导入（前者导入ES6模块，后者是CommonJS模块。目前ES6是最通用的，CommonJS逐渐被淘汰）
 
 ```javascript
-import Vue from 'vue';
+import path from 'path';
 const app = require('app.js');   // 不建议使用。也不建议两种导入混用
 ```
 
@@ -941,6 +945,35 @@ app.get('/hello', handler);
 ```javascript
 app.get('/user/:id/:type?', handler);
 ```
+
+
+
+```javascript
+const router = express.Router();
+
+// 绑定路由
+router.get('/query', query_handler);
+router.post('/upload', upload_handler);
+
+// 中间件
+router.use(middleware);
+
+app.use('/api', router);
+```
+
+## 请求处理
+
+```javascript
+function handler(req, res, next) {
+    const ip = req.ip || req.socket.remoteAddress;
+    if (ip === '127.0.0.1') {
+        return next()
+    }
+    res.status(403).send('Access denied')
+}
+```
+
+
 
 
 

@@ -28,7 +28,7 @@ VSCode的设置存储在`%APPDATA%\Code\User\settings.json`
 
 ```json
 {
-    "python.pythonPath": "~/myproject/.venv/Scripts/python.exe"
+    "python.defaultInterpreterPath": "~/myproject/.venv/Scripts/python.exe"
 }
 ```
 

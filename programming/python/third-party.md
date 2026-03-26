@@ -114,6 +114,23 @@ uv run python         # 运行python
 
 uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目。也可以用`--project 目录`指定Project
 
+### 安装本地包
+
+```bash
+uv pip install $path_to_package  # 方法1：安装到虚拟环境（不会写入pyproject.toml）
+uv sync  # 方法2：写入pyproject.toml并同步
+```
+
+```toml
+[project]
+dependencies = [
+    "local-package"
+]
+
+[tool.uv.sources]
+local-package = { path = "../local_package"}
+```
+
 # 第三方库
 
 

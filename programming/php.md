@@ -72,13 +72,13 @@ echo "i = {$i}";
 # 数组（Array）。即键值对
 $arr1 = array("Peter"=>"43", "Brian"=>"7");
 $arr2 = ['foo'=>'bar', 1:2];
-echo $age['Peter'];
+echo $arr1['Peter'];
 
 # 数组key缺省时，自动使用递增整数，看上去像其他语言的列表
 $arr3 = ['a', 'b', 'c'];
 
 ${'var'} = 'name'; # 通过字符串访问变量，相当于$var
-$$var = 'Alice';   # 可变变量。相当于$($var)，即$name。这行代码等同于$name = 'Alice'
+$$var = 'Alice';   # 可变变量。相当于${$var}，即$name。这行代码等同于$name = 'Alice'
 ```
 
 ## 运算符

@@ -379,7 +379,7 @@ Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src '
   - `'self'`：和文档同源（协议、域名、端口）
   - `'unsafe-inline'`：内联资源，如`script`标签的内联脚本、`style`标签的内联样式
   - `'nonce-{随机字符串}'`：`nonce`值匹配的内联资源，如`<script nonce="随机字符串">`
-  - URL：如`http://*.example.com`。若协议缺省则用当前页面的协议
+  - URL：如`http://*.example.com`
 
 # 网络安全设备
 

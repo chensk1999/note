@@ -241,8 +241,6 @@ class Host:
 test_server = Host(ip="127.0.0.1", port=80, url="http://127.0.0.1/home")
 ```
 
-
-
 # datetime - 时间
 
 有两个时间的库：time和datetime，前者更接近操作系统层面，而datetime做了一定的封装，功能更丰富，用起来更容易
@@ -374,47 +372,67 @@ obj = json.loads(json_str, object_hook=max)
 
 # logging - 日志
 
+## 记录日志
+
 ```python
 import logging
 
-# 日志配置
-# 其实是在配置root logger，所有记录器都会继承这些设置
-# 另一种做法是手动创建Formatter和Handler，配置给getLogger(__name__)
-logging.basicConfig(
-    # 日志等级。低于此等级的消息不输出
-    level=logging.INFO,
-    # 消息格式（使用这些参数隐式创建一个Formatter并绑定到Handler）
-    format='%(asctime)s %(levelname)s-%(name)s: %(message)s',
-    datefmt='%m/%d/%Y %I:%M:%S %p',  # 格式同time.strftime
-    # 配置Handler（handler决定消息输出到哪里）
-    filename='runtime.log',  # 创建一个FileHandler
-    encoding='utf-8',
-    handlers=(logging.StreamHandler(), )
-      # 将这些handler绑定到root logger
-      # 若它们没有formatter，则将format参数指定的格式绑定上去
-)
-
-# 创建记录器。相同名字创建出来的是指向同一个logger的引用
-# logger以.作为分隔符划分层级，比如scan是scan.api的父级；此外，root是所有logger的父级
-# 子记录器会继承父级的等级、处理器
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# 记录日志消息
-logger.debug('this is debug message. It has %s', 'formatting')
-# 常用等级包括：
-# debug    调试信息
-# info     程序正常运行
-# warning  已经或即将发生意外，程序仍能正常运行
-# error    发生严重问题，程序某些功能不能正常执行
-# critical 严重错误，程序无法继续执行
+# 创建logger。同名logger指向同一个对象。名字以句点`.`划分层级，比如scan是scan.api的父级
+# 此外，root是所有logger的父级。子记录器会继承父级的配置
+logger = logging.getLogger(f"mymodule.{__name__}")
+logger.debug("this is debug message")  # 记录日志
 ```
 
-其他常用Handler
+常用日志等级包括：
+
+- `debug`：调试信息，仅用于诊断问题
+- `info`：程序正常运行
+- `warning`：即将或已经发生意外，程序仍能正常运行
+- `error`：发生严重问题，程序某些功能不能正常执行
+- `critical`：严重错误，程序无法继续执行
+
+## 配置Logger
+
+全局配置。其实是在配置root logger，所有记录器都会继承这些设置
 
 ```python
-from logging.handlers import TimedRotatingFileHandler
+import logging
+
+logging.basicConfig(
+    level = logging.INFO,    # 低于此等级的消息不输出
+    filename = 'myapp.log',  # 记录到文件
+    encoding = 'utf-8',
+    format = '%(asctime)s %(levelname)s-%(name)s: %(message)s',  # 消息格式
+    datefmt = '%m/%d/%Y %I:%M:%S %p',  # 时间格式。同time.strftime
+)
 ```
+
+以上示例传的`filename`和`encoding`参数会被用于创建一个`logging.FileHandler`处理器。如果需要更复杂处理，可以手动创建Handler
+
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+handlers = [
+    logging.StreamHandler(),
+    RotatingFileHandler('myapp.log', maxBytes=2_000_000, backupCount=5)
+]
+basicConfig(handlers = handlers)
+```
+
+配置单个Logger
+
+```python
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
+```
+
+## 进阶教程
+
+1. 调用`logger.info`等日志函数，产生`LogRecord`
+2. `Filter`过滤，比如配置`logger.setLevel`就是配置一个拒绝低级别日志的`Filter`
+3. `Handler`分派日志，比如`StreamHandler`显示到命令行、`FileHandler`记录到文件
+4. `Formatter`决定日志消息的最终内容，比如日期格式
 
 # pathlib - 路径
 

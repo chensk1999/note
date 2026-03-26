@@ -15,7 +15,7 @@ perl -e 'print "Hello World\n"'
 ./hello.pl
 ```
 
-hello.pl的内容如下：
+`hello.pl`的内容如下：
 
 ```perl
 #!/usr/bin/perl
@@ -71,8 +71,6 @@ $n = @arr;      # 标量上下文，对数组求值得到数组长度10
 
 $n = scalar(@arr);  # 显式使用标量上下文
 ```
-
-
 
 ## 特殊变量
 

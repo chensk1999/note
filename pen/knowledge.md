@@ -229,3 +229,16 @@ Firefox：打开about:config，将`security.tls.version.min`改成1
 URI、HTML、SQL
 
 php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
+
+## 源头响应和转发
+
+如何分辨响应是来自反向代理、CDN还是直接来自服务器
+
+1. 看Header
+   - 反向代理特征：`Server: nginx`
+   - CDN特征：`Server: Cloudflare, via: cache`等
+   - 源站特征：`Server: Weblogic`，`Set-Cookie: JSESSIONID`
+2. 看页面内容：反向代理通常是简单文本、默认样式；CDN通常有“请求被拦截”、“请联系网站管理员”等提示；源站可能是自定义报错
+3. HTTP方法，如OPTIONS请求，反向代理一般只支持`GET, HEAD`
+4. 非法URL，如`/%00, /..;/`，有异常信息则为源服务器
+5. 响应时间，一般源站的抖动较明显
