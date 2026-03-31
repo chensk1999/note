@@ -277,8 +277,8 @@ SSL（Secure Socket Layer，安全套接层）是保障通信安全的加密协�
 **4XX**（客户端错误，Client Error）：客户端发送的请求有问题，服务器无法处理 / 拒绝处理
 
 - **400 Bad Request**
-- **401 Unauthorized**
-- **403 Forbidden**
+- **401 Unauthorized**：未授权，如Token缺失或无效（提示用户去登录）
+- **403 Forbidden**：禁止访问，如普通用户访问管理员页面，或者访问禁止远程访问的页面（告知用户无权访问）
 - **404 Not Found**
 
 **5XX**（服务器错误，Server Error）：服务器故障，无法处理请求

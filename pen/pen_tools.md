@@ -1,3 +1,129 @@
+# 综合工具
+
+## Proxifier - 代理
+
+可以用[Proxifier注册机](https://github.com/y9nhjy/Proxifier-Keygen?tab=readme-ov-file)破解
+
+## Burp Suite - 抓包
+
+下载证书：`http://burp/`
+
+### 代理
+
+**Bambda过滤器**
+
+[ProxyHttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/proxy/ProxyHttpRequestResponse.html)，[Utilities](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/Utilities.html)，[Logging](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/logging/Logging.html)
+
+过滤测过的路径 / 没有测试价值的路径：
+
+```java
+var path_raw = requestResponse.request().path();
+List<String> filteredPaths = Arrays.asList(
+    "/some_annoying_path",
+    "/test?q=1"
+);
+
+// 完全匹配过滤
+if (filteredPaths.contains(path_raw)) {
+    logging().logToOutput(path_raw);
+    return false;
+}
+
+// 部分匹配过滤
+for (String filteredPath : filteredPaths) {
+    if (path_raw.contains(filteredPath)) {
+        return false;
+    }
+}
+
+```
+
+### 插件
+
+[编写Burp Suite插件](https://t0data.gitbooks.io/burpsuite/content/chapter16.html)
+
+[Creating Burp Extensions](https://portswigger.net/burp/documentation/desktop/extend-burp/extensions/creating)
+
+- [HaE](https://github.com/gh0stkey/HaE)（Highlighter and Extractor）：数据标注与提取工具
+  - F-Regex和S-Regex：首先用F-Regex匹配，结果再与S-Regex匹配。正则必须包裹在括号内
+  - Color：从灰色到红色逐级增加，如果一条数据匹配了多条规则则会显示最高级的颜色；如果匹配到多个同级规则，则提高一级显示
+  - Sensitive：大小写敏感
+- BurpCrypto：参数加密工具。首先在插件面板选择加密算法，并输入密钥，然后点击Add Processor；然后进入Intruder界面，添加Payload，选择Payload - Payload处理 - 添加；规则类型选择调用Burp扩展，选中刚才添加的处理器
+
+
+## Yakit
+
+[Yakit: 集成化单兵安全能力平台](https://yaklang.com/en/products/intro/)
+
+### MITM
+
+抓包工具
+
+### Web Fuzzer
+
+重放与爆破，将Burp Suite的Repeater和Intruder合为一体
+
+- **模糊测试标签**（fuzztag）：fuzztag由两层花括号包裹，如`{{int(1-5)}}`，参考[标签一览](https://yaklang.com/docs/yakexamples/fuzztag/)。标签可加编号，如`{{int::1(1-5)}}`，同编号的一起迭代
+- **配置**：位于左边栏，有各种高级配置，比如关闭fuzztag，并发配置
+- **规则**：位于左边栏
+  - 过滤器：丢弃模式丢掉匹配到的返回包，保留模式只保留匹配到的返回包，仅匹配模式保留所有数据包，用颜色标注匹配到的包
+  - 数据提取器：用正则 / XPath等提取数据
+  - 变量：此处定义的变量可以用fuzztag`{{parameter(变量名)}}`引用。nuclei模式下变量值作为nuclei表达式解析；fuzztag模式下会解析变量中的fuzztag；raw模式不解析，直接将变量视作字符串
+  - 参数、Cookie、Header：如果设置了，每次发包都会进行额外请求，每个额外请求带一个参数
+- **序列**：[WebFuzzer序列基础](https://yaklang.com/products/Web%20Fuzzer/fuzz-sequence)
+- **热加载**：位于Request面板右上。在此面板中写yak代码，就能用`{{yak(函数名|参数)}}`调用
+
+### 插件
+
+插件仓库 - 本地 - 新建插件。常用的插件种类有两类：
+
+1. **独立模块**：单独一个进程运行，通过Webhook与主进程通信
+2. **嵌入式模块**：由Yakit主进程直接调用。嵌入式模块崩溃、内存泄漏都会影响主进程
+
+```javascript
+yakit.AutoInitYakit()   // 建立与主进程的通信
+// 输出到插件日志
+yakit.Info("Hello This is a info message")
+yakit.Warn("Warning!!! Warning: %v", now())
+yakit.Error("Error!? Impossible")
+// 进度条
+yakit.SetProgress(0.1)
+sleep(1)
+yakit.SetProgress(0.9)
+// 输出表格
+yakit.EnableTable("测试表格", ["id", "name"])
+yakit.Output(yakit.TableData("测试表格", {"id":10324, "name":"John"}))
+```
+
+## Metasploit Framework
+
+Metasploit Framework是集合了大量渗透模块的管理器，它可以管理模块、调用模块、加载模块运行环境等。模块分为以下几类，覆盖了渗透测试各个阶段：
+
+- **Auxiliary**：模糊测试、枚举
+- **Exploit**：利用漏洞，比如引发缓冲区溢出实现RCE
+- **Payload**：利用成功后执行的代码，比如反弹Shell、植入后门
+  - **Encoder**，**Evasion**：规避防护系统
+  - **Nop**：插入Nop指令，辅助各种溢出漏洞
+- **Post**：后渗透，如提权、持久化、清理痕迹
+
+基础流程是：
+
+```shell
+msfconsole  # 进入Metasploit Framework Shell
+
+search type:exploit description:overlayfs  # 搜素模块
+info 8                    # 查看模块信息，可以用搜素结果编号或者完整模块路径
+use 8                     # 调用模块
+show options              # 查看模块配置选项
+set RHOSTS example.com    # 配置模块
+set payload payload/linux/x64/shell/reverse_tcp  # 配置payload
+exploit                   # 进行攻击
+```
+
+### Auxiliary
+
+`scanner/ssh/ssh_login`：SSH爆破，也可以用于建立连接
+
 # 信息搜集
 
 ## nmap - 端口扫描
@@ -87,9 +213,11 @@ whatweb --user-agent $UA --cookie $COOKIE --proxy "localhost:8080" $URL
 
 ## tscan - 综合扫描工具
 
-
+GUI
 
 ## fscan - 综合扫描工具
+
+速度比tscan慢，准确度较高
 
 ```bash
 .\fscan.exe -h $ip -np -p 0-65535 -nopoc -o result.txt
@@ -100,8 +228,6 @@ fscan弱口令扫描：
 ```bash
 fscan.exe -h 10.0.0.0/24 -p 5037,8009,61616,8161,20880,11111,9042,7180,7182,8123,9000,9004,5984,2375,9200,9300,9100,4369,2379,6123,8081,21,8649,8080,4848,25000,25010,8019,8020,8088,8443,9000,19888,8888,8051,7051,11000,8042,443,9083,143,9990,8080,8000,5005,9092,5601,8080,389,11211,502,27017,1433,3306,8848,7848,137,111,2049,1521,5632,8999,110,5432,4899,3389,6379,1099,10911,873,554,445,587,161,1080,4440,7077,18080,4040,4000,3128,22,9001,3690,5000,5631,23,69,5900,7001,9043,8880,8069,2181,2888,3888,111,2049,2181,2222,2375,2888,3888,4000,4040,4440,4848,5005,5900,5984,6123,7001,7051,7077,7180,7182,8019,8020,8048,8051,8069,8081,8088,8161,9042,9043,9100,9200,9300,9990,10000,11111,18080,20880,25000,25010,50000,50030,50070,50090,60000,60010,60030,27018,8083,8086 -pwdf pwd.txt
 ```
-
-
 
 ## 测绘工具
 
@@ -171,6 +297,9 @@ sqlmap -u "example.com?id=1" --technique=U
 
 ```bash
 sqlmap -u "example.com?id=1" --tamper=if2case.py ---suffix="#"
+```
+
+```python
 ```
 
 ### Payload
@@ -245,134 +374,7 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 将WebShell脚本上传到服务器，在主界面右键 - 添加数据 - 填写WebShell的URL和连接密码（比如WebShell仓库里的脚本都是用`ant`参数控制脚本，连接密码就是ant）
 
-# 综合工具
-
-## Proxifier - 代理
-
-可以用[Proxifier注册机](https://github.com/y9nhjy/Proxifier-Keygen?tab=readme-ov-file)破解
-
-## Burp Suite - 抓包
-
-下载证书：`http://burp/`
-
-### 代理
-
-**Bambda过滤器**
-
-[ProxyHttpRequestResponse](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/proxy/ProxyHttpRequestResponse.html)，[Utilities](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/utilities/Utilities.html)，[Logging](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/logging/Logging.html)
-
-过滤测过的路径 / 没有测试价值的路径：
-
-```java
-var path_raw = requestResponse.request().path();
-List<String> filteredPaths = Arrays.asList(
-    "/some_annoying_path",
-    "/test?q=1"
-);
-
-// 完全匹配过滤
-if (filteredPaths.contains(path_raw)) {
-    logging().logToOutput(path_raw);
-    return false;
-}
-
-// 部分匹配过滤
-for (String filteredPath : filteredPaths) {
-    if (path_raw.contains(filteredPath)) {
-        return false;
-    }
-}
-
-```
-
-### 插件
-
-[编写Burp Suite插件](https://t0data.gitbooks.io/burpsuite/content/chapter16.html)
-
-[Creating Burp Extensions](https://portswigger.net/burp/documentation/desktop/extend-burp/extensions/creating)
-
-- [HaE](https://github.com/gh0stkey/HaE)（Highlighter and Extractor）：数据标注与提取工具
-  - F-Regex和S-Regex：首先用F-Regex匹配，结果再与S-Regex匹配。正则必须包裹在括号内
-  - Color：从灰色到红色逐级增加，如果一条数据匹配了多条规则则会显示最高级的颜色；如果匹配到多个同级规则，则提高一级显示
-  - Sensitive：大小写敏感
-
-
-## Yakit
-
-[Yakit: 集成化单兵安全能力平台](https://yaklang.com/en/products/intro/)
-
-### MITM
-
-抓包工具
-
-### Web Fuzzer
-
-重放与爆破，将Burp Suite的Repeater和Intruder合为一体
-
-- **模糊测试标签**（fuzztag）：fuzztag由两层花括号包裹，如`{{int(1-5)}}`，参考[标签一览](https://yaklang.com/docs/yakexamples/fuzztag/)。标签可加编号，如`{{int::1(1-5)}}`，同编号的一起迭代
-- **配置**：位于左边栏，有各种高级配置，比如关闭fuzztag，并发配置
-- **规则**：位于左边栏
-  - 过滤器：丢弃模式丢掉匹配到的返回包，保留模式只保留匹配到的返回包，仅匹配模式保留所有数据包，用颜色标注匹配到的包
-  - 数据提取器：用正则 / XPath等提取数据
-  - 变量：此处定义的变量可以用fuzztag`{{parameter(变量名)}}`引用。nuclei模式下变量值作为nuclei表达式解析；fuzztag模式下会解析变量中的fuzztag；raw模式不解析，直接将变量视作字符串
-  - 参数、Cookie、Header：如果设置了，每次发包都会进行额外请求，每个额外请求带一个参数
-- **序列**：[WebFuzzer序列基础](https://yaklang.com/products/Web%20Fuzzer/fuzz-sequence)
-- **热加载**：位于Request面板右上。在此面板中写yak代码，就能用`{{yak(函数名|参数)}}`调用
-
-### 插件
-
-插件仓库 - 本地 - 新建插件。常用的插件种类有两类：
-
-1. **独立模块**：单独一个进程运行，通过Webhook与主进程通信
-2. **嵌入式模块**：由Yakit主进程直接调用。嵌入式模块崩溃、内存泄漏都会影响主进程
-
-```javascript
-yakit.AutoInitYakit()   // 建立与主进程的通信
-// 输出到插件日志
-yakit.Info("Hello This is a info message")
-yakit.Warn("Warning!!! Warning: %v", now())
-yakit.Error("Error!? Impossible")
-// 进度条
-yakit.SetProgress(0.1)
-sleep(1)
-yakit.SetProgress(0.9)
-// 输出表格
-yakit.EnableTable("测试表格", ["id", "name"])
-yakit.Output(yakit.TableData("测试表格", {"id":10324, "name":"John"}))
-```
-
-## Metasploit Framework
-
-Metasploit Framework是集合了大量渗透模块的管理器，它可以管理模块、调用模块、加载模块运行环境等。模块分为以下几类，覆盖了渗透测试各个阶段：
-
-- **Auxiliary**：模糊测试、枚举
-- **Exploit**：利用漏洞，比如引发缓冲区溢出实现RCE
-- **Payload**：利用成功后执行的代码，比如反弹Shell、植入后门
-  - **Encoder**，**Evasion**：规避防护系统
-  - **Nop**：插入Nop指令，辅助各种溢出漏洞
-- **Post**：后渗透，如提权、持久化、清理痕迹
-
-基础流程是：
-
-```shell
-msfconsole  # 进入Metasploit Framework Shell
-
-search type:exploit description:overlayfs  # 搜素模块
-info 8                    # 查看模块信息，可以用搜素结果编号或者完整模块路径
-use 8                     # 调用模块
-show options              # 查看模块配置选项
-set RHOSTS example.com    # 配置模块
-set payload payload/linux/x64/shell/reverse_tcp  # 配置payload
-exploit                   # 进行攻击
-```
-
-### Auxiliary
-
-`scanner/ssh/ssh_login`：SSH爆破，也可以用于建立连接
-
 # 模糊/暴力测试
-
-## dirsearch - 目录扫描
 
 ## dirb - 目录扫描
 
@@ -398,6 +400,20 @@ $COOKIE = "name1:value1; name2:value2"
 dirb $URL $WORDS -a $UA -c $COOKIE -o "output.txt"  # 基本扫描
 dirb $URL -z 100 -X .php,.html,.txt   # 请求之间间隔100ms；在词典每项后面加上后缀
 ```
+
+## dirsearch - 目录扫描
+
+同样是目录扫描工具
+
+```bash
+python dirsearch.py -u https://example.com -w $wordlist
+```
+
+重要参数：
+
+- **扫描内容**：目录字典`-w ./字典.txt`，文件后缀`-e php,jsp,html`
+- **扫描速度**：`-t 线程数(默认25)`
+- 其他：代理`--proxy http://127.0.0.1:8080`
 
 ## hydra - 多协议密码爆破
 
@@ -451,8 +467,6 @@ hashcat --stdout wordlist.lst -r /rules/best64.rule | head -n 50  # 预览变形
 hashcat -a 0 -m 0 hash.txt wordlist.lst -r /rules/best66.rule
 ```
 
-
-
 # 其他
 
 ## 安装CA证书
@@ -490,55 +504,7 @@ sudo cat /etc/ssl/certs/cacert.crt | grep L4zOd3  # 查找刚才复制的一小�
 
 ### Android
 
-- **Android 7前**：用户证书和系统证书有相同权限，直接安装为用户证书即可
-- **Android 7-13**：用户证书和系统证书分开，系统证书存储于`/system/etc/security/cacerts`。但是普通用户没有访问system目录的权限，root用户也可能没有写system目录的权限
-- **Android 14后**：系统证书除了system盘，还安装在`/apex/com.android.conscrypt/cacerts`，由apex机制管理
-- 部分应用程序会使用**证书锁定**（SSL/TLS Pinning），即只信任程序内置的证书，需要逆向或者用[Frida](https://github.com/frida/frida) Hook
-
-以下方法适用于Android 7-13
-
-**方法1**：adb获取root权限，直接操作系统证书目录。不过adb可能无法获得足够的权限
-
-```shell
-adb root
-adb remount
-adb push 9a5ba575.0 /system/etc/security/cacerts/
-```
-
-**方法2**：在adb shell获取超级用户权限，将系统盘改为可写，并写入证书。若显示`Read-only file system`，无法获取权限，说明system盘使用了只读文件系统，要用方法3
-
-```shell
-# 获取super user权限。可能需要在手机上点确认。若shell的$变为#说明成功
-su
-# 获取写系统分区权限。不同系统需要的命令不同，建议逐一尝试
-mount -o rw,remount /system
-mount -o rw,remount /
-chmod 777 /system
-# 将证书复制到系统证书目录
-cp /sdcard/Download/9a5ba575.0 /system/etc/security/cacerts/
-```
-
-**方法3**：magisk加载模块：首先[安装magisk](./android.md#magisk)，安装[MoveCertificate模块](https://github.com/ys1231/MoveCertificate)，将证书复制到`/data/local/tmp/cert`，重启手机即可生效
-
-**其他**：没有测试过，上面的方法都用不了的时候可以考虑
-
-- DNA修改system.img：使用安卓固件解包打包工具[DNA](https://github.com/ColdWindScholar/D.N.A3)，修改system.img映像并重新刷入
-- [HTTP Toolkit](https://httptoolkit.com/docs/guides/android/)工具抓包，原理似乎是挂载了一个内存文件系统，参考[这篇文章](http://91fans.com.cn/post/certificate/)。其中使用的命令如下
-
-```shell
-# 将系统证书复制到临时文件夹
-mkdir -m 700 /data/local/tmp/htk-ca-copy
-cp /system/etc/security/cacerts/* /data/local/tmp/htk-ca-copy/
-# Create the in-memory mount on top of the system certs folder
-mount -t tmpfs tmpfs /system/etc/security/cacerts
-# 将系统证书、要添加的证书复制到内存文件系统
-mv /data/local/tmp/htk-ca-copy/* /system/etc/security/cacerts/
-cp /data/local/tmp/c88f7ed0.0 /system/etc/security/cacerts/
-# Update the perms & selinux context labels, so everything is as readable as before
-chown root:root /system/etc/security/cacerts/*
-chmod 644 /system/etc/security/cacerts/*
-chcon u:object_r:system_file:s0 /system/etc/security/cacerts/*
-```
+参考[APP抓包](../system/android.md#APP抓包)
 
 ## VMWare
 

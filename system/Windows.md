@@ -64,9 +64,13 @@ $Local:username = "admin"         # 本地变量，当前代码块中可用
 # 大部分指令的返回值都是Object或者Array[Object]
 $files = Get-ChildItem -File
 $file = $files[0]
+
+# 查看对象
 $file | Get-Member -MemberType Property  # 查看属性名
-$file.GetType()    # 访问方法。此方法返回对象类别
-$file.FullName     # 访问属性
+$file | Select-Object *  # 查看所有属性
+$file | Format-List *    # 查看所有属性（包括隐藏属性）
+$file.GetType()  # 访问方法。此方法返回对象类别
+$file.FullName   # 访问属性
 
 # 定义对象
 $uri = [System.Uri]::new('https://example.com')  # 用类的new方法定义
@@ -142,6 +146,28 @@ function Say-Hello {
 
 
 # 常用指令
+
+## 用户与权限
+
+Windows系统权限从高到低大致有：
+
+- SYSTEM：操作系统核心服务
+- Administrators：管理员权限。特别地，Administrator账户默认始终是管理员模式，而其他用户进行高权限操作时可能需要UAC提升（“以管理员身份运行”）
+- 其他用户组
+
+备注：`SYSTEM`是内置安全主体（Security Principal），Administrators是用户组，其中好像有些微妙的区别
+
+```powershell
+# whoami
+whoami           # 查看当前用户名
+whoami /groups   # 查看所有用户组
+
+Get-LocalUser -Name $env:USERNAME | Select-Object *  # 查看当前用户详细信息
+Get-LocalGroup                               # 查看所有用户组
+Get-LocalGroupMember -Name "Administrators"  # 查看用户组的所有成员
+```
+
+
 
 ## 文本处理
 

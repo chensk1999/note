@@ -265,3 +265,13 @@ reverse-sourcemap "example.js.map"  # 还原源文件
 ```
 
 源码反编译
+
+# 未分类
+
+这部分放还不知道分哪类的东西。内容多了要考虑重新分类
+
+## Swagger
+
+- Swagger-UI：可视化API文档
+- Swagger-Resources：资源配置接口，记录有哪些API文档
+- api-docs：具体的文档内容

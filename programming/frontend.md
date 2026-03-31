@@ -542,7 +542,7 @@ const obj = {
         // 函数中，嵌套定义函数会“隔离”上下文，匿名函数则不会
         function f1() { console.log(this.name); }
         const f2 = () => console.log(this.name);
-        
+
         f1();  // 嵌套函数隔开了上下文，this是不是obj，打印undefined
         f2();  // 匿名函数没有隔开上下文，this == obj，打印'example'
     },
@@ -1039,4 +1039,3 @@ php的HTML转义函数`htmlspecialchars`默认不转义单引号，因此拼接�
 目前主流的前端开发技术大多都会利用Webpack、Rollup等工具进行打包
 
 [javascript-obfuscator](https://github.com/javascript-obfuscator/javascript-obfuscator)
-
