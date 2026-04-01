@@ -115,17 +115,11 @@ root之后可以进行大量不安全的操作，因此许多会检测手机是�
 - **Android 14后**：系统证书除了system盘，还安装在`/apex/com.android.conscrypt/cacerts`，由apex机制管理
 - 部分应用程序会使用**证书锁定**（SSL/TLS Pinning），即只信任程序内置的证书，需要逆向或者用[Frida](https://github.com/frida/frida) Hook
 
-以下方法适用于Android 7-13
+以下方法适用于Android 7-13（均需要root权限）
 
-**方法1**：adb获取root权限，直接操作系统证书目录。不过adb可能无法获得足够的权限
+**前置准备**：首先准备好CA证书，用`openssl x509 -in cert.pem -inform PEM -subject_hash_old -noout`计算哈希值，重命名为`哈希值.0`
 
-```shell
-adb root
-adb remount
-adb push 9a5ba575.0 /system/etc/security/cacerts/
-```
-
-**方法2**：在adb shell获取超级用户权限，将系统盘改为可写，并写入证书。若显示`Read-only file system`，无法获取权限，说明system盘使用了只读文件系统，要用方法3
+**方法1**：获取root权限，直接写入系统证书目录。若无法获取写权限（如：显示`Read-only file system`），说明system盘使用了只读文件系统，要用其他方法
 
 ```shell
 # 获取super user权限。可能需要在手机上点确认。若shell的$变为#说明成功
@@ -138,7 +132,7 @@ chmod 777 /system
 cp /sdcard/Download/9a5ba575.0 /system/etc/security/cacerts/
 ```
 
-**方法3**：magisk加载模块：首先[安装magisk](./android.md#magisk)，安装[MoveCertificate模块](https://github.com/ys1231/MoveCertificate)，将证书复制到`/data/local/tmp/cert`，重启手机即可生效
+**方法2**：magisk加载模块：首先安装magisk，安装[MoveCertificate模块](https://github.com/ys1231/MoveCertificate)，将重命名为`hash值.0`的证书复制到`/data/local/tmp/cert`，重启手机即可生效
 
 **其他**：没有测试过，上面的方法都用不了的时候可以考虑
 
@@ -255,7 +249,7 @@ su  # 获取超级用户权限。可能需要在手机上点确认。若shell的
 
 ```shell
 # 查看分区路径
-cd /dev/block/platform/"根据机型有所不同"/by-name 
+cd /dev/block/platform/"根据机型有所不同"/by-name
 ls -l
 
 # 导出为img文件
@@ -291,4 +285,3 @@ dumpsys package $pkg | grep $pkg/
 # 启动应用
 am start -n $pkg/$activity -a android.intent.action.VIEW
 ```
-

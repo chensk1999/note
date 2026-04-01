@@ -255,3 +255,8 @@ python -m whisper "src.mp4" --language zh
 ```
 
 首次使用时需要下载模型，会自动下载并放在`%USERPROFILE%/.cache/whisper`
+
+其他常用参数：
+
+- 输出：`--output_dir 输出目录`， `--output_format {txt,vtt,srt,tsv,json,all}`
+- 线程：`--threads `

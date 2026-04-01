@@ -1,8 +1,52 @@
 # 简介
 
-Java是严格的面向对象语言——除了基本类型之外，一切皆对象，所有代码都放在类中，哪怕是main函数也要写成类的静态方法
+## Java平台
 
-Java是编译型语言，但也具有部分解释型语言的特性。Java源代码写在`.java`文件中；源代码经过`javac`编译器编译为字节码写入`.class`文件（如后缀所暗示的，每个文件装一个类，文件名和类名必须相同），编译过程包括了严格的语法检查和静态类型校验；Java虚拟机JVM加载字节码，并翻译为机器码执行（较新版本会将频繁执行的代码编译为机器码，其他代码动态解释为机器码）
+Java平台分为三个版本，用于不同场景：
+
+- **Java ME**（Micro Edition）：功能精简，用于嵌入式设备
+- **Java SE**（Standard Edition）：旧称J2SE。包含所有基本功能，用于一般的应用程序
+  - LTS版本包括Java 8（2014）、Java 11（2018）、Java 17（2021）、Java 21（2023）、Java 25（2025）
+- **Java EE**（Enterprise Edition）：旧称J2EE，标准名称Jakarta EE。在Java SE基础上指定了许多规范，如Web容器、消息队列，并提供相应标准库。常用于服务器程序
+  - Java EE提供了许多API（大多数为接口、抽象类），但并没有完整实现。它们由Weblogic等第三方软件实现，因此必须运行在这些软件的环境中
+  - 从2010年代开始，Java EE的生态位逐渐被Spring替代。Spring吸收Java EE的设计思想，提供了一套替代Java EE的方案，且整合了工程实现
+
+## 开发、运行环境
+
+Java是编译型语言，兼具解释型语言的特性。Java源代码首先编译为字节码，再由JVM解释执行。编译过程中会进行语法检查和静态类型校验，因此能避免纯解释型语言运行时才能发现错误的缺点；编译得到的字节码在所有平台上都能运行，也能避免编译型语言在不同系统间的移植性问题
+
+```mermaid
+graph LR
+    src(源代码<br>Hello.java)
+    src -->|编译器| byte(字节码<br>Hello.class)
+    byte -->|JVM| exe(机器码)
+```
+
+- JDK（Java Development Kit），**开发环境**
+  - 编译器`javac`、调试器`jdb`、打包工具`jar`等
+  - JRE（Java Runtime Environment），**运行环境**
+    - JVM（Java Vritual Machine）`java`
+    - 运行库
+
+编译运行过程如下：
+
+```shell
+# 编译
+javac Main.java   # 编译为字节码 Main.class
+javac -cp $jar_path Main.java  # 编译时在$jar_path下寻找依赖
+
+# 打包。将class文件、资源文件等打包为一个jar文件。使用和zip相同的算法
+jar -cvf Main.jar Main.class  # 将Main.class打包为Main.jar
+
+# 运行
+java Main          # 运行Main.classs
+java -jar Main.jar # 运行Main.jar
+java -cp .;$jar_path Main  # 在"."和$jar_path下寻找Main.class和依赖
+```
+
+## Java程序基础
+
+Java是严格的面向对象语言——除了基本类型之外，一切皆对象，所有代码都放在类中，哪怕是main函数也要写成类的静态方法。一个文件中包含一个类，且文件名必须是类名（特别地，可以额外包含非`public`类，它们不受上述限制）
 
 ```java
 public class HelloWorld {
@@ -12,20 +56,7 @@ public class HelloWorld {
 }
 ```
 
-编译运行过程如下：
-
-```shell
-javac Main.java   # 编译为字节码
-java Main         # 用JVM运行
-
-# 打包
-jar -cvf Main.jar Main.class
-java -jar Main.jar
-```
-
-# 基础语法
-
-## 流程控制
+# 流程控制
 
 和C基本相同。比C多一个数组的for循环
 
@@ -46,7 +77,7 @@ Java的数据类型分两类：
 
 ## 数值
 
-整数有`byte, short, int, long`四种，浮点数有`float, double`两种。此外还有布尔值`bool`因为篇幅较少，并入这一节
+整数`byte, short, int, long`、浮点数`float, double`、布尔值`bool`
 
 ```java
 // 整数
@@ -81,14 +112,14 @@ n.equals(i);    // 包装类的比较
 
 ## 字符和字符串
 
-Java用单引号表示字符，双引号表示字符串。字符可以隐式转换为整数
+Java用单引号表示字符，双引号表示字符串
 
 ```java
 // 字符
 char c = 'a';
-int i = c + 1;
+int i = c + 1;  // 字符可以隐式转换为整数
 
-// 字符串
+// 字符串。注意：String是引用类，不是基本类型
 String s = "Hello";
 ```
 
@@ -102,12 +133,13 @@ int[] arr2 = {1, 2, 3};    // 定义并初始化
 int[][] arr2d = new int[3][3];  // 二维数组
 ```
 
-数组（Array）过于原始了，更常用的是列表（List）。注意：List是一个接口，而非具体的类，它有多种实现。最常用的是`ArrayList`和`LinkedList`
+数组（Array）过于原始了，更常用的是列表（List）。List是一个接口，而非具体的类，它有多种实现。最常用的是`java.util.ArrayList`和`java.util.LinkedList`
 
 ```java
 List<int> arr = new ArrayList<>();
 arr.add(1);
 List<String> colors = Arrays.asList("blue", "red");
+String blue = colors.get(0);
 ```
 
 # 类和对象
@@ -124,7 +156,7 @@ public class BankAccount {
     private String accountHolder;
     private double balance;
     private final String accountNumber;  // final变量，不能重新赋值
-    
+
     // 构造方法。名字和类名相同，没有返回值，创建对象时自动调用
     public BankAccount(String accountHolder) {
         this.accountNumber = "ACC" + (++totalAccounts);
@@ -159,7 +191,7 @@ public class BankAccount {
         return String.format("账户[%s] 户主: %s 余额: %.2f",
             accountNumber, accountHolder, balance);
     }
-    
+
     // main方法，代码运行的入口
     public static void main(String[] args) {
         BankAccount account = new BankAccount("张三");
@@ -199,7 +231,6 @@ class Truck extends Vehicle {
         System.out.println(name + " 正在沿公路运输货物...");
     }
 }
-
 ```
 
 ## 接口
@@ -229,7 +260,14 @@ public class Truck implements Movable {
         System.out.println(name + " 正在沿公路运输货物...");
     }
 }
+```
 
+## 包
+
+待补充
+
+```java
+package mypackage;
 ```
 
 # IO
@@ -248,8 +286,6 @@ public class Main {
     }
 }
 ```
-
-
 
 ## 字节流
 
@@ -338,44 +374,218 @@ public class Main {
 
 # Web编程
 
-简易HTTP服务器：
+## Servlet
+
+### 基础
+
+Servlet就是处理HTTP请求的代码。它运行在应用服务器（Tomcat，Weblogic等）之上，服务器收到HTTP请求后调用Servlet处理，并将响应发送给客户端
+
+注意：应用服务器版本、Servlet API版本、JDK版本必须匹配
 
 ```java
-import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+// Servlet API 5.0+使用jakarta.servlet；4.x及之前的需使用javax.servlet
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.util.*;
+import java.io.PrintWriter;
 
-public class SimpleHttpServer {
-    public static void main(String[] args) throws IOException {
-        // 创建服务器，监听 8080 端口
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-        // 注册处理器
-        server.createContext("/", new IndexHandler());
-        // 启动服务
-        server.setExecutor(null); // 使用默认线程池
-        server.start();
-        System.out.println("服务器已启动，访问：http://localhost:8080/");
-    }
-
-    static class IndexHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            // 构造响应体
-            String response = "<h1>Hello, World</h1>";
-            // 设置响应头和内容类型
-            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
-            exchange.sendResponseHeaders(200, response.getBytes(StandardCharsets.UTF_8).length);
-            // 设置响应体
-            try (OutputStream os = exchange.getResponseBody()) {
-                os.write(response.getBytes(StandardCharsets.UTF_8));
-            }
-        }
+// 使用注解映射地址。应用服务器收到访问"/hello"的请求时调用此Servlet处理
+// 旧版本使用web.xml映射
+@WebServlet(urlPatterns = "/hello")
+public class HelloServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        resp.setContentType("text/html");   // 设置响应头
+        PrintWriter pw = resp.getWriter();
+        pw.write("<h1>Hello, world!</h1>"); // 写入响应体
+        pw.flush();
     }
 }
 ```
 
+`pom.xml`中加入如下依赖：
+
+```xml
+<groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <version>5.0.0</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+### Session
+
+Session用于在多次HTTP请求之间保存用户信息
+
+首次调用`req.getSession()`时，应用服务器会创建一个`HttpSession`对象，并将其ID通过名为`JSESSIONID`的Cookie发给客户端；用户携带`JSESSIONID`访问服务器时，可以调用`req.getSession`获取该ID对应的`HttpSession`对象。此对象可用于存储用户信息
+
+需要注意，Session对象都在内存中。若Session太多可能消耗大量内存；若需要在服务器集群上部署，需要同步或者配置Sticky Session（反向代理根据`JSESSIONID`决定发往哪个后端服务器）。以上方案都较复杂且有性能问题，因此Session适用于中小型Web应用，大型Web应用需要避免使用Session
+
+```java
+@WebServlet("/api/profile")
+public class ProfileServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        HttpSession session = request.getSession(true);  // 获取 Session
+
+        if (session.getAttribute("user") == null) {
+            // 未登录：创建 Session 并初始化
+            session.setAttribute("user", "guest");
+            pw.println("未登录");
+            return;
+        }
+        // 已登录：正常处理请求
+        String user = (String) session.getAttribute("user");
+        pw.println("Welcome, " + user);
+    }
+}
+```
+
+```
+WEB-INF/
+    web.xml     核心配置文件，包括Servlet名、路径映射、Filter顺序等
+    database.properties
+                数据库配置
+    classes/    所有class文件，主要是各个Servlet类。目录结构应该按类名
+                如com.learnjava.myservlet应放在classes/com/learnjava/myservlet.class
+    lib/        各种依赖文件，例如数据库驱动的jar包
+    src/        源代码。目录结构和classes相同
+```
+
+
+
+### 内部转发
+
+Servlet处理请求时，除了自己处理，还可以交给另一个Servlet处理。下面一行代码将请求转发给处理`/hello`的Servlet处理
+
+```java
+req.getRequestDispatcher("/hello").forward(req, resp);
+```
+
+### JSP
+
+JSP（Java Server Pages）是将PHP嵌入到HTML中的脚本。在执行前会自动编译为Servlet
+
+```jsp
+<h1>Hello, World</h1><br/>
+<% out.println("Your IP Address is "); %>
+<span style="color:red">
+    <%= request.getRemoteAddr() %>
+</span>
+```
+
+### MVC
+
+MVC设计模式旨在让业务逻辑和网页外观解耦。它由Model、View、Controller三部分组成，**Controller**接收用户的请求，并调用Model进行处理；**Model**执行业务逻辑；最后**View**将数据显示给客户端用户
+
+```mermaid
+graph LR
+  1[/User/] --> C(Controller)
+  C --> M(Model)
+  M --> V(View)
+  V --> 2[/User/]
+```
+
+## Filter
+
+Filter是对HTTP请求进行预处理的组件，常用于日志、登录检查等。多个Filter可以链式进行处理
+
+```java
+@WebFilter(urlPatterns = "/*")
+public class EncodingFilter implements Filter {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse resp = (HttpServletResponse) response;
+        // 判断是否已登录
+        HttpSession session = req.getSession(false);
+        if (session != null && session.getAttribute("user") != null) {
+            chain.doFilter(request, response);  // 已登录，放行
+        } else {
+            resp.sendRedirect("/login.jsp");    // 未登录，跳转到登录页
+        }
+    }
+}
+
+```
+
+# 工具链
+
+随着项目规模的增大，软件开发就变成了复杂的工程问题，需要引入更多工具。这些工具能够帮助开发者统一项目结构、简化第三方库的使用流程、自动完成编译与打包，并提供稳定的运行环境，从而提高开发效率与项目的可管理性
+
+## Maven
+
+[Maven](https://maven.apache.org/)是Apache基金会提供的项目管理工具，负责依赖管理以及构建流程（常规构建流程包括编译、测试、打包、发布）。其标准目录结构如下：
+
+```bash
+maven-project
+├── pom.xml   # 项目配置
+├── src
+│   ├── main
+│   │   ├── java       # 源代码
+│   │   └── resources  # 资源文件
+│   └── test
+│       ├── java
+│       └── resources
+└── target    # 编译、打包生成的文件
+```
+
+其中项目配置`pom.xml`（Project Object Model）一般格式如下。Maven工程以`groupId, artifactId, version`作为唯一标识，项目、依赖均如此
+
+```xml
+<project>
+	<modelVersion desc="POM模型版本">4.0.0</modelVersion>
+	<groupId desc="开发者名">com.example.learnjava</groupId>
+	<artifactId desc="项目名">hello</artifactId>
+	<version desc="当前版本号">1.0</version>
+	<packaging>jar</packaging>
+	<properties desc="项目属性，比如jdk版本">
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>17</maven.compiler.release>
+	</properties>
+	<dependencies desc="项目依赖">
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+	</dependencies>
+</project>
+```
+
+配置好后，可以用命令`mvn clean package`删除旧构建，并进行编译、打包。此时会自动下载依赖包，默认下载到`%USERPROFILE%/.m2`目录
+
+## Tomcat
+
+从[Apache Tomcat官网](https://tomcat.apache.org/index.html)下载，不同版本支持的Java版本、Servlet API版本不同，可参考[版本选择](https://tomcat.apache.org/whichversion.html)
+
+# 其他
+
+## JavaFX
+
+JavaFX是旧版本的GUI库，当前各版本都不带这个库，因此尝试运行使用JavaFX的软件会报错：
+
+```bash
+# 使用Java 8运行的报错。2025年5月以后发行的Java 8版本不包含JavaFX
+错误: JavaFX 已从 JDK 8 中删除。
+
+# 使用高版本Java运行的报错
+错误: 找不到或无法加载主类 fun.fireline.AppStartUp
+原因: java.lang.NoClassDefFoundError: javafx/application/Application
+```
+
+解决方法：
+
+1. 安装旧版本Java 8（不推荐）
+2. 使用Java 11+版本，下载[JavaFX库](https://gluonhq.com/products/javafx/)，并
+
+```bash
+java --module-path "D:/programs/javafx-sdk-21.0.9/lib/" --add-modules "javafx.controls,javafx.fxml" -jar $jar_file
+```

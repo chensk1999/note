@@ -445,7 +445,9 @@ systemctl list-unit-files --type=service  # 所有服务及其启用状态
 
 老版本可能需要使用`service`命令
 
-## openssl - SSL / TLS加密
+## openssl - 加密
+
+`openssl`是使用最广泛的开源加密库，提供了TLS、CA证书、常见加密算法，大部分Linux发行版都会预装`openssl`。2014年的Heartbleed漏洞之后，部分开发者转向其他加密库，如Chrome、安卓系统使用Google主导的BoringSSL库
 
 **passwd**：生成密码。下面例子使用SHA256算法、以`salt`为盐计算123456的哈希
 
@@ -455,11 +457,15 @@ openssl passwd -6 -salt salt 123456
 
 **x509**：CA证书
 
+- PEM格式：Base64编码的文本，后缀`.pem`，`.crt`，`.key`。常用于Linux系统
+- DER格式：二进制格式，后缀`.der`，`.cer`。常用于Windows平台、Java平台
+
 ```bash
 # 格式转换
 openssl x509 -in cert.crt -inform pem -out cert.der -outform der
 # 计算哈希值
-openssl x509 -in cert.pem -inform PEM -subject_hash
+openssl x509 -in cert.pem -inform PEM -subject_hash -noout
+openssl x509 -in cert.pem -inform PEM -subject_hash_old  # 旧版哈希算法。安卓证书需要用此方法
 ```
 
 **s_client**：TLS客户端。`openssl s_client -connect $ip:$port`。加上参数`quiet`隐藏握手等信息

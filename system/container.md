@@ -29,14 +29,15 @@ Docker是基于Linux容器（Linux Container，LXC）技术的一个虚拟化工
  sudo systemctl start docker   # 启动Docker守护进程
 ```
 
-手动安装：
+安装完之后需要加入用户组（或者用sudo），否则没有权限，比如显示`docker: Got permission denied`
 
 ```bash
-# 卸载旧版本
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
-
-# 安装。比较复杂，此处从略
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
 ```
+
+
 
 ## 容器
 
@@ -126,15 +127,13 @@ Docker仓库被墙了，需要配置代理或者镜像
 
 ```json
 {
-    // 代理
-    "proxies": {
-        "http-proxy": "http://proxy.example.com:3128",
-        "https-proxy": "https://proxy.example.com:3129",
-        "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
-    }
+  "proxies": {
+    "http-proxy": "http://proxy.example.com:3128",
+    "https-proxy": "https://proxy.example.com:3129",
+    "no-proxy": "*.test.example.com,.example.org,127.0.0.0/8"
+  }
 
-    // 镜像
-    "registry-mirrors": ["https://docker.xuanyuan.me/"]
+  "registry-mirrors": ["https://docker.xuanyuan.me/"]
 }
 ```
 
