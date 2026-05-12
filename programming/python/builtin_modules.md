@@ -417,12 +417,7 @@ handlers = [
     logging.StreamHandler(),
     RotatingFileHandler('myapp.log', maxBytes=2_000_000, backupCount=5)
 ]
-basicConfig(handlers = handlers)
-```
-
-配置单个Logger
-
-```python
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 ```

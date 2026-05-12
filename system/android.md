@@ -28,6 +28,7 @@ adb install app.apk            # 安装应用
 adb uninstall com.example.app  # 卸载应用
 adb shell pm list packages     # 查看已安装应用
 adb shell pm list packages -3  # 查看已安装的第三方应用
+adb shell am monitor           # 进入监控模式，启动应用就会显示包名
 ```
 
 # 刷机
@@ -80,7 +81,7 @@ Recovery模式（恢复模式）是厂商设计的刷机模式，通常功能单
 
 ## root
 
-获取root权限后可以进行许多不安全的操作，网上也有许多伪装成正常工具的恶意工具。不要在root过的设备上进行敏感操作，尤其是存储隐私信息、进行支付
+获取root权限后可以进行许多不安全的操作。网上也有许多伪装成正常Root工具 / 插件的恶意工具，**不要在root过的设备上进行敏感操作**，尤其是存储隐私信息、进行支付
 
 目前（2026）主流的Root方式是Magisk
 
@@ -154,10 +155,6 @@ chmod 644 /system/etc/security/cacerts/*
 chcon u:object_r:system_file:s0 /system/etc/security/cacerts/*
 ```
 
-## 微信小程序抓包
-
-微信7.0以上做了SSL Pinning，而目前（2026年3月）通过降低版本到6.7.3无法登录
-
 # Frida
 
 ## 安装
@@ -221,10 +218,10 @@ frida -U -f com.xxx.app -l script.js
 
 - `-U, --usb`：通过usb连接到手机
 - attach模式：向正在运行的进程注入代码。只能Hook未来要执行的代码，无法Hook初始化流程，且更容易被检测。通常用于分析UI行为（如按钮点击），或者抓接口参数
-  - `-n, --attach-name`：使用attach模式注入到指定的文件
+  - `-n, --attach-name`：使用attach模式注入到指定的APP
   - `-p, --attach-pid`：使用attach模式注入到指定的PID
 - spawn模式：重启进程并注入代码。可以控制整个生命周期，常用于分析或者绕过初始化流程、登录流程
-  - `-f, --file`：使用spawn模式注入到指定的文件
+  - `-f, --file`：使用spawn模式注入到指定的APP
 - `-l, --load`：加载脚本文件
 
 

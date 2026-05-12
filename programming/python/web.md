@@ -785,7 +785,7 @@ from playwright.sync_api import Playwright, Browser  # 可以用作type hint
 # 启动 Playwright driver 进程
 with sync_playwright.start() as p:
     # 启动浏览器
-    chromium = p.chromium.launch(headless=False)
+    chromium = p.chromium.launch(headless=False, proxy={"server":"127.0.0.1:8000"})
     # 打开新窗口，不同context之间Cookie、LocalStorage等状态不共享
     context = chromium.new_context()
     # 打开网页

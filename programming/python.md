@@ -472,18 +472,19 @@ from module import func as f
 
 ## 创建包
 
-在每个文件夹都放一个`__init__.py`文件，就构成了包。导入时`__init__.py`会先被执行，一般用它自动加载子包
+在每个文件夹都放一个`__init__.py`文件，就构成了包。导入时`__init__.py`会先被执行，一般用它自动加载子包。子包导入其他子包时可以用**相对路径导入**，例如`from .. import other_sub_pkg`
 
-包和普通脚本的区别在于导入。子包导入其他子包时可以用包名导入，也可以用相对路径导入。例如，包的结构是`pkg -> sub1, sub2`，从`sub1`导入`sub2`有以下两种方法
+运行解释器时，带上`-m`参数就可以把运行一个包
 
-```python
-from pkg import sub2
-from .. import sub2
+```bash
+python -m my_pkg  # 将my_pkg/__main__.py作为Package运行
+python my_pkg     # 将my_pkg/__main__.py作为脚本运行（其中的相对路径导入会报错）
 ```
 
-使用`-m`参数，解释器会将包当作脚本执行，例如`python -m package`，会运行`package/__main__.py`，此时`__main__.py`被当作包的一部分，`__main__.py`中的`import .subpackage1`等导入语句会将`subpackage1`作为包的一部分导入
+包的标准结构
 
-但是，若不带`-m`参数，它就不被当作一个包，其中的相对路径导入语句失败。如果包不在模块搜索路径`sys.path`，绝对路径导入也会失效
+待补充
+
 
 # IO
 

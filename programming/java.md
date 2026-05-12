@@ -22,18 +22,36 @@ graph LR
     byte -->|JVM| exe(机器码)
 ```
 
-- JDK（Java Development Kit），**开发环境**
-  - 编译器`javac`、调试器`jdb`、打包工具`jar`等
-  - JRE（Java Runtime Environment），**运行环境**
-    - JVM（Java Vritual Machine）`java`
-    - 运行库
+**开发环境**：JDK（Java Development Kit）
 
-编译运行过程如下：
+- 编译器`javac`、调试器`jdb`、打包工具`jar`等
+- **运行环境**：JRE（Java Runtime Environment）
+  - JVM（Java Vritual Machine）`java`
+  - 运行库
 
-```shell
+
+
+## Java程序基础
+
+Java是严格的面向对象语言——除了基本类型之外，一切皆对象，所有代码都放在类中，哪怕是main函数也要写成类的静态方法。**一个文件包含一个类，且文件名必须和类名相同**（特别地，可以额外包含非`public`类，它们不受上述限制）
+
+```java
+public class HelloWorld {
+    public static void main(String[] args) {  // main方法，程序执行入口
+        System.out.println("Hello World");
+    }
+}
+```
+
+**目录层次必须和包层次一致**（源文件目录层次没有硬性规定，但大多数工具都要求这么做；编译后的Class文件则必须按照包层次存放，否则ClassLoader找不到对应的Class文件）。例如，包名为`learn_java.mypackage`，则源代码应该放在`src/learn_java/mypackage/`目录下，编译后的class文件应该放在`bin/learn_java/mypackage/`目录
+
+编译运行过程：
+
+```bash
 # 编译
 javac Main.java   # 编译为字节码 Main.class
-javac -cp $jar_path Main.java  # 编译时在$jar_path下寻找依赖
+javac -cp $jar_path Main.java  # 引用依赖
+javac -d bin src/Main.java     # 编译，并在bin目录下按照包名自动生成目录结构
 
 # 打包。将class文件、资源文件等打包为一个jar文件。使用和zip相同的算法
 jar -cvf Main.jar Main.class  # 将Main.class打包为Main.jar
@@ -42,18 +60,6 @@ jar -cvf Main.jar Main.class  # 将Main.class打包为Main.jar
 java Main          # 运行Main.classs
 java -jar Main.jar # 运行Main.jar
 java -cp .;$jar_path Main  # 在"."和$jar_path下寻找Main.class和依赖
-```
-
-## Java程序基础
-
-Java是严格的面向对象语言——除了基本类型之外，一切皆对象，所有代码都放在类中，哪怕是main函数也要写成类的静态方法。一个文件中包含一个类，且文件名必须是类名（特别地，可以额外包含非`public`类，它们不受上述限制）
-
-```java
-public class HelloWorld {
-    public static void main(String[] args) {  // main方法，程序执行入口
-        System.out.println("Hello World");
-    }
-}
 ```
 
 # 流程控制
@@ -184,9 +190,9 @@ public class BankAccount {
         return balance;
     }
 
-    // 重写（Override）父类方法。注意和重载（Overload）不同
-    // 重写覆盖父类方法，重载则是两个方法同时存在，根据实参类型选择调用
-    @Override
+    // 重写（Override）父类方法
+    // 注意：重写覆盖父类方法，重载（Overload）则是两个方法同时存在，根据实参类型选择调用
+    @Override  // 让编译器检查是不是重载，若不是则报错
     public String toString() {
         return String.format("账户[%s] 户主: %s 余额: %.2f",
             accountNumber, accountHolder, balance);
@@ -264,11 +270,17 @@ public class Truck implements Movable {
 
 ## 包
 
-待补充
+包是Java语言的命名空间，可以避免名字冲突。一个类真正的完整名字是`包名.类名`，例如JDK自带的`Arrays`类，其全名是`java.util.Arrays`
+
+包的声明应该放在源文件开头：
 
 ```java
-package mypackage;
+package learnjava.util;
 ```
+
+定义包名之后，这个文件定义的类全名就是`包名.类名`，并且引用同一个包内的其他类时可以省略包名。引用其他包的时候，需要用`包名.类名`，也可以用`import`语句导入，如`import java.util.ArrayList;`，`import java.util.*;`，后者导入`java.util`包的所有类。`import`必须在`package`声明之后、`class`声明之前
+
+目录层次必须和包层次一致。尤其Class文件则必须按照包层次存放，否则ClassLoader找不到对应的Class文件
 
 # IO
 
@@ -518,7 +530,7 @@ public class EncodingFilter implements Filter {
 
 # 工具链
 
-随着项目规模的增大，软件开发就变成了复杂的工程问题，需要引入更多工具。这些工具能够帮助开发者统一项目结构、简化第三方库的使用流程、自动完成编译与打包，并提供稳定的运行环境，从而提高开发效率与项目的可管理性
+随着项目规模的增大，软件开发就变成了复杂的工程问题，需要引入工具来简化第三方库的使用流程、自动完成编译与打包、提供稳定的运行环境
 
 ## Maven
 

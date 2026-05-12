@@ -275,3 +275,8 @@ reverse-sourcemap "example.js.map"  # 还原源文件
 - Swagger-UI：可视化API文档
 - Swagger-Resources：资源配置接口，记录有哪些API文档
 - api-docs：具体的文档内容
+
+## WAF
+
+https://cloud.tencent.com/developer/article/2121698
+

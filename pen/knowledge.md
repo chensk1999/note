@@ -131,22 +131,20 @@ localStorage与sessionStorage
 - 接口权限
 - 数据行级权限
 
-# 搜索引擎
-
-## Fofa
-
-## 鹰图
-
-## Quake
-
 # 移动端渗透
 
 限制
 
-- 模拟器检测：通过检测手机号、型号、网络等信息
-  - 绕过方法：使用真机。检测不够严格的可以用模拟器虚拟真机型号；想炫技的可以逆向绕过检测代码
-- 反代理
-- 证书校验
+- **模拟器检测**：通过检测手机号、型号、网络等信息。绕过方法：使用真机。检测不够严格的可以用模拟器虚拟真机型号；想炫技的可以逆向绕过检测代码
+- **反代理**：检测系统代理配置。绕过：安装Postern，这个APP设置的代理不会被系统检测；在电脑用Proxifier转发
+- **SSL Pinning**：使用应用内置的证书。绕过：XPosed的JustTrustMe模块
+- **Hook框架检测**：
+- **双向证书校验**：
+  - 没有加壳的APK：首先用MOBSF反编译提取证书文件，然后配置进抓包工具，如Burp Suite在Network - TLS - 客户端TLS证书
+  - Frida + [r0capture](https://github.com/r0ysue/r0capture) + Wirdshark，通杀抓包，抓取所有流量，但是不能实时修改
+  - Frida + [hookjs](https://github.com/apkunpacker/FridaScripts)的SSL Unpinning模块 + Burp Suite，适合渗透测试，能突破SSL Pinning、双向证书校验
+
+APK反编译工具：JADX
 
 # 其他
 
@@ -174,8 +172,6 @@ localStorage与sessionStorage
 - 检测阶段：基线检查、安全审计、安全设备分析
 - 响应阶段：应急响应
 
-
-
 系统监控与维护：实时监控、故障处理、系统更新、数据备份
 
 安全设备管理：巡检、配置管理、特征库升级、安全报告
@@ -185,8 +181,6 @@ localStorage与sessionStorage
 风险评估与管理：基线检查、漏扫、风险评估
 
 培训与技术支持
-
-
 
 阶段性工作，如等保、护网、集团检查、上级单位考核；日常工作：巡检、漏扫、监控、分析告警、上报数据、安全设备运维
 
@@ -232,9 +226,23 @@ localStorage与sessionStorage
 
 Firefox：打开about:config，将`security.tls.version.min`改成1
 
-## 转义
+## 摘要、加密和编码
 
-URI、HTML、SQL
+**摘要**
+
+- MD5：32位十六进制数
+- SHA1：40位十六进制数
+- Modular Crypt Format：通常为`$id$参数$hash`，一个字符串包含了算法、参数、盐、哈希值全部内容
+
+**加密**
+
+- 对称加密：AES，DES，RC4。密文通常用base64编码
+
+**编码**
+
+- URL：`%20, %3D`等，参考[Javascript笔记](../programming/javascript.md)
+- HTML：`&lt;, &gt;, &#25105;`等。同样参考[Javascript笔记](typora://app/programming/javascript.md)
+- Base64：大小写字母 + 数字 + `+/`或者`-_`，等号结尾
 
 php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
 
@@ -251,5 +259,15 @@ php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
 4. 非法URL，如`/%00, /..;/`，有异常信息则为源服务器
 5. 响应时间，一般源站的抖动较明显
 
-## 未整理杂乱笔记
+# 存储桶
+
+待补充
+
+# 教程笔记
+
+ThinkPHP框架
+
+ThinkPHP 5.0非路由模式的典型URL：`/index.php/模块/控制器/操作/参数`，其中模块=目录名，控制器=文件名，操作=函数名
+
+ASP
 

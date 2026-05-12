@@ -6,7 +6,9 @@
 
 ## Burp Suite - 抓包
 
-下载证书：`http://burp/`
+破解工具：[Github](https://github.com/Datch666/BurpKeygenCN)，[吾爱破解](https://www.52pojie.cn/thread-2005151-1-1.html)
+
+下载证书：http://burp/
 
 ### 代理
 
@@ -17,7 +19,7 @@
 过滤测过的路径 / 没有测试价值的路径：
 
 ```java
-var path_raw = requestResponse.request().path();
+var path_raw = requestResponse.request().path();  // 也可把path换成pathWithoutQuery
 List<String> filteredPaths = Arrays.asList(
     "/some_annoying_path",
     "/test?q=1"
@@ -35,7 +37,6 @@ for (String filteredPath : filteredPaths) {
         return false;
     }
 }
-
 ```
 
 ### 插件
@@ -229,6 +230,20 @@ fscan弱口令扫描：
 fscan.exe -h 10.0.0.0/24 -p 5037,8009,61616,8161,20880,11111,9042,7180,7182,8123,9000,9004,5984,2375,9200,9300,9100,4369,2379,6123,8081,21,8649,8080,4848,25000,25010,8019,8020,8088,8443,9000,19888,8888,8051,7051,11000,8042,443,9083,143,9990,8080,8000,5005,9092,5601,8080,389,11211,502,27017,1433,3306,8848,7848,137,111,2049,1521,5632,8999,110,5432,4899,3389,6379,1099,10911,873,554,445,587,161,1080,4440,7077,18080,4040,4000,3128,22,9001,3690,5000,5631,23,69,5900,7001,9043,8880,8069,2181,2888,3888,111,2049,2181,2222,2375,2888,3888,4000,4040,4440,4848,5005,5900,5984,6123,7001,7051,7077,7180,7182,8019,8020,8048,8051,8069,8081,8088,8161,9042,9043,9100,9200,9300,9990,10000,11111,18080,20880,25000,25010,50000,50030,50070,50090,60000,60010,60030,27018,8083,8086 -pwdf pwd.txt
 ```
 
+## dirsearch - 目录扫描
+
+目录扫描工具。类似功能的还有dirb，dirbuster（GUI）和ffuf（模糊测试）等
+
+```bash
+python dirsearch.py -u https://example.com -w $wordlist
+```
+
+重要参数：
+
+- **扫描内容**：目录字典`-w ./字典.txt`，文件后缀`-e php,jsp,html`
+- **扫描速度**：`-t 线程数(默认25)`
+- 其他：代理`--proxy http://127.0.0.1:8080`
+
 ## 测绘工具
 
 - FOFA：https://fofa.info/
@@ -240,6 +255,27 @@ fscan.exe -h 10.0.0.0/24 -p 5037,8009,61616,8161,20880,11111,9042,7180,7182,8123
 - 零零信安：https://0.zone/
 
 整合：OneForAll
+
+### 搜索语法
+
+**Quake**
+
+地区筛选：`country:"China" AND NOT province:"HongKong"`
+
+**Fofa**
+
+地区筛选：`country="CN" && region!="HK"`
+
+### 搜索引擎高级语法
+
+| Operator   | 含义               | 示例                    | 备注/可尝试的关键词          |
+| ---------- | ------------------ | ----------------------- | ---------------------------- |
+| `site`     | 指定网站           | `insite:example.com`    |                              |
+| `inurl`    | URL中包含指定词    | `inurl:id=`             | `id=, file=`                 |
+| `intitle`  | 网页标题包含指定词 | `intitle:"index of"`    | `phpinfo, index of`          |
+| `intext`   | 网页内容包含指定词 | `intext:"@gmail.com"`   |                              |
+| `filetype` | 文件类型           | `filetype:cfg`          | `env, bak, sql, zip, tar.gz` |
+| `link`     | 链接到指定页面     | `link:example.com/news` | 最好单独使用                 |
 
 # 漏洞分析&利用
 
@@ -374,60 +410,13 @@ python3 -c 'import pty; pty.spawn("/bin/bash")'
 
 将WebShell脚本上传到服务器，在主界面右键 - 添加数据 - 填写WebShell的URL和连接密码（比如WebShell仓库里的脚本都是用`ant`参数控制脚本，连接密码就是ant）
 
-# 模糊/暴力测试
-
-## dirb - 目录扫描
-
-简单的目录扫描工具。能实现类似功能的还有dirbuster（GUI）和ffuf（模糊测试）等
-
-```shell
-dirb "example.com"  "/usr/share/dirb/wordlists/big.txt" -o "output.txt"
-```
-
-| 参数 | 作用                |
-| ---- | ------------------- |
-| `-a` | User-Agent          |
-| `-X` | eXtension，如`.php` |
-| `-z` | 延迟（毫秒）        |
-| `-H` | 请求头，            |
-
-```shell
-$URL = "example.com"
-$WORDS = "/usr/share/dirb/wordlists/big.txt"
-$UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-$COOKIE = "name1:value1; name2:value2"
-
-dirb $URL $WORDS -a $UA -c $COOKIE -o "output.txt"  # 基本扫描
-dirb $URL -z 100 -X .php,.html,.txt   # 请求之间间隔100ms；在词典每项后面加上后缀
-```
-
-## dirsearch - 目录扫描
-
-同样是目录扫描工具
-
-```bash
-python dirsearch.py -u https://example.com -w $wordlist
-```
-
-重要参数：
-
-- **扫描内容**：目录字典`-w ./字典.txt`，文件后缀`-e php,jsp,html`
-- **扫描速度**：`-t 线程数(默认25)`
-- 其他：代理`--proxy http://127.0.0.1:8080`
+# 密码爆破工具
 
 ## hydra - 多协议密码爆破
 
 ```shell
 hydra -l username -P password.txt ssh://target_addr
 ```
-
-## 字典
-
-kali自带的字典包括：
-
-- `/usr/share/wordlists`
-
-# 其他工具
 
 ## John The Ripper - 哈希爆破
 
@@ -467,25 +456,15 @@ hashcat --stdout wordlist.lst -r /rules/best64.rule | head -n 50  # 预览变形
 hashcat -a 0 -m 0 hash.txt wordlist.lst -r /rules/best66.rule
 ```
 
-# 其他
+# 工具配置
 
 ## 安装CA证书
 
-CA证书是数字证书认证机构（Certificate Authority）颁发的电子证书，一般特指SSL/TLS证书。设备与服务器建立SSL/TLS连接时，需要验证证书有效性：
+抓HTTPS数据包需要安装抓包工具的CA证书，并让被抓包的应用信任此证书。CA证书原理参考[互联网笔记](./internet.md#HTTPS协议)。各种系统需要的证书格式如下，详情以及格式转换方法参考[Linux笔记](../system/Linux.md)的`openssl`指令
 
-1. 设备请求服务器`example.com`，服务器发回服务器证书、签发证书的CA机构信息
-2. 设备比对服务器证书、本地信任库，若匹配到了则信任此服务器
-3. 若未匹配到，则向签发证书的CA机构服务器发起请求，CA服务器发回自己的证书、上级CA机构信息
-4. 用和第二步相同的方法判断此CA服务器是否可信，若可信，则与它建立连接，询问`example.com`是否可信；若不可信，则重复3-4，请求再上一级的CA服务器
-5. 若最终判断结果是`example.com`可信，就与它继续建立连接；否则，中止TLS握手
-
-想要用代理抓包时需要手动添加“不安全”的证书以获取传输数据
-
-- Linux：base64编码的文本，后缀`.pem`，`.crt`，`.key`
-- Windows：二进制文件，后缀`.der`，`.cer`
-- Android：两种格式都行，但是文件名要改为`PEM格式证书哈希值.0`
-
-格式转换详见Linux笔记 - 其他指令 - openssl x509
+- Linux：PEM格式，base64编码的文本，后缀`.pem`，`.crt`，`.key`
+- Windows：CRT格式，二进制文件，后缀`.der`，`.cer`
+- Android：两种格式都行，但是文件名要改为`证书哈希值.0`
 
 ### Windows
 
@@ -504,7 +483,7 @@ sudo cat /etc/ssl/certs/cacert.crt | grep L4zOd3  # 查找刚才复制的一小�
 
 ### Android
 
-参考[APP抓包](../system/android.md#APP抓包)
+安卓系统证书安装较复杂，参考[安卓笔记](../system/android.md)的APP抓包部分
 
 ## VMWare
 
@@ -542,28 +521,25 @@ guestInfo.svga.wddm.restrictModesToBootTopology="TRUE"
 
 [项目主页](https://vulhub.org/)
 
-1. 安装Docker：`curl -s https://get.docker.com/ | sh`
-2. 启动Docker：`sudo service docker start`
+1. 安装Docker：参考[Docker笔记](../system/container.md)
 3. 下载Vulhub：`git clone https://github.com/vulhub/vulhub.git`
 4. 选择环境：`cd flask/ssti`
 5. 启动靶场：`docker compose up -d`
 6. 访问靶场：根据`README.md`的指示复现漏洞
 7. 关闭靶场：`docker compose down`。为了避免被他人恶意利用，测试结束后一定记得关闭环境
 
-过程中可能报以下错误：
+过程中可能报以下错误（其中Docker相关部分以Docker笔记为准，此处仅供参考）：
 
-- **`docker: Got permission denied`**：没有docker权限，需要使用sudo或者添加用户组
+- **`docker: Got permission denied`**：没有docker权限，需要添加用户组
 
 ```bash
-sudo docker compose up
-
 sudo groupadd docker
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 
 - **`unexpected keyword argument 'ssl_version'`**：使用`docker compose up -d`指令启动。不要用官方教程的`docker-compose`，那是旧版本的
-- **加载超时**：docker官网被墙了，需要开代理或者换镜像站，设置方法是在`/etc/docker/daemon.json`中加入如下内容（代理或镜像选一个即可）然后重启
+- **加载超时**：docker官网被墙了，需要开代理或者换镜像站。关闭Docker，在`/etc/docker/daemon.json`中加入如下配置（代理或镜像选一个即可）然后重启
 
 ```json
 {
@@ -586,56 +562,7 @@ newgrp docker
 5. 随便选个php版本，并创建MySQL数据库。将数据库账号、密码写进`config.inc.php`（位于`/xp/www/pikachu/inc`）
 6. 打开网站（可在面板 - 网站点击网站名打开），访问`/install.php`，点击初始化
 
-## 常见默认端口
-
-| 端口  | 常见服务      | 备注           |
-| ----- | ------------- | -------------- |
-| 21    | FTP           |                |
-| 22    | SSH           |                |
-| 23    | TELNET        |                |
-| 53    | DNS           |                |
-| 80    | HTTP          |                |
-| 443   | HTTPS         |                |
-| 445   | SMB           | 微软的文件共享 |
-| 1433  | MSSQL         |                |
-| 1521  | Oracle        |                |
-| 3306  | MySQL         |                |
-| 3389  | RDP           | 远程桌面       |
-| 5432  | pgsql         |                |
-| 6379  | Redis         |                |
-| 8080  | tomcat, jboss |                |
-| 27017 | MongoDB       |                |
-
-## User-Agent
-
-格式：`User-Agent: <product> / <product-version> <comment>`；[UA列表](https://gist.github.com/pzb/b4b6f57144aea7827ae4)
-
-```
-# Windows
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36
-
-Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)
-
-# Windows端微信浏览器（2025.07.27，微信4.0.6）
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf254061a) XWEB/14307 Flue
-
-# Windows端微信小程序（2025.07.27，微信4.0.6）
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090a13) UnifiedPCWindowsWechat(0xf254061a) XWEB/14307
-
-# MUMU模拟器微信小程序
-Mozilla/5.0 (Linux; Android 12; M2102J2SC Build/TKQ1.221114.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 MMWEBID/7854 MicroMessenger/8.0.57.2820(0x28003933) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android
-```
-
-## 搜索引擎
-
-| Operator   | 含义               | 示例                    | 备注/可尝试的关键词          |
-| ---------- | ------------------ | ----------------------- | ---------------------------- |
-| `site`     | 指定网站           | `insite:example.com`    |                              |
-| `inurl`    | URL中包含指定词    | `inurl:id=`             | `id=, file=`                 |
-| `intitle`  | 网页标题包含指定词 | `intitle:"index of"`    | `phpinfo, index of`          |
-| `intext`   | 网页内容包含指定词 | `intext:"@gmail.com"`   |                              |
-| `filetype` | 文件类型           | `filetype:cfg`          | `env, bak, sql, zip, tar.gz` |
-| `link`     | 链接到指定页面     | `link:example.com/news` | 最好单独使用                 |
+# 其他工具
 
 ## 在线工具
 
@@ -649,3 +576,16 @@ Mozilla/5.0 (Linux; Android 12; M2102J2SC Build/TKQ1.221114.001; wv) AppleWebKit
 javascrip反混淆工具：https://deobfuscate.io/、http://www.jsnice.org/
 
 [GTFOBins](https://gtfobins.github.io/) - 可用于提权的Linux命令
+
+## 编写BurpSuite插件
+
+[Burp Extender API](https://github.com/PortSwigger/burp-extender-api)
+
+在Burp Suite的扩展 - APIs（或者[官方在线文档](https://portswigger.net/burp/extender/api/index.html)）中，可以看到各种插件接口。重要接口有
+
+- `IBurpExtender`：插件入口，必须实现
+- BurpExtenderCallbacks
+
+[Montoya API](https://github.com/PortSwigger/burp-extensions-montoya-api)
+
+2022年后官方废弃了旧接口，提供了更现代的Montoya API。不过目前（2026）仍然是旧API比较多

@@ -116,10 +116,13 @@ uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目�
 
 ### 安装本地包
 
+**方法1**：安装为可编辑的包。会成为不在`pyproject.toml`中的“幽灵依赖”，但修改包的代码后可以直接运行
+
 ```bash
-uv pip install $path_to_package  # 方法1：安装到虚拟环境（不会写入pyproject.toml）
-uv sync  # 方法2：写入pyproject.toml并同步
+uv pip install -e "pkg_name @ ./path/to/pkg"
 ```
+
+**方法2**：添加到项目。首先在项目的`pyproject.toml`添加配置
 
 ```toml
 [project]
@@ -129,6 +132,12 @@ dependencies = [
 
 [tool.uv.sources]
 local-package = { path = "../local_package"}
+```
+
+然后运行`uv sync`更新环境。更新代码之后可能需要重装：
+
+```bash
+uv sync --reinstall-package local-package
 ```
 
 # 第三方库
