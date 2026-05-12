@@ -2,14 +2,12 @@
 
 ## 工作区，暂存区和版本库
 
-工作区（working directory）就是我们看见的文件目录；暂存区（index, or stage）标记了下一次要提交的内容，通常在`.git/index`文件夹；版本库（repository）就是`.git`文件夹下的其他东西，包括了所有历史版本和快照。版本库内的内容总是有办法恢复的，但是没有commit的内容可以被弄丢
+工作区（working directory）就是我们看见的文件目录；暂存区（index / stage）标记了下一次要提交的内容，通常在`.git/index`文件夹；版本库（repository）是`.git`文件夹下的其他东西，包括了所有历史版本和快照。版本库内的内容总是有办法恢复的，但是没有commit的内容可以被弄丢
 
 ```mermaid
  graph LR
-    工作区 --暂存--> 暂存区 --提交-->版本库
+    工作区 --暂存（git add）--> 暂存区 --提交（git commit）-->版本库
 ```
-
-## 分支
 
 git版本库里有三类对象：
 
@@ -17,53 +15,27 @@ git版本库里有三类对象：
 - tree，记录文件目录结构和若干blob对象索引
 - commit，记录了提交的元信息、一个tree索引和指向上一次提交的commit索引（合并分支产生的提交，指向多个父commit对象）
 
-分支就是指向commit对象的可变指针，一般用master表示主支
-
 git中有一个特殊指针HEAD，它指向当前活动的commit。当进行提交时，HEAD自动向前移动到新的commit。另外，如果HEAD不指向一个分支，称作detached HEAD状态
 
 # 工作流程
 
-## 配置
+基础操作
 
 ```bash
-git config [--global] user.name "Chen Shaokun"
-git config [--global] user.email "chensk@mail.ustd.edu.cn"
+# 初始化Git仓库
+git init   # 在当前目录下建立仓库
+git clone https://github.com/vuejs/vue.git  # 克隆git仓库
 
-# 取消代理
-# 能解决代理导致的“failed to connect to github.com port 443”错误
-git config --global --unset http.proxy
-git config --global --unset https.proxy
-```
-
-## 初始化git仓库
-
-```bash
-# 在当前目录下建立仓库
-git init
-
-# 在当前目录建立bare仓库（bare仓库没有工作区，用作存储）
-# 如果要接受其他人的push，最好用bare仓库
-git init --bare
-
-# 克隆git仓库
-# source是仓库地址，比如user@server:path/to/repo.git
-git clone <source> [name]
-```
-
-## Commit
-
-```bash
 # 查看仓库状态（HEAD位置、有哪些文件被修改、etc.）
 git status
 git status --branch --short  # 包含当前branch和文件状况的简短报告。很实用
 
-# 按照git status的提示暂存所有需要的更改
-
-# 提交更改。记得写commit message
-git commit
+# 暂存和提交
+git add --all   # 暂存所有更改
+git commit      # 提交更改。记得写commit message
 ```
 
-## 整体流程
+整体流程
 
 ```bash
 # 创建并切换到新分支。此举在于让master相对独立，不至于大家一起编辑master
@@ -165,24 +137,17 @@ git stash drop [stash]
 
 ```bash
 # 查看远程仓库
-git remote -v             # 查看远程仓库表
-git remote show <remote>  # 查看一个远程仓库的信息
+git remote -v             # 查看远程仓库列表
+git remote show $name     # 查看远程仓库的信息
 
-# 添加、移除远程仓库
-git remote add <name> <url>
-git remote remove <name>
+git remote add $name $url  # 添加远程仓库
+git remote remove $name    # 移除远程仓库
+git remote rename $old_name $new_name  # 重命名远程仓库
 
-# 重命名远程仓库
-git remote rename <old> <new>
 
-# 从远程仓库抓取
-git fetch <remote>
-
-# 从远程仓库拉取
-git pull
-
-# 推送到远程仓库
-git push <remote> [branch]
+git fetch $name  # 从远程仓库抓取
+git pull         # 从远程仓库拉取
+git push $remote_repo_name $branch  # 推送到远程仓库
 ```
 
 ## 标签
@@ -281,21 +246,17 @@ git config --global sendpack.sideband false
 
 ```bash
 # 斜杠开头匹配根目录文件
-# 忽略根目录的.txt文件，但不忽略其他文件夹的.txt文件
-/*.txt
-/foo/bar    # 注意：如果有其他斜杠，则同样匹配到其他文件夹里的东西。此规则效果和foo/bar相同
+/*.txt      # 忽略根目录的.txt文件，但不忽略其他文件夹的.txt文件
+/foo/bar    # 注意：如果有其他斜杠，则不限定根目录。此规则效果和foo/bar相同
 
 # 斜杠结尾匹配目录
-# 忽略名为build的目录（它们的子目录、子文件都被忽略）
-build/
+build/      # 忽略名为build的目录（它们的子目录、子文件都被忽略）
 
 # 星号匹配斜杠以外的东西
-# 忽略 doc/notes.txt，但不忽略 doc/server/arch.txt
-doc/*.txt
+doc/*.txt   # 忽略 doc/notes.txt，但不忽略 doc/server/arch.txt
 
 # 双星号匹配包括斜杠的任意字符
-# 忽略 doc/ 目录及其所有子目录下的pdf文件
-doc/**/*.pdf
+doc/**/*.pdf  # 忽略 doc/ 目录及其所有子目录下的pdf文件
 
 # 感叹号取消忽略
 # 忽略sim目录下的所有内容，但是不忽略makefile
@@ -306,9 +267,9 @@ sim/**
 
 ## 如何写Commit Message
 
-此指导原则适用于绝大多数项目。大团队可能有更严格的格式规范、要求加上Issue ID等元数据，但内容主体还是按照以下方式书写的
+此指导原则适用于绝大多数项目。大团队可能有更严格的格式规范、可能需要加上Issue ID等元数据，但内容主体还是按照以下方式书写的
 
-- **内容**：总结+具体说明
+- **内容**：一行总结+具体说明
   - 总结应该简要说明该提交起到什么作用（不需要描述具体改了什么，这部分放在具体说明中解释）
   - 具体说明应该包含：具体改动了哪些内容、是什么（有关代码起什么作用）、为什么（为何需要修改）、怎么做（做出了什么修改）
 - **句式**
@@ -331,7 +292,7 @@ sim/**
 5. 添加到账户：[settings](https://github.com/settings/profile) - SSH and GPG keys - New SSH key - title是给自己看的，key是公钥文件的内容（以文本格式打开然后复制粘贴）
 6. 测试能否连接：`ssh -T git@github.com`，成功会输出 You've successfully authenticated。
 
-如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值好像使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
+如果安装了Cadence，由于Cadence设置了环境变量HOME，git无法正确找到密钥，需要将密钥复制到Cadence安装目录下的.ssh文件夹（删除或者更改HOME的值可能使cadence的软件出问题）。或者用git bash `ssh -vT git@github.com`看看git去哪里找密钥来找问题
 
 ## Timed out
 
@@ -346,4 +307,3 @@ sim/**
 ```bash
 git -c http.proxy="http://127.0.0.1:7890" clone $repo
 ```
-

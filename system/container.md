@@ -11,21 +11,19 @@
 
 将上述技术整合在一起，并提供一套好用的接口，这就是我们今天使用的容器。最早也最出名的容器是Docker，但它在激烈竞争中落败，目前最成功的容器软件是Kubernetes，简称K8s
 
-# Docker
+## Docker
 
 Docker是基于Linux容器（Linux Container，LXC）技术的一个虚拟化工具。Linux容器可以简单视作一个轻量级虚拟机，不同容器共享操作系统，但是文件系统、网络、进程相互隔离；而Docker在此基础上提供了创建、运行容器的服务
 
 - **镜像**（Image）：包含了程序运行所需要的所有内容，包括代码、配置文件、库文件、环境变量等。Docker镜像只读，不可修改
 - **容器**（Container）：镜像的运行实例，每个容器具有自己的文件系统、网络和进程空间
 
-## 安装
-
 使用官方脚本安装：
 
 ```bash
  curl -fsSL https://test.docker.com -o test-docker.sh
  sudo sh test-docker.sh
- 
+
  sudo systemctl start docker   # 启动Docker守护进程
 ```
 
@@ -37,43 +35,22 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
+# 镜像
 
-
-## 容器
-
-```bash
-# 启动容器，并运行程序
-# 若本地没有ubuntu:15.10镜像，则会从仓库下载
-docker run ubuntu:15.10 /bin/echo "Hello world"
-
-# 启动容器，并在后台运行
-docker run -d ubuntu:15.10 /bin/echo "Hello world"
-docker ps -a                    # 查看所有容器。后续操作可用这一步看到的容器ID或name
-docker exec -it $cid /bin/bash  # 在当前容器运行interactive shell
-docker stop $cid                # 停止容器
-docker rm $cid                  # 删除容器
-```
-
-### Docker Compose
-
-Compose是管理多个容器的工具（旧版本为`docker-compose`，需要独立安装）
+镜像就是Docker容器的“安装包”
 
 ```bash
-docker compose up -d   # 读取当前目录的compose.yml配置并启动容器
-docker compose down
-```
+# 下载镜像。默认下载源：https://hub.docker.com/
+docker pull ubuntu:13.10
 
-## 镜像
-
-```bash
-docker images             # 查看本地镜像
-docker pull ubuntu:13.10  # 从仓库下载镜像。默认是https://hub.docker.com/
-docker rmi ubuntu:13.10   # 删除镜像
+# 管理镜像
+docker image ls               # 查看本地镜像（别名：docker images）
+docker image rm ubuntu:13.10  # 删除镜像（别名：docker rmi）
 ```
 
 注意：Docker Hub被墙了，需要配置代理或者镜像
 
-### 构建镜像
+## 构建镜像
 
 可以使用Dockerfile构建镜像。Dockerfile文件包含了创建镜像使用的每一条指令
 
@@ -102,14 +79,61 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 docker build -t "my_image:dev" ./
 ```
 
-### 管理镜像
+# 容器
+
+容器相当于使用镜像创建出的虚拟机
+
+容器中包含了容器配置以及可写层的数据。Docker的设计理念是：**容器可以随时删除**，因此配置、重要数据应放在容器之外（例如使用Docker Compose、挂载Volume）
 
 ```bash
-docker image ls
-docker image rm $REPO
+docker run --name ubuntu ubuntu:15.10     # 启动容器
+docker run --name ubuntu -d ubuntu:15.10  # 启动容器，并在后台运行
+
+docker ps -a                          # 查看所有容器
+docker exec -it $container /bin/bash  # 以交互模式运行/bin/bash。$container可以是容器ID或名字
+docker stop $container                # 停止容器
+docker rm $container                  # 删除容器
+
+docker cp $container:/etc/nginx ./conf  # 将容器内文件复制到宿主机
 ```
 
-## 配置
+## Volume
+
+Volume是持久化保存容器内数据的方法，它有数据卷（volume）、挂载点（bind mount）两种方式
+
+- bind mount：将宿主机指定文件、目录挂载到容器内。可以让容器直接访问宿主机文件，但可移植性一般较差
+- volume：将Docker指定的目录挂载到容器内。需要用`docker volume`命令管理数据卷（或者用root权限直接访问`/var/lib/docker/volumes`）
+
+```bash
+# bind mount示例：将宿主机的/home/admin/nginx挂载到容器的/etc/nginx/conf.d，并设为只读(Read Only)
+# 参数格式为 宿主机目录:容器目录:选项
+docker run --name nginx -v /home/admin/nginx:/etc/nginx/conf.d:ro nginx:latest
+```
+
+## Docker Compose
+
+Compose是管理多个容器的工具（旧版本为`docker-compose`，需要独立安装）
+
+```bash
+# 启动服务
+docker compose up -d    # 启动服务。若容器缺失则创建新的；若配置变了，则重建容器
+docker compose start    # 启动已有容器。常用于启动单个服务
+docker compose run      # 使用compose配置创建容器并运行。常用于临时任务
+
+# 停止服务
+docker compose stop     # 停止所有服务
+docker compose down     # 停止所有服务，并删除容器
+
+# 启停单个服务
+docker compose stop nginx
+docker compose start nginx
+docker compose restart nginx # 重启服务
+
+docker compose logs -f     # 滚动查看容器日志
+docker compose exec app sh # 进入容器调试
+```
+
+# 配置Docker
 
 Docker配置文件位于`/etc/docker/daemon.json`。注意，Docker可能占用了配置文件，如果写不进去就要关掉Docker再改
 
@@ -121,7 +145,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker  # 重启Docker
 ```
 
-### 代理和镜像
+## 代理和镜像
 
 Docker仓库被墙了，需要配置代理或者镜像
 
@@ -137,7 +161,7 @@ Docker仓库被墙了，需要配置代理或者镜像
 }
 ```
 
-### TLS验证
+## TLS验证
 
 如果仓库的CA证书有问题，Docker会拒绝操作（`tls: failed to verify certificate`），需要加上如下配置：
 
@@ -146,4 +170,3 @@ Docker仓库被墙了，需要配置代理或者镜像
     "insecure-registries": ["registrydomain.com:5000"]
 }
 ```
-
