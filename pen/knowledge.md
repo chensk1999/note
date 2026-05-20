@@ -265,9 +265,20 @@ php: `htmlspecialchars`；mysqli：`mysqli_real_escape_string`
 
 # 教程笔记
 
-ThinkPHP框架
+**ThinkPHP框架**
 
 ThinkPHP 5.0非路由模式的典型URL：`/index.php/模块/控制器/操作/参数`，其中模块=目录名，控制器=文件名，操作=函数名
 
-ASP
+**ASP**
 
+搭建组合：Windows Server + IIS + ASP + Access / SQL Server，2015以前热门，现在已经很少见了
+
+access数据库的mdb文件放在网站目录下，可能下载下来；如果数据库后缀是asp，写入一句话木马再访问可能直接get shell
+
+Fofa关键字：powereasy（动易网站管理系统）、aspcms
+
+iis短文件名泄露漏洞（探测文件名前6位）；iis文件解析漏洞（`evil.asp;.jpg`解析为asp文件）
+
+**.NET**
+
+编译为DLL，aspx源码内容简短，主要是调DLL

@@ -51,7 +51,7 @@ networks:
 mkdir nginx
 
 docker run --name temp-nginx -d nginx:1.29
-docker cp nginx:/etc/nginx/conf.d ./nginx
+docker cp temp-nginx:/etc/nginx/conf.d ./nginx
 
 docker stop temp-nginx
 docker rm temp-nginx
@@ -62,7 +62,7 @@ docker rm temp-nginx
 
 参考[免费域名注册笔记](https://shenao.de/blog/)，在[Stackryze](https://domain.stackryze.com/)注册域名。注册完成后，然后用[CloudFlare](https://dash.cloudflare.com/)托管
 
-托管流程：在Cloudflare添加域名和DNS记录，获得Name Server；回到Stackryze，将域名的Name Server改为CF的服务器；等待DNS生效
+托管流程：在Cloudflare添加域名和DNS记录，获得Name Server；回到Stackryze，将域名的Name Server改为CF的服务器；等待DNS生效。注意：**不要配置域名泛解析**。域名泛解析到境外服务器可能被风控判定为高危服务，遭到DNS封锁
 
 写Nginx配置文件，将子域名代理到各种真实服务
 
@@ -145,3 +145,82 @@ server {
 
 可以把SSL配置写进另一个文件，如`ssl.conf`，在主配置文件里面只写`include /etc/nginx/conf.d/ssl.conf;`
 
+# 安装Hermes
+
+时效性：2026.05.18
+
+参考：[Using Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/docker)
+
+```bash
+docker pull nousresearch/hermes-agent:latest
+```
+
+## 测试
+
+```bash
+# 初始化工具。配置模型和API Key
+docker run -it --rm --user hermes -v ./hermes:/opt/data nousresearch/hermes-agent setup
+
+# 测试对话。能收到回复、能调用系统功能比如“查看磁盘占用”，则成功
+docker run -it --rm --user hermes -v ./hermes:/opt/data nousresearch/hermes-agent
+docker run -it --rm  --user hermes-v ./hermes:/opt/data nousresearch/hermes-agent -c  # 恢复Session
+
+# 测试Gateway连接。运行之后给它发消息能收到回复
+docker run -it --rm -v ./hermes:/opt/data nousresearch/hermes-agent setup gateway # 初始配置
+docker run -it --rm -v ./hermes:/opt/data nousresearch/hermes-agent gateway run
+.venv/bin/hermes config set MESSAGING_CWD /opt/data/workspace    # 配置Gateway工作目录
+```
+
+注意：官方docker镜像的`entrypoint.sh`会将用户切换到`hermes`（id为`10000:10000`），运行`docker run`和`docker exec`时要指定用户，否则可能导致文件权限异常
+
+在已经启动的容器打开TUI：
+
+```bash
+docker exec -it --workdir /opt/data/workspace hermes /opt/hermes/.venv/bin/hermes
+docker exec -it --workdir /opt/data/workspace/novelist hermes /opt/hermes/.venv/bin/hermes
+```
+
+配置工作目录：在`config.yaml`中写入
+
+```yaml
+terminal:
+  cwd: /your/project/path
+```
+
+有些教程说配置`MESSAGING_CWD`之类的环境变量，都是旧版本的
+
+
+
+
+
+
+
+https://hermes-agent.nousresearch.com/docs/user-guide/features/memory
+
+MEMORY.md 环境、规定 800 token
+
+SOUL.md 用户习惯，500token
+
+Session开始时注入
+
+https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files
+
+hermes.md 项目配置，最高优先级 搜索git root
+
+agents.md 项目配置，中等优先级 在CWD寻找
+
+soul.md 智能体性格、用语配置 `HERMES_HOME/SOUL.md`
+
+https://hermes-agent.nousresearch.com/docs/user-guide/features/context-references
+
+`@file:path_to_file.py:10-25 ` 注入文件内容
+
+`@folder:path/to/dir` 注入目录树
+
+`@diff, @staged` 注入git diff
+
+`@git:5` 注入最近5次提交信息
+
+`@url:https://example.com` 加载网页并注入
+
+注入指定内容

@@ -324,7 +324,10 @@ sudo配置存储在`/etc/sudoers`文件中，可用`sudo visudo`编辑配置。`
   - SUID：全称Set User Identity，执行`SUID=1`的文件时，暂时获取文件所有者的权限
   - SGID：全称Set Group Identity，执行`SGID=1`的文件时，暂时获得文件所属用户组的权限
   - Sticky：也叫Sticky bit，若目录设置`Sticky=1`，则该目录下的文件只有各自的属主可以删除
-- 8-6比特：文件所有者（**U**ser）的权限。包括读（**R**ead）、写（**W**rite）、执行（e**X**ecute）。拥有文件执行权限就可以将它作为程序代码执行，拥有目录执行权限就可以查看这个目录下有什么文件
+- 8-6比特：文件所有者（**U**ser）的权限。包括读（**R**ead）、写（**W**rite）、执行（e**X**ecute）
+  - 文件执行权限是将它作为程序 / 源代码执行的能力
+  - 目录读权限是读取目录列表（`ls`）的能力，执行权限是访问其中文件、子目录的权限
+
 - 5-3比特：文件所属用户组（**G**roup）的权限
 - 2-0比特：其他用户（**O**ther）的权限
 
@@ -350,14 +353,14 @@ drwxrwxr-x 2 root root 4096 Feb  3 22:38 a_folder
 
 ### 更改权限
 
-`chmod`指令可以更改文件权限
+`chmod`指令可以**更改文件权限**
 
 ```shell
-chmod g+w main.py
-chmod o-rwx file_name
+chmod g+w main.py          # 向用户组成员授予写权限
+chmod o-rwx main.py        # 撤销其他用户的读、写、执行权限
 ```
 
-其中`g+w`表示向用户组成员授予写权限，`o-rwx`表示撤销其他用户的读、写、执行权限。这个参数由“Who What Which”三部分组成：
+参数由“Who What Which”三部分组成：
 
 - `ugoa`：修改谁的权限。四个字母分别表示所有者（User）、用户组（Group）、其他用户（Other）、全部（All）
 - `+=-`：如何修改权限。`+`授予权限，`-`撤销权限，`=`设置权限
@@ -371,6 +374,12 @@ chmod 4755 main.py # 设置SUID=1，并授予文件属主rwx权限，授予用�
 
 # 补充：修改目录下全部文件（Recursive）
 chmod -R u+rwx dir_name
+```
+
+`chown`指令**更改文件所有者**
+
+```bash
+chown admin:admin main.py  # 将main.py的所有者:用户组改为main:main
 ```
 
 ## 文件操作指令

@@ -2,8 +2,6 @@
 
 python有大量第三方模块，只要在[PyPI](https://pypi.org/)上注册就能发行自己的模块，可以通过pip等工具非常方便地安装第三方模块。本笔记记录第三方模块的管理方法，以及部分第三方模块的使用（内容较少或我学习不深入的记录在这里，体量较大的单独放一个笔记）
 
-# 管理工具
-
 第三方模块的安装、更新、卸载都可以用工具实现。第三方模块的管理又分为两个层面：
 
 - **包管理**：pip
@@ -11,7 +9,7 @@ python有大量第三方模块，只要在[PyPI](https://pypi.org/)上注册就�
 
 还有很多第三方的管理工具，如[uv](https://docs.astral.sh/uv/)、[conda](https://mirrors.tuna.tsinghua.edu.cn/anaconda/)。这几个工具各有优势，都可以用，无非是速度、方便程度各有高低，哪个最好用也没有定论
 
-## pip + venv
+# pip + venv
 
 python自带的管理工具
 
@@ -19,16 +17,16 @@ python自带的管理工具
 python -m venv env_name
 ```
 
-## uv
+# uv
 
 uv是用Rust写的python环境管理工具，运行速度比pip快得多。安装以及使用方式可以参考[uv文档](https://docs.astral.sh/uv/)
 
 - 脚本一键安装：`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`，默认安装位置`%USERPROFILE%/.local/bin`
 - 手动安装：下载[uv Releases](https://github.com/astral-sh/uv/releases)，将`uv.exe`路径加入Path
 
-### 配置
+## 配置
 
-**管理python版本**：
+**管理python版本**
 
 ```shell
 uv python list          # 查看可安装版本
@@ -37,7 +35,7 @@ uv python dir           # 查看安装位置
 uv python pin 3.12      # 设置为默认版本
 ```
 
-**管理缓存目录**：
+**管理缓存目录**
 
 ```shell
 uv cache dir    # 查看缓存目录
@@ -59,7 +57,7 @@ cache-dir = "./.uv_cache"
 cache-dir = "./.uv_cache"
 ```
 
-**换源**：
+**换源**
 
 在配置文件中添加下面的内容。用户配置文件或项目配置文件`pyproject.tmol`
 ```toml
@@ -72,7 +70,7 @@ default = true
 
 或者用`--index`参数临时指定镜像
 
-### 运行脚本
+## 运行脚本
 
 ```shell
 uv init --script example.py --python 3.12  # 创建脚本文件
@@ -99,7 +97,7 @@ from rich.pretty import pprint
 uv run --with requests,rich example.py
 ```
 
-### 管理Project
+## 管理Project
 
 创建项目时，会创建`pyproject.toml, .python-version, uv.lock`等配置文件，还有对应的虚拟环境（默认为`.venv`）。安装或删除第三方库时，会将操作记录在配置文件中，并修改虚拟环境
 
@@ -114,7 +112,7 @@ uv run python         # 运行python
 
 uv通过在当前目录下找`pyproject.toml`文件来确定使用哪个项目。也可以用`--project 目录`指定Project
 
-### 安装本地包
+## 安装本地包
 
 **方法1**：安装为可编辑的包。会成为不在`pyproject.toml`中的“幽灵依赖”，但修改包的代码后可以直接运行
 

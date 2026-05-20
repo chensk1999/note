@@ -9,31 +9,156 @@
     工作区 --暂存（git add）--> 暂存区 --提交（git commit）-->版本库
 ```
 
-git版本库里有三类对象：
+git版本库里有三类对象：blob，文件快照；tree，某次提交的文件目录结构和文件的blob对象索引；commit，包含提交的元信息、tree索引和指向上一次commit的索引
 
-- blob，存储文件快照
-- tree，记录文件目录结构和若干blob对象索引
-- commit，记录了提交的元信息、一个tree索引和指向上一次提交的commit索引（合并分支产生的提交，指向多个父commit对象）
+## HEAD指针和分支
 
-git中有一个特殊指针HEAD，它指向当前活动的commit。当进行提交时，HEAD自动向前移动到新的commit。另外，如果HEAD不指向一个分支，称作detached HEAD状态
+git中有一个特殊指针HEAD，它指向当前活动的分支。当进行提交时，活动分支自动向前移动到新的commit。另外，如果HEAD不指向一个分支，称作detached HEAD状态
 
-# 工作流程
+# 常用指令
 
-基础操作
+## 文件操作
 
 ```bash
-# 初始化Git仓库
-git init   # 在当前目录下建立仓库
-git clone https://github.com/vuejs/vue.git  # 克隆git仓库
-
 # 查看仓库状态（HEAD位置、有哪些文件被修改、etc.）
 git status
 git status --branch --short  # 包含当前branch和文件状况的简短报告。很实用
 
-# 暂存和提交
-git add --all   # 暂存所有更改
-git commit      # 提交更改。记得写commit message
+# 查看提交历史
+git log
+git log HEAD ^HEAD~5        # 列出最近5次提交
+git log --graph --oneline   # 类似树状输出，只输出简洁信息
+git log app.py              # 查看文件的提交历史
+git show 3e635d:app.py      # 查看某次提交的文件内容（注意：路径不能用反斜杠）
+
+# 暂存修改
+git add --all
+
+# 提交修改
+git commit
+git commit -a        # 提交所有修改（包括未暂存的）
+git commit --amend   # 修订提交，将现在暂存区里的更改合并到上一个提交
+
+# 恢复文件
+git restore app.py   # 丢弃工作区修改，恢复到HEAD版本
+git restore --source 3e635d app.py  # 恢复到指定版本
+
+# 单个文件版本切换
+git checkout --patch <branch> <file>
 ```
+
+## stash
+
+stash指令能够把当前工作区储存起来，主要用于储存脏的工作区，比如写到一半时需要转到另一个分支做别的事情
+
+```bash
+# 储存工作区，并将工作区恢复到HEAD
+git stash
+
+# 查看stash
+git stash list          # stash列表
+git stash show [stash]  # 查看更改。stash参数是stash list显示的全名或编号
+
+# 恢复stash
+git stash pop [stash]   # 将最后的（或者指定的）stash恢复到工作区，并删除（有冲突时不删除）
+git stash apply [stash] # 同上，但不删除
+
+# 删除stash
+git stash drop [stash]
+```
+
+## 远程仓库
+
+```bash
+# 查看远程仓库
+git remote -v             # 查看远程仓库列表
+git remote show $repo     # 查看远程仓库的信息（$repo是自定义的名称）
+
+# 编辑远程仓库
+git remote add $repo $url  # 添加远程仓库
+git remote remove $repo    # 移除远程仓库
+git remote rename $repo $new_repo_name  # 重命名远程仓库
+
+# 和远程仓库同步数据
+git fetch $repo  # 从远程仓库抓取
+git pull         # 从远程仓库拉取
+git push $repo $branch  # 推送到远程仓库
+```
+
+同步数据以分支为单位。本地分支绑定到远程上游分支（Upstream Branch），同步操作都是在当前分支和对应远程上游分支之间进行。首次push时需要绑定上游分支：
+
+```bash
+git push -u origin main  # 将当前分支绑定到origin仓库的main分支
+```
+
+## 分支
+
+```bash
+git branch -a    # 查看分支
+git branch $branch_name    # 创建分支
+git switch $branch_name    # 切换分支。旧写法：git checkout $branch_name
+git switch -c $branch_name # 创建分支并切换。旧写法：git checkout -b $branch_name
+
+git merge feature      # 将feature分支合并到当前分支
+git branch -d feature  # 删除feature分支
+
+git rebase main        # 将当前分支的变基到main分支
+git rebase -i HEAD~3   # 交互模式编辑最近3个提交
+```
+
+**变基**是重写提交历史的命令。例如，主分支1.0版本更新后，开发者一边在main分支修bug，一边在feature分支开发新功能。一段时间后提交历史变成这样：
+
+```mermaid
+gitGraph
+    commit id: "1.0" tag: "v1.0"
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    commit id: "1.0.1"
+    commit id: "1.0.2"
+```
+
+变基功能可以将feature分支的”基底“移动到最新版本。feature分支原来是从v1.0分出来的这就是它的”基底“；变基命令将它的”基底“移动到main分支的最新位置了
+
+```mermaid
+gitGraph
+    commit id: "1.0" tag: "v1.0"
+    commit id: "1.0.1"
+    commit id: "1.0.2"
+    branch feature
+    checkout feature
+    commit
+    commit tag: "v1.1"
+```
+
+变基之后`git merge feature`，再删掉feature分支就能获得一份线性、无分叉的提交记录，避免直接合并导致提交历史变成蜘蛛网。但是，rebase会改变commit hash，如果其他人pull过变基之前的feature分支，会产生仓库冲突。一般原则是：**禁止对push过的提交进行变基**
+
+rebase指令还可以修改提交历史，常用于**整理合并提交历史**
+
+## 标签
+
+标签是指向某次提交的标记。但和分支不同，标签通常不会移动，常用来标记版本号
+
+```bash
+# 查看标签
+git tag --list "v1.8.*"
+git show $tag_name
+
+# 创建标签
+git tag -a v1.4 -m "some message about the annotated tag" 9fceb02
+
+# 删除标签
+git tag -d <tag>
+
+# 推送标签
+git push origin $tag_name    # 推送一个标签
+git push origin --tags       # 推送全部标签
+git push --delete $tag_name  # 移除远程仓库的标签
+```
+
+# 工作流程
 
 整体流程
 
@@ -75,144 +200,6 @@ git merge origin/master
 
 # 推送
 git push
-```
-
-# 常用指令
-
-## 文件操作
-
-```bash
-# 提交修改
-git commit
-git commit -a        # 提交所有修改（包括未暂存的）
-git commit --amend   # 修订提交，将现在暂存区里的更改合并到上一个提交
-
-# 撤销修改到上一次提交
-git checkout -- <file>
-
-# 单个文件版本切换
-git checkout --patch <branch> <file>
-```
-
-## 查看历史
-
-```bash
-# 查看提交历史
-git log
-git log HEAD ^HEAD~5        # 列出所有是HEAD祖先、并且不是HEAD~1祖先的commit
-git log HEAD~5..HEAD        # 和上一条一样。可以理解为从HEAD~5到HEAD的提交
-git log --graph --oneline   # 类似树状输出，只输出简洁信息
-
-# 文件比较
-git diff  # 比较工作区与暂存区
-git diff --compact-summary  # 只输出摘要，即各文件增删多少行
-git diff <commit> <path>    # 暂存区与commit，且只比较path以及path的子文件
-
-git show HEAD~3:README.md   # 查看文件历史版本。注意，不可以用反斜杠
-```
-
-## stash
-
-stash指令能够把当前工作区储存起来，主要用于储存脏的工作区，比如写到一半时需要转到另一个分支做别的事情
-
-```bash
-# 储存工作区，并将工作区恢复到HEAD
-git stash
-git stash push          # 和git stash等价
-git stash -m <message>  # stash信息。如果没有，保存为WIP on <branch>:<commit>
-
-# 查看stash
-git stash list          # stash列表
-git stash show [stash]  # 查看更改。stash参数是stash list显示的全名或编号
-
-# 恢复stash
-git stash pop [stash]   # 将最后的（或者指定的）stash恢复到工作区，并删除（有冲突时不删除）
-git stash apply [stash] # 同上，但不删除
-
-# 删除stash
-git stash drop [stash]
-```
-
-## 远程仓库
-
-```bash
-# 查看远程仓库
-git remote -v             # 查看远程仓库列表
-git remote show $name     # 查看远程仓库的信息
-
-git remote add $name $url  # 添加远程仓库
-git remote remove $name    # 移除远程仓库
-git remote rename $old_name $new_name  # 重命名远程仓库
-
-
-git fetch $name  # 从远程仓库抓取
-git pull         # 从远程仓库拉取
-git push $remote_repo_name $branch  # 推送到远程仓库
-```
-
-## 标签
-
-```bash
-# 查看标签
-git tag --list "v1.8.*"
-git show <tag>
-
-# 创建轻量标签（相当于提交的别名，除了名字什么都没有。通常只用作临时标签）
-git tag v1.4
-
-# 创建附注标签（可以包含很多信息，一般建议用这个）
-git tag -a v1.4 -m "some message about the annotated tag"
-
-# 使用例：给过去的提交加标签
-git log --pretty=oneline
-git tag -a v1.2 9fceb02       # 9fceb02是对应提交的部分校验和
-
-# 删除标签
-git tag -d <tag>
-
-# 推送标签：push默认不推送标签
-git push origin <tagname>    # 推送一个标签
-git push origin --tags       # 推送全部标签
-git push --delete <tagname>  # 移除远程仓库的标签
-```
-
-## 分支
-
-```bash
-# 查看分支
-git branch -a
-
-# 切换分支
-git checkout <branch>
-
-# 创建同时切换
-git checkout -b <branch>
-
-# 合并分支（将目标分支合并到当前分支）: merge
-git merge <branch>
-
-# 删除分支: --delete, -d
-git branch --delete <branch>
-
-# 移动分支: --force, -f
-git branch --force <branch>  # 将分支强制移动到HEAD
-
-# 变基
-# 首先，撤销从upstream与branch分支点开始、到branch为止的所有commit
-# 然后移动到upstream，再逐个施加这些commit
-git rebase upstream [branch]
-
-# 例如
-git rebase master dev
-# A - B - C - master
-#      \ D - E - dev
-# 转变为
-# A - B - C - master
-#                \ D' - E' - dev
-
-# 用rebase合并commit
-# 执行之后会弹出编辑窗口，选择如何合并。注意：如果要合并已经推送的提交，再次推送需要git push -f
-git rebase -i HEAD~3
 ```
 
 # 其他

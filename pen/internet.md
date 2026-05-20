@@ -418,7 +418,7 @@ Content-Security-Policy: default-src 'self'; script-src *.allowed.com; img-src '
 - 状态防火墙：工作于传输、网络层，根据连接状态（IP地址、端口、连接时长、流量等）判断是否允许通过
 - 下一代防火墙：工作于传输、网络、应用层。除了前面两种防火墙检测的东西以外，还要利用应用层协议分析数据内容
 
-netfilter（内核）与iptables（UI）
+netfilter（内核）与iptables、firewalld、nftables、ufw（UI）
 
 Windows Defender或Windows安全中心
 
