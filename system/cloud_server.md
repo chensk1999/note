@@ -166,8 +166,8 @@ docker run -it --rm --user hermes -v ./hermes:/opt/data nousresearch/hermes-agen
 docker run -it --rm  --user hermes-v ./hermes:/opt/data nousresearch/hermes-agent -c  # 恢复Session
 
 # 测试Gateway连接。运行之后给它发消息能收到回复
-docker run -it --rm -v ./hermes:/opt/data nousresearch/hermes-agent setup gateway # 初始配置
-docker run -it --rm -v ./hermes:/opt/data nousresearch/hermes-agent gateway run
+docker run -it --rm --user hermes -v ./hermes:/opt/data nousresearch/hermes-agent setup gateway # 初始配置
+docker run -it --rm --user hermes -v ./hermes:/opt/data nousresearch/hermes-agent gateway run
 .venv/bin/hermes config set MESSAGING_CWD /opt/data/workspace    # 配置Gateway工作目录
 ```
 
@@ -176,8 +176,8 @@ docker run -it --rm -v ./hermes:/opt/data nousresearch/hermes-agent gateway run
 在已经启动的容器打开TUI：
 
 ```bash
-docker exec -it --workdir /opt/data/workspace hermes /opt/hermes/.venv/bin/hermes
-docker exec -it --workdir /opt/data/workspace/novelist hermes /opt/hermes/.venv/bin/hermes
+docker exec -it --user hermes --workdir /opt/data/workspace hermes /opt/hermes/.venv/bin/hermes
+docker exec -it --user hermes --workdir /opt/data/workspace/novelist hermes /opt/hermes/.venv/bin/hermes
 ```
 
 配置工作目录：在`config.yaml`中写入

@@ -4,7 +4,7 @@ Web服务器负责接受HTTP请求，并返回HTTP响应；处理静态请求，
 
 ## Apache
 
-### 常见漏洞
+### 历史漏洞
 
 **多后缀解析漏洞**
 
@@ -47,7 +47,7 @@ AddLanguage zh-CN .cn
 
 ## Nginx
 
-### 常见漏洞
+### 历史漏洞
 
 **自动修复路径漏洞**
 
@@ -81,13 +81,15 @@ Nginx 0.8.41~1.4.3 / 1.5.0~1.5.7，若文件名包含`\x20\x00`就无法正确�
 
 
 
-### 常见漏洞
+### 历史漏洞
 
 **目录解析漏洞**：IIS 5.x / 6.0版本中，名为`*.asp, *.asa, *.cer, *.cdx`的目录中所有文件都解析为asp文件
 
-**文件名解析漏洞**：IIS 5.x / 6.0版本中，`evil.asp;.jpg`解析为asp文件
+**文件名解析漏洞**：IIS 5.x / 6.0版本中，`evil.asp;.jpg`、`/dir.asp/evil.jpg`解析为asp文件
 
 **畸形解析漏洞**：IIS 7.0版本，与Nginx自动修复路径漏洞类似，开启Fast-CGI模式且`cgi.fix_pathinfo=1`，访问`evil.jpg/non-exist.php`，会将`evil.jpg`作为php文件解析
+
+PUT上传漏洞：IIS 6.0，如果开启目录写权限并开启了WebDAV，则可以通过PUT请求写入文件、通过MOVE请求移动文件
 
 ## OpenResty
 
@@ -132,7 +134,7 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 - 绿色树叶图标![SpringBoot favicon.ico](data:image/x-icon;base64,AAABAAEAEA0AAAEAIACcAwAAFgAAACgAAAAQAAAAGgAAAAEAIAAAAAAAdAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZqBwHEaPV4xCq4dWQcq6T0LNv2I7z8R7NtDGkjPQxaQszsSkMtDGoDvSyHlI08otAAAABAAAAAAAAAAAAAAAADeaazIvgUL7K306/yqFSP8olGH/JqR9/yS5of8jxbX/Is3D/yLNwv8hzMH/Js3C/zHPxZ5B0skYAAAAAETSxyUuwa3PJqmF/yelfv4onnP/KZZm/yqPWP8rhUf/KpBa/yawkf8jyr3/Is7E/iLMwf8izMH/MM/FpwAAAAY00MafIc3D/yLQx/4i0Mj/ItHJ/yLQyP8jyr3/JL2o/yaphv8qk1//KJxw/yTEtP8iz8X+IszB/yTNwv9A0slGMM/F3CLMwf8jzcL/I83C/yPMwf8izcL/Is3C/yLOxP8izsX/JMSy/yeqhv8onnL/JMOy/yLOxP4izMH/M9DGrDDPxcoizMH/I83C/yPNwv8jzcL/I83C/yPNwv8jzMH/Is3C/yLNwv8jzMH/Jbaa/yesiv8jyLr/Is3C/y/Pxek60chyIszB/yLNwv8jzcL/I83C/yPNwv8jzcL/I83C/yPNwv8jzcL/I8zB/yLOxf8mtZr/JcCs/yLNwv8ozcP/AAAACC3OxNEjzcL/IszB/yLMwf8izMH/IszB/yLMwf8izMH/IszB/yLMwf4jzMH/Is7E/yXAq/8jyr3+Jc3D/wAAAABW1s4aLc7EribNwuUmzcL4JM3C/SXNwv4lzcL7Jc3C+iXNwv8jzcL/IszB/yLNwv8jy7/+IszB/yrOxPwAAAAAAAAAAAAAAAA+0sg/Mc/FbCrOxHgtz8V5L8/FcyzPxHEvz8SBLM/EoynOw9ckzcL/Is3C/yLMwf8uz8TkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU50ccsMs/FdijOw+sizMH/MtDFuwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJA0sgyJ83D5zjRx4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAELSyThP1c04gAcAAIABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAAAA4AAAAP/gAAD/+AAA//wAAA==)，FOFA语法：`icon_hash="116323821"`
 - 错误页面`White Label Error Page`
 
-常见漏洞
+历史漏洞
 
 - 敏感信息泄露：Spring Boot提供`actuator`模块，用于监控系统状态。1.5以下默认允许未授权访问所有端点，≥1.5则默认只能访问`/actuator/health`和`/actuator/info`端点。端点详情参考[对于Spring Boot的渗透姿势](https://blog.zgsec.cn/archives/129.html)。注意：路径也可能是`/api/actuator`等样子。一台服务器也可能有多个actuator页面
 - actuator未授权中价值大的有`/actuator/env`配置文件、`/actuator/heapdump`，其暴露的`.hprof`文件是Java应用的内存转储，很可能包含数据库账户密码等敏感信息，可用[JDumpSpider](https://github.com/whwlsfb/JDumpSpider)提取
@@ -173,7 +175,7 @@ Spring Boot架设在Spring框架之上，通过增加中间层的方式简化了
 
 **指纹特征**：Shiro默认使用Servlet容器的会话管理，即用`JSESSIONID`标识会话；其自动登录功能使用名为`rememberMe`的Cookie。若数据包Cookie带有`rememberMe`字段，或者在请求包添加`rememberMe`字段后，响应包设置Cookie`rememberMe = deleteMe`，可判定使用了Shiro
 
-**常见漏洞**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)、[Shiro权限绕过汇总](https://yinwc.github.io/2022/01/13/shiro-%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E7%B3%BB%E5%88%97%E6%B1%87%E6%80%BB/)
+**历史漏洞**：参考[Shiro漏洞研究](https://github.com/HackJava/Shiro)、[Shiro权限绕过汇总](https://yinwc.github.io/2022/01/13/shiro-%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E7%B3%BB%E5%88%97%E6%B1%87%E6%80%BB/)
 
 ## FastJson
 
@@ -181,7 +183,7 @@ FastJson是阿里巴巴开发的JSON序列化、反序列化库，它使用方�
 
 **指纹特征**：待补充
 
-**常见漏洞**：参考[FastJson漏洞研究](https://github.com/HackJava/Fastjson)
+**历史漏洞**：参考[FastJson漏洞研究](https://github.com/HackJava/Fastjson)
 
 ## Log4j2
 
@@ -189,7 +191,7 @@ Log4j2是Apache开源的Java日志库，它也是Log4j的升级版
 
 **指纹特征**：待补充
 
-**常见漏洞**：待补充
+**历史漏洞**：待补充
 
 ## Docker Registry
 
@@ -200,7 +202,7 @@ Docker仓库
 1. 响应头`Docker-Distribution-Api`
 2. 访问`/v1`或者`/v2`返回`{}`；访问`/v2/_catalog`返回仓库列表或者401
 
-**常见漏洞**：1.x版本有很多高危漏洞；2.x配置错误会导致API未授权访问
+**历史漏洞**：1.x版本有很多高危漏洞；2.x配置错误会导致API未授权访问
 
 1. 获取仓库列表：`https://<仓库>/v2/_catalog`
 2. 获取镜像的Tag：`https://<仓库>/v2/<repo>/tags/list`
@@ -279,4 +281,32 @@ reverse-sourcemap "example.js.map"  # 还原源文件
 ## WAF
 
 https://cloud.tencent.com/developer/article/2121698
+
+## XXL-JOB
+
+XXL-JOB是分布式任务调度开发平台，用它开发的应用架构为一个调度中心 + 若干执行器节点，调度中心和执行器节点之间通过网络进行通信（注：执行器默认是9999端口）。执行器、调度中心的心跳端口、注册端口不会对公网开放，能看到的是任务调度中心的控制台页面
+
+### 指纹特征
+
+图标：![xxljob-favicon](../images/components-xxljob-favicon.ico)
+
+![xxljob-login_page](../images/components-xxljob-login_page.png)
+
+![xxljob-调度中心](../images/components-xxljob-调度中心.png)
+
+### 历史漏洞
+
+版本历史：2026.04 3.4.0；2025.02 3.0.0；
+
+**默认口令**：admin / 123456
+
+登录进控制台就能在任务管理模块下发Glue Shell任务，在执行器主机RCE
+
+执行器端的漏洞：2.3.1，执行器accessToken添加默认配置`default_token`
+
+https://xz.aliyun.com/news/13339
+
+
+
+
 
