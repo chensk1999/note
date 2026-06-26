@@ -481,9 +481,39 @@ python -m my_pkg  # 将my_pkg/__main__.py作为Package运行
 python my_pkg     # 将my_pkg/__main__.py作为脚本运行（其中的相对路径导入会报错）
 ```
 
-包的标准结构
+包的标准结构。`my_project`为项目名，`app`为包名。`import`时包名的横杠要替换为下划线，例如包名是`my-pkg`，则需要`import my_pkg`
 
-待补充
+```
+my_project/
+├── pyproject.toml
+├── src/
+│   └── app/
+│       ├── __init__.py
+│       └── main.py
+└── tests/
+```
+
+这是当前（2026）的主流标准。pyproject.toml的写法可以参考[Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)。示例：
+
+```toml
+[project]
+name = "workbench"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "playwright>=1.58.0",
+    "requests>=2.34.2",
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
 
 
 # IO
@@ -732,21 +762,6 @@ Raises:
     KeyError: raises an exception
 """
 ```
-
-## 虚拟环境
-
-虚拟环境（Virtual Environment）是一个分离的python环境，可以在此环境安装第三方库而不影响其他python程序，比如给不同程序安装不同版本的库
-
-```shell
-# 建立虚拟环境
-python -m venv env_name
-
-# 打开虚拟环境
-env_name\Scripts\activate.bat            # Windows
-env_name\source env_name/bin/activate    # Unix or MacOS
-```
-
-打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作
 
 ## 可迭代对象
 

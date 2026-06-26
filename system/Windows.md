@@ -247,6 +247,13 @@ dig example.com A  # linux自带，windows需安装
 
 ### 传输层
 
+**Test-NetConnection** - 测试端口连通性
+
+```powershell
+Test-NetConnection www.baidu.com -Port 80
+tnc www.baidu.com -Port 80   # 别名tnc
+```
+
 **netstat** - 网络状态
 
 查询网络状态，如当前建立的连接、路由表

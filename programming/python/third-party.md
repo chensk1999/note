@@ -17,6 +17,19 @@ python自带的管理工具
 python -m venv env_name
 ```
 
+虚拟环境（Virtual Environment）是一个分离的python环境，可以在此环境安装第三方库而不影响其他python程序，比如给不同程序安装不同版本的库
+
+```shell
+# 建立虚拟环境
+python -m venv env_name
+
+# 打开虚拟环境
+env_name\Scripts\activate.bat            # Windows
+env_name\source env_name/bin/activate    # Unix or MacOS
+```
+
+打开虚拟环境之后命令行会显示如`(env_name) D:env_name>`的提示符，在此界面运行pip、运行解释器、运行脚本都是对虚拟环境中的东西进行操作
+
 # uv
 
 uv是用Rust写的python环境管理工具，运行速度比pip快得多。安装以及使用方式可以参考[uv文档](https://docs.astral.sh/uv/)
@@ -35,18 +48,20 @@ uv python dir           # 查看安装位置
 uv python pin 3.12      # 设置为默认版本
 ```
 
-**管理缓存目录**
+管理
+
+**管理存储目录**
 
 ```shell
 uv cache dir    # 查看缓存目录
 uv cache clean requests  # 删除requests库
 uv cache clean  # 删除全部库
 uv cache prune  # 删除过时库文件
+
+uv tool dir     # 查看工具安装目录
 ```
 
-安装第三方库时，库文件首先下载到缓存目录；虚拟环境使用第三方库时，通过硬链接或者复制的方式引用，这样就不用重复下载了
-
-缓存目录和虚拟环境在同一个盘时，可以用硬链接直接引用缓存的库文件，效率更高。参考文档[Settings | uv](https://docs.astral.sh/uv/reference/settings/#cache-dir)，添加以下配置可更改缓存目录
+安装第三方库时，库文件首先下载到缓存目录；虚拟环境使用第三方库时，若缓存目录和虚拟环境在同一个盘，用硬链接直接引用缓存的库文件。参考文档[Settings | uv](https://docs.astral.sh/uv/reference/settings/#cache-dir)，添加以下配置可更改缓存目录
 
 ```toml
 # 用户配置文件`%APPDATA%\uv\uv.toml`（Windows）或`~/.config/uv/uv.toml`（Linux）
@@ -56,6 +71,8 @@ cache-dir = "./.uv_cache"
 [tool.uv]
 cache-dir = "./.uv_cache"
 ```
+
+工具目录需要用环境变量设置，添加环境变量`UV_TOOL_DIR`，设置为工具的安装目录
 
 **换源**
 
@@ -73,10 +90,10 @@ default = true
 ## 运行脚本
 
 ```shell
-uv init --script example.py --python 3.12  # 创建脚本文件
+uv run example.py
 ```
 
-然后编辑其中的inline metadata，用`uv run example.py`时会自动创建临时环境。inline metadata的格式如下：
+以上命令会在虚拟环境运行脚本。uv会自动安装inline metadata指定的包，格式如下：
 
 ```python
 # /// script
@@ -139,8 +156,6 @@ uv sync --reinstall-package local-package
 ```
 
 # 第三方库
-
-
 
 ## openpyxl - 操作excel表格
 
@@ -247,23 +262,3 @@ result = model.evaluate(test_images, test_labels, verbose=2)
 model.save('my_model')    # 创建my_model的文件夹，并将模型架构、权重、训练配置存进去
 my_model = keras.models.load_model('my_model')
 ```
-
-## whisper - 语音识别
-
-https://github.com/openai/whisper
-
-```shell
-# 安装
-pip install openai-whisper
-sudo apt install ffmpeg    # whisper依赖ffmpeg
-
-python -m whisper --help
-python -m whisper "src.mp4" --language zh
-```
-
-首次使用时需要下载模型，会自动下载并放在`%USERPROFILE%/.cache/whisper`
-
-其他常用参数：
-
-- 输出：`--output_dir 输出目录`， `--output_format {txt,vtt,srt,tsv,json,all}`
-- 线程：`--threads `

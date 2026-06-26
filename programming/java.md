@@ -572,7 +572,13 @@ maven-project
 </project>
 ```
 
-配置好后，可以用命令`mvn clean package`删除旧构建，并进行编译、打包。此时会自动下载依赖包，默认下载到`%USERPROFILE%/.m2`目录
+配置好后，可以
+
+```bash
+mvn clean package
+```
+
+删除旧构建，并进行编译、打包。此时会自动下载依赖包，默认下载到`%USERPROFILE%/.m2`目录
 
 ## Tomcat
 

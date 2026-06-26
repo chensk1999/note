@@ -42,9 +42,6 @@ git commit --amend   # 修订提交，将现在暂存区里的更改合并到上
 # 恢复文件
 git restore app.py   # 丢弃工作区修改，恢复到HEAD版本
 git restore --source 3e635d app.py  # 恢复到指定版本
-
-# 单个文件版本切换
-git checkout --patch <branch> <file>
 ```
 
 ## stash

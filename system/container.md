@@ -83,7 +83,7 @@ docker build -t "my_image:dev" ./
 
 容器相当于使用镜像创建出的虚拟机
 
-容器中包含了容器配置以及可写层的数据。Docker的设计理念是：**容器可以随时删除**，因此配置、重要数据应放在容器之外（例如使用Docker Compose、挂载Volume）
+容器中包含了容器配置以及可写层的数据。Docker的设计理念是：**容器可以随时删除**，因此配置、重要数据应放在容器之外（例如把配置写在Docker Compose文件、重要数据挂载Volume）
 
 ```bash
 docker run --name ubuntu ubuntu:15.10     # 启动容器
@@ -108,6 +108,15 @@ Volume是持久化保存容器内数据的方法，它有数据卷（volume）�
 # bind mount示例：将宿主机的/home/admin/nginx挂载到容器的/etc/nginx/conf.d，并设为只读(Read Only)
 # 参数格式为 宿主机目录:容器目录:选项
 docker run --name nginx -v /home/admin/nginx:/etc/nginx/conf.d:ro nginx:latest
+```
+
+管理Volume
+
+```bash
+docker volume ls
+docker volume rm $name       # 删除Volume
+docker volume inspect $name  # 查看数据卷信息
+docker volume prune          # 删除未使用的Volume（慎用）
 ```
 
 ## Docker Compose
@@ -135,7 +144,7 @@ docker compose exec app sh # 进入容器调试
 
 # 配置Docker
 
-Docker配置文件位于`/etc/docker/daemon.json`。注意，Docker可能占用了配置文件，如果写不进去就要关掉Docker再改
+Docker配置文件位于`/etc/docker/daemon.json`。注意，Docker可能占用配置文件，如果写不进去就关掉Docker再改
 
 ```bash
 sudo systemctl stop docker     # 关闭Docker
