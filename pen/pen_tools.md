@@ -581,9 +581,8 @@ javascrip反混淆工具：https://deobfuscate.io/、http://www.jsnice.org/
 
 [Burp Extender API](https://github.com/PortSwigger/burp-extender-api)
 
-在Burp Suite的扩展 - APIs（或者[官方在线文档](https://portswigger.net/burp/extender/api/index.html)）中，可以看到各种插件接口。重要接口有
+旧版API，也叫Wiener API。核心接口是`IBurpExtender`（插件入口，必须实现）
 
-- `IBurpExtender`：插件入口，必须实现
 - BurpExtenderCallbacks
 
 [Montoya API](https://github.com/PortSwigger/burp-extensions-montoya-api)

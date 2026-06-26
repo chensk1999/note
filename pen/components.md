@@ -288,6 +288,8 @@ XXL-JOB是分布式任务调度开发平台，用它开发的应用架构为一�
 
 ### 指纹特征
 
+标题：任务调度中心
+
 图标：![xxljob-favicon](../images/components-xxljob-favicon.ico)
 
 ![xxljob-login_page](../images/components-xxljob-login_page.png)
