@@ -238,9 +238,36 @@ openclaw channels login --channel openclaw-weixin                 # 扫码登录
 
 https://github.com/AstrBotDevs/AstrBot/blob/master/README_zh.md
 
+https://docs.astrbot.app/what-is-astrbot.html
+
 使用uv部署
 
-运行时白屏，F12显示`Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/plain"`，把注册表`\HKEY_CLASSES_ROOT\.js`的Content Type改成`application/javascript`
+```bash
+uv tool install astrbot --python 3.12
+astrbot init # 仅首次执行此命令以初始化环境
+astrbot run
+```
+
+然后访问http://127.0.0.1:6185
+
+仪表盘网页白屏，F12显示`Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/plain"`，把注册表`\HKEY_CLASSES_ROOT\.js`的Content Type改成`application/javascript`
+
+## aibeat
+
+https://github.com/tophant-ai/aibeat
+
+```bash
+# 在软件根目录执行运行前检查
+./bin/promptbeat --version
+./bin/promptbeat validate --config examples/llm-basic/promptbeat.yaml
+
+# 如果提示找不到python，是因为软链接错误
+cd runtime/venv/bin
+sudo rm python3
+sudo ln -s ${软件根目录}/runtime/python/bin/python3
+```
+
+
 
 # AI模型
 
@@ -309,13 +336,9 @@ python -m whisper "src.mp4" --language zh
 
 ## EwoMail邮件服务器
 
-1. 官方安装脚本：http://doc.ewomail.com/docs/ewomail/install
-2. Docker安装：https://github.com/tangramor/ewomail-docker
-3. 在CentOS的Docker容器安装：https://github.com/en0th/EwoMailForDocker
-
-使用官方安装脚本不断遇到问题，如果成功安装mysql后才出问题，就要重装系统从头开始；用Docker安装，mysql要降版本（仓库内的compose.yml使用了`default-authentication-plugin`，当前版本已经不再支持，降到`mysql:8.0.26`），启动后CPU、磁盘占用极高，导致服务器卡死，怀疑是ClamAV组件发力了
-
-最终在CentOS的Docker容器用官方脚本安装成功
+1. 官方安装脚本：http://doc.ewomail.com/docs/ewomail/install。由于CentOS仓库过期、部分官方资源过期，很容易出问题。官方脚本必须在干净系统上安装，假如安装中途失败（尤其是安装mysql后发生问题），就要重装系统从头开始，因此不建议在真机上装
+2. Docker安装：https://github.com/tangramor/ewomail-docker。mysql要降版本（仓库内的compose.yml使用了`default-authentication-plugin`，当前版本已经不再支持，要降到`mysql:8.0.26`）。启动后CPU、磁盘占用极高，导致服务器卡死，怀疑是ClamAV组件发力了
+3. 在CentOS的Docker容器安装：https://github.com/en0th/EwoMailForDocker。在CentOS的Docker容器内用官方脚本安装成功
 
 ```bash
 # 构建镜像
@@ -332,8 +355,8 @@ docker exec -it --privileged ewomail /bin/sh
 然后在容器内进行安装。安装前需要解决的问题有：
 
 1. `sh: setenforce: command not found`：容器没有`setenforce`指令。注释掉start.sh的setenforce一行
-2. 如果不带`en`参数（`start.sh xxx.com`），安装脚本的`epel_replace`函数会换到北师大源，导致安装失败，因此需要删掉`epel_replace`函数的内容
-3. 如果带了`en`参数（`start.sh xxx.com en`），安装脚本会从`http://download.ewomail.org`下载rpm包，而这个网站已经不在了，因此不能带`en`参数
+2. 如果带`en`参数安装（`start.sh xxx.com en`），安装脚本会从`http://download.ewomail.org`下载rpm包，而这个网站已经不在了，因此不能带`en`参数
+3. 如果不带`en`参数（`start.sh xxx.com`），安装脚本的`epel_replace`函数会换到北师大源，导致安装失败，因此需要删掉`epel_replace`函数的内容
 4. yum源失效：换阿里云镜像
 
 ```bash

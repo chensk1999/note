@@ -419,9 +419,9 @@ find ~ -type f -exec file {} \; # 对每个找到的文件执行命令。{}是�
 | CentOS 8       | dnf       |      |
 | FreeBSD        | pkg       |      |
 
-换源、镜像：修改`/etc/apt/sources.list`，并添加公钥文件
+换源、镜像：修改`/etc/apt/sources.list`或`/etc/apt/sources.list.d/ubuntu.sources`
 
-`sudo wget https://archive.kali.org/archive-keyring.gpg -O /usr/share/keyrings/kali-archive-keyring.gpg`
+参考：[清华镜像站使用帮助](https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/)
 
 # 其他指令
 
